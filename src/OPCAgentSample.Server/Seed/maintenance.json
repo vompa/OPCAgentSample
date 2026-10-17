@@ -1,0 +1,36 @@
+{
+  "note": "Wartungs-DB nach Spezifikation Abschnitt 8, Termine bis 17.01.2027. Relative Termine (today, tomorrow) beziehen sich auf die Demo-Uhr Do 15.10.2026; ein Datum ohne Uhrzeit gilt ab Produktionstagbeginn 06:00 Ortszeit.",
+  "plans": [
+    { "id": "MP-OF01-DOOR", "stationId": "OF-01", "title": "Türverriegelung prüfen (seit 2 Tagen überfällig)", "kind": "safetyInspection", "due": "2026-10-13", "durationMinutes": 30, "safetyRelevant": true },
+    { "id": "MP-RT02-MOULD", "stationId": "RT-02", "title": "Form F-125-07 wechseln (W-3381)", "kind": "strokeCounter", "due": "today 11:30", "durationMinutes": 40, "workOrder": "W-3381", "mouldId": "F-125-07", "hint": "bündelbar mit Rüsten auf Ø 115" },
+    { "id": "MP-RT04-HYD-CHECK", "stationId": "RT-04", "title": "Hydraulik-Sichtprüfung empfohlen (Drift Presskraftaufbau)", "kind": "conditionBased", "due": "today", "durationMinutes": 20 },
+    { "id": "MP-RT01-SCALE", "stationId": "RT-01", "title": "Waage kalibrieren", "kind": "measuringEquipment", "due": "tomorrow", "durationMinutes": 30, "hint": "bündelbar mit Mischungswechsel" },
+    { "id": "MP-VP01-STRAP", "stationId": "VP-01", "title": "Umreifer warten", "kind": "scheduled", "due": "tomorrow 14:00", "durationMinutes": 30 },
+    { "id": "MP-RT02-OIL", "stationId": "RT-02", "title": "Hydrauliköl wechseln", "kind": "timeBased", "due": "2026-10-19", "durationMinutes": 45 },
+    { "id": "MP-OF02-SENSORS", "stationId": "OF-02", "title": "Temperaturfühler Zone 1-3 kalibrieren", "kind": "measuringEquipment", "due": "2026-10-20", "durationMinutes": 60 },
+    { "id": "MP-RT04-MOULD", "stationId": "RT-04", "title": "Form F-180-03 wechseln (Prognose aus Hüben)", "kind": "forecast", "due": "2026-10-21 13:00", "forecast": true, "mouldId": "F-180-03", "hint": "bündelbar mit Rüsten 13:00" },
+    { "id": "MP-VP02-STRAP-WEAR", "stationId": "VP-02", "title": "Umreifer Verschleißteile (Prognose aus Betriebsstunden)", "kind": "forecast", "due": "2026-10-22", "durationMinutes": 30, "forecast": true },
+    { "id": "MP-RT04-HYD", "stationId": "RT-04", "title": "Hydraulikwartung (regulär KW 45)", "kind": "timeBased", "due": "2026-11-02", "hint": "Empfehlung: vorziehen" },
+
+    { "id": "MP-RT01-SAFETY-DEC", "stationId": "RT-01", "title": "Jährliche Sicherheitsprüfung Presse", "kind": "inspection", "due": "2026-12-01", "windowEnd": "2026-12-24", "safetyRelevant": true },
+    { "id": "MP-RT02-SAFETY-DEC", "stationId": "RT-02", "title": "Jährliche Sicherheitsprüfung Presse", "kind": "inspection", "due": "2026-12-01", "windowEnd": "2026-12-24", "safetyRelevant": true },
+    { "id": "MP-RT03-SAFETY-DEC", "stationId": "RT-03", "title": "Jährliche Sicherheitsprüfung Presse", "kind": "inspection", "due": "2026-12-01", "windowEnd": "2026-12-24", "safetyRelevant": true },
+    { "id": "MP-RT04-SAFETY-DEC", "stationId": "RT-04", "title": "Jährliche Sicherheitsprüfung Presse", "kind": "inspection", "due": "2026-12-01", "windowEnd": "2026-12-24", "safetyRelevant": true },
+
+    { "id": "MP-OF01-REVISION", "stationId": "OF-01", "title": "Ofenrevision im Betriebsurlaub (Wartungsfenster 24.12.-06.01.)", "kind": "revision", "due": "2026-12-24", "windowEnd": "2027-01-07" },
+    { "id": "MP-OF02-REVISION", "stationId": "OF-02", "title": "Ofenrevision im Betriebsurlaub (Wartungsfenster 24.12.-06.01.)", "kind": "revision", "due": "2026-12-24", "windowEnd": "2027-01-07" },
+    { "id": "MP-RT01-GENERAL", "stationId": "RT-01", "title": "Generalinspektion im Betriebsurlaub (Wartungsfenster 24.12.-06.01.)", "kind": "inspection", "due": "2026-12-24", "windowEnd": "2027-01-07" },
+    { "id": "MP-RT02-GENERAL", "stationId": "RT-02", "title": "Generalinspektion im Betriebsurlaub (Wartungsfenster 24.12.-06.01.)", "kind": "inspection", "due": "2026-12-24", "windowEnd": "2027-01-07" },
+    { "id": "MP-RT03-GENERAL", "stationId": "RT-03", "title": "Generalinspektion im Betriebsurlaub (Wartungsfenster 24.12.-06.01.)", "kind": "inspection", "due": "2026-12-24", "windowEnd": "2027-01-07" },
+    { "id": "MP-RT04-GENERAL", "stationId": "RT-04", "title": "Generalinspektion im Betriebsurlaub (Wartungsfenster 24.12.-06.01.)", "kind": "inspection", "due": "2026-12-24", "windowEnd": "2027-01-07" },
+
+    { "id": "MP-RT01-SCALE-JAN", "stationId": "RT-01", "title": "Waage kalibrieren (quartalsweise)", "kind": "measuringEquipment", "due": "2027-01-07", "windowEnd": "2027-01-16" },
+    { "id": "MP-RT02-SCALE-JAN", "stationId": "RT-02", "title": "Waage kalibrieren (quartalsweise)", "kind": "measuringEquipment", "due": "2027-01-07", "windowEnd": "2027-01-16" },
+    { "id": "MP-RT03-SCALE-JAN", "stationId": "RT-03", "title": "Waage kalibrieren (quartalsweise)", "kind": "measuringEquipment", "due": "2027-01-07", "windowEnd": "2027-01-16" },
+    { "id": "MP-RT04-SCALE-JAN", "stationId": "RT-04", "title": "Waage kalibrieren (quartalsweise)", "kind": "measuringEquipment", "due": "2027-01-07", "windowEnd": "2027-01-16" }
+  ],
+  "history": [
+    { "id": "MH-RT01-SCALE-JUL", "stationId": "RT-01", "title": "Waage kalibriert", "kind": "measuringEquipment", "doneAt": "2026-07-14 10:00", "result": "unauffällig" },
+    { "id": "MH-RT02-SCALE-JUL", "stationId": "RT-02", "title": "Waage kalibriert", "kind": "measuringEquipment", "doneAt": "2026-07-15 10:00", "result": "unauffällig" }
+  ]
+}

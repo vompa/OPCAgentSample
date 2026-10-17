@@ -1,0 +1,38 @@
+{
+  "note": "Artikel, Kartons und Mischungschargen aus dem Szenario der Simulation (HallAMasterData). Kartons stehen als Artikel mit Körnung '-', weil Ausschussstückkosten und Auftragsartikel dieselbe Tabelle nutzen. Die Verarbeitbarkeit einer Mischung (verarbeitbar bis) ergibt sich aus der Lieferung am Rundtisch, nicht aus der Charge.",
+  "mixtures": [
+    { "id": "A30", "name": "Mischung A30", "grit": "A30" },
+    { "id": "A36", "name": "Mischung A36", "grit": "A36" },
+    { "id": "A46", "name": "Mischung A46", "grit": "A46" },
+    { "id": "A60", "name": "Mischung A60", "grit": "A60" }
+  ],
+  "articles": [
+    { "id": "A-115-A60", "name": "Trennscheibe Ø 115 × 1,0 mm A60", "diameterMm": 115, "grit": "A60", "thicknessMm": 1.0, "piecesPerCarton": 25, "fillWeightTargetGrams": 98.0, "fillWeightToleranceGrams": 1.5 },
+    { "id": "A-115-A46", "name": "Trennscheibe Ø 115 × 1,6 mm A46", "diameterMm": 115, "grit": "A46", "thicknessMm": 1.6, "piecesPerCarton": 25, "fillWeightTargetGrams": 98.0, "fillWeightToleranceGrams": 1.5 },
+    { "id": "A-125-A60", "name": "Trennscheibe Ø 125 × 1,0 mm A60", "diameterMm": 125, "grit": "A60", "thicknessMm": 1.0, "piecesPerCarton": 25, "fillWeightTargetGrams": 112.0, "fillWeightToleranceGrams": 1.5 },
+    { "id": "A-125-A46", "name": "Trennscheibe Ø 125 × 1,6 mm A46", "diameterMm": 125, "grit": "A46", "thicknessMm": 1.6, "piecesPerCarton": 25, "fillWeightTargetGrams": 112.0, "fillWeightToleranceGrams": 1.5 },
+    { "id": "A-180-A30", "name": "Trennscheibe Ø 180 × 3,0 mm A30", "diameterMm": 180, "grit": "A30", "thicknessMm": 3.0, "piecesPerCarton": 10, "fillWeightTargetGrams": 112.0, "fillWeightToleranceGrams": 1.5 },
+    { "id": "A-180-A36", "name": "Trennscheibe Ø 180 × 2,5 mm A36", "diameterMm": 180, "grit": "A36", "thicknessMm": 2.5, "piecesPerCarton": 10, "fillWeightTargetGrams": 112.0, "fillWeightToleranceGrams": 1.5 },
+    { "id": "A-230-A36", "name": "Trennscheibe Ø 230 × 3,0 mm A36", "diameterMm": 230, "grit": "A36", "thicknessMm": 3.0, "piecesPerCarton": 5, "fillWeightTargetGrams": 112.0, "fillWeightToleranceGrams": 1.5 },
+    { "id": "A-230-A30", "name": "Trennscheibe Ø 230 × 3,0 mm A30", "diameterMm": 230, "grit": "A30", "thicknessMm": 3.0, "piecesPerCarton": 5, "fillWeightTargetGrams": 112.0, "fillWeightToleranceGrams": 1.5 },
+    { "id": "K-125-25", "name": "Karton Ø 125, 25 Stück", "diameterMm": 125, "grit": "-", "thicknessMm": 0.0, "piecesPerCarton": 25, "articleGroup": "Karton Ø 125" },
+    { "id": "K-115-25", "name": "Karton Ø 115, 25 Stück", "diameterMm": 115, "grit": "-", "thicknessMm": 0.0, "piecesPerCarton": 25, "articleGroup": "Karton Ø 115" },
+    { "id": "K-180-10", "name": "Karton Ø 180, 10 Stück", "diameterMm": 180, "grit": "-", "thicknessMm": 0.0, "piecesPerCarton": 10, "articleGroup": "Karton Ø 180" }
+  ],
+  "mixtureBatches": [
+    { "id": "M-2410-01", "mixtureId": "A46", "bulkDensityGramsPerLiter": 1380, "producedAt": "2026-10-05 05:00", "remark": "unauffällig" },
+    { "id": "M-2410-02", "mixtureId": "A60", "bulkDensityGramsPerLiter": 1380, "producedAt": "2026-10-05 05:10", "remark": "unauffällig" },
+    { "id": "M-2410-03", "mixtureId": "A36", "bulkDensityGramsPerLiter": 1400, "producedAt": "2026-10-05 05:20", "remark": "unauffällig" },
+    { "id": "M-2410-06", "mixtureId": "A60", "bulkDensityGramsPerLiter": 1380, "producedAt": "2026-10-07 05:10", "remark": "unauffällig" },
+    { "id": "M-2410-07", "mixtureId": "A46", "bulkDensityGramsPerLiter": 1390, "producedAt": "2026-10-08 05:00", "remark": "unauffällig" },
+    { "id": "M-2410-08", "mixtureId": "A30", "bulkDensityGramsPerLiter": 1410, "producedAt": "2026-10-08 05:20", "remark": "unauffällig" },
+    { "id": "M-2410-09", "mixtureId": "A60", "bulkDensityGramsPerLiter": 1370, "producedAt": "2026-10-09 05:10", "remark": "unauffällig" },
+    { "id": "M-2410-11", "mixtureId": "A46", "bulkDensityGramsPerLiter": 1380, "producedAt": "2026-10-12 05:00", "remark": "unauffällig" },
+    { "id": "M-2410-12", "mixtureId": "A60", "bulkDensityGramsPerLiter": 1380, "producedAt": "2026-10-12 05:10", "remark": "unauffällig" },
+    { "id": "M-2410-13", "mixtureId": "A60", "bulkDensityGramsPerLiter": 1390, "producedAt": "2026-10-13 05:10", "remark": "unauffällig" },
+    { "id": "M-2410-14", "mixtureId": "A36", "bulkDensityGramsPerLiter": 1400, "producedAt": "2026-10-12 17:00", "remark": "unauffällig" },
+    { "id": "M-2410-15", "mixtureId": "A46", "bulkDensityGramsPerLiter": 1380, "producedAt": "2026-10-14 05:00", "remark": "unauffällig" },
+    { "id": "M-2410-16", "mixtureId": "A30", "bulkDensityGramsPerLiter": 1410, "producedAt": "2026-10-14 12:00", "remark": "unauffällig" },
+    { "id": "M-2410-17", "mixtureId": "A60", "bulkDensityGramsPerLiter": 1460, "producedAt": "2026-10-14 21:15", "remark": "Schüttdichte über Rezeptwert (Soll 1,38 kg/l); Füllgewichtsdrift an RT-01 und RT-02 ab Mi 22:00" }
+  ]
+}

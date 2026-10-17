@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>KI-Leitstand Handy</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2F5D8A}a:hover{color:#1E3F60}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #EEECE6; font-family: 'IBM Plex Sans', sans-serif; color: #1B1F24; display: flex; flex-direction: column; overflow: hidden">
+
+<header style="background: #1B232D; color: #F2F0EA; padding: 14px 16px 10px; display: flex; flex-direction: column; gap: 10px; flex: 0 0 auto">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="width: 30px; height: 30px; border-radius: 7px; background: {{accent}}; display: flex; align-items: center; justify-content: center">
+<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="2.5"></circle><path d="M12 3v4M12 17v4M3 12h4M17 12h4"></path></svg>
+</div>
+<span style="font-size: 16px; font-weight: 700">KI-Leitstand</span>
+</div>
+<div style="width: 32px; height: 32px; border-radius: 50%; background: #3A4654; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">{{user.initials}}</div>
+</div>
+<div role="group" aria-label="Rolle" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #26313D; border-radius: 999px; padding: 4px">
+<sc-for list="{{roles}}" as="r" hint-placeholder-count="3">
+<button type="button" onClick="{{r.pick}}" style="{{r.style}}">{{r.label}}</button>
+</sc-for>
+</div>
+</header>
+
+<div aria-label="Statusleiste" style="flex: 0 0 auto; display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 16px; background: #26313D; color: #C9CFD6; font-size: 12px; white-space: nowrap; overflow: hidden">
+<span style="display: inline-flex; align-items: center; gap: 6px; color: #FFFFFF; font-weight: 600"><span style="width: 7px; height: 7px; border-radius: 50%; background: #5FBF7F"></span>OPC</span>
+<span>{{barScope}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; margin-left: auto">09:42</span>
+</div>
+
+<main style="flex: 1 1 auto; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+
+<sc-if value="{{isStart}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div>
+<div style="font-size: 20px; font-weight: 700">Guten Morgen, {{user.first}}</div>
+<div style="font-size: 14px; color: #5A6068">{{user.title}}</div>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; margin-top: -6px; font-size: 13px; color: #5A6068">
+<span style="display: inline-flex; align-items: center; gap: 4px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5A6068" stroke-width="2" aria-hidden="true"><path d="M14 14.8V4a2 2 0 10-4 0v10.8a4 4 0 104 0z"></path></svg>23,4 °C</span>
+<span style="display: inline-flex; align-items: center; gap: 4px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5A6068" stroke-width="2" aria-hidden="true"><path d="M12 3s6 6.5 6 11a6 6 0 01-12 0c0-4.5 6-11 6-11z"></path></svg>48 % rF</span>
+<span>Hallenklima im Sollbereich</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{summary}}" as="s" hint-placeholder-count="3">
+<div style="{{s.box}}">
+<span style="font-size: 26px; font-weight: 700; line-height: 1">{{s.n}}</span>
+<span style="font-size: 13px; font-weight: 600">{{s.label}}</span>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; align-items: baseline; justify-content: space-between">
+<h2 style="margin: 0; font-size: 14px; font-weight: 600; color: #5A6068; text-transform: uppercase; letter-spacing: 0.6px">Jetzt zu tun</h2>
+<button type="button" onClick="{{goInbox}}" style="border: none; background: transparent; color: #2F5D8A; font-size: 14px; font-weight: 600; min-height: 44px; cursor: pointer">Postfach ({{openCount}})</button>
+</div>
+<sc-for list="{{urgent}}" as="i" hint-placeholder-count="2">
+<div style="background: #FFFFFF; border: 1px solid #D6D3CB; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; gap: 8px; align-items: center"><span style="{{i.badge}}">{{i.prioText}}</span><span style="font-size: 12px; color: #5A6068">{{i.due}}</span></div>
+<div style="font-size: 15px; font-weight: 700; line-height: 1.35">{{i.title}}</div>
+<button type="button" onClick="{{i.analyze}}" style="min-height: 44px; border: none; border-radius: 8px; background: #1B232D; color: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer">Mit Claude analysieren</button>
+</div>
+</sc-for>
+<sc-for list="{{tileGroups}}" as="g" hint-placeholder-count="3">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 4px">
+<h2 style="margin: 0; font-size: 14px; font-weight: 600; color: #5A6068; text-transform: uppercase; letter-spacing: 0.6px">{{g.title}}</h2>
+<span style="font-size: 12px; color: #5A6068">{{g.kpi}}</span>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #D6D3CB; border-radius: 10px; overflow: hidden">
+<sc-for list="{{g.items}}" as="m" hint-placeholder-count="2">
+<div style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid #EFEDE7; min-height: 44px">
+<span style="{{m.pill}}">{{m.word}}</span>
+<div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 16px; font-weight: 700">{{m.id}}</span>
+<span style="font-size: 14px; color: #3A4048">{{m.note}}</span>
+</div>
+<span style="font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums">{{m.pct}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{isAsk}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+<span title="Favoriten" style="display: inline-flex; padding: 0 2px"><svg width="18" height="18" viewBox="0 0 24 24" fill="{{accent}}" stroke="{{accent}}" stroke-width="1.5" role="img" aria-label="Favoriten"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg></span>
+<sc-for list="{{queries}}" as="q" hint-placeholder-count="5">
+<button type="button" onClick="{{q.pick}}" style="{{q.style}}">{{q.short}}</button>
+</sc-for>
+</div>
+<div style="display: flex; gap: 6px">
+<label for="mq" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Frage an Claude</label>
+<input id="mq" type="text" placeholder="Frage an Claude …" style="flex: 1 1 auto; min-width: 0; min-height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #B9B5AB; border-radius: 8px; font-family: inherit; font-size: 15px">
+<button type="button" aria-label="Spracheingabe" style="flex: 0 0 44px; height: 44px; border: none; border-radius: 8px; background: #1B232D; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"></rect><path d="M5 11a7 7 0 0014 0M12 18v3"></path></svg></button>
+</div>
+<div style="align-self: flex-end; max-width: 90%; background: #1B232D; color: #F2F0EA; border-radius: 12px 12px 2px 12px; padding: 10px 12px; font-size: 15px; line-height: 1.4">{{a.q}}</div>
+<article style="background: #FFFFFF; border: 1px solid #D6D3CB; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+<p style="margin: 0; font-size: 18px; font-weight: 700; line-height: 1.35">{{a.head}}</p>
+<div style="background: #1B232D; color: #FFFFFF; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 600; color: #F0A35E; text-transform: uppercase; letter-spacing: 0.6px">Was tun?</span>
+<span style="font-size: 16px; font-weight: 600; line-height: 1.4">{{a.option}}</span>
+</div>
+<div style="font-size: 12px; font-weight: 600; color: #5A6068; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px">Die Werte</div>
+<div style="display: flex; flex-direction: column">
+<sc-for list="{{a.rows}}" as="r" hint-placeholder-count="4">
+<div style="padding: 9px 0; border-top: 1px solid #EFEDE7; display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; justify-content: space-between; gap: 8px; align-items: center">
+<span style="font-size: 15px; font-weight: 600">{{r.label}}</span>
+<span style="{{r.badge}}">{{r.badgeText}}</span>
+</div>
+<span style="font-size: 14px; line-height: 1.4; color: #3A4048">{{r.value}}</span>
+</div>
+</sc-for>
+</div>
+<figure style="margin: 0; display: flex; flex-direction: column; gap: 6px">
+<figcaption style="font-size: 13px; font-weight: 600; color: #3A4048">{{a.chartTitle}}</figcaption>
+<sc-for list="{{a.bars}}" as="b" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; gap: 8px">
+<span style="flex: 0 0 92px; font-size: 12px; color: #3A4048; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{b.label}}</span>
+<div style="flex: 1 1 auto; height: 12px; background: #EFEDE7; border-radius: 3px; overflow: hidden"><div style="{{b.fill}}"></div></div>
+<span style="flex: 0 0 54px; text-align: right; font-size: 12px; font-weight: 600">{{b.display}}</span>
+</div>
+</sc-for>
+</figure>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 600; color: #5A6068; text-transform: uppercase; letter-spacing: 0.6px">Warum</span>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #2A2F35">{{a.insight}}</p>
+</div>
+<button type="button" onClick="{{toggleTrace}}" style="display: flex; align-items: center; justify-content: space-between; min-height: 44px; padding: 0 12px; border: 1px solid #D6D3CB; border-radius: 8px; background: #FFFFFF; font-size: 13px; color: #3A4048; cursor: pointer">
+<span style="font-family: 'IBM Plex Mono', monospace">{{traceSummary}}</span>
+<span style="font-weight: 600">{{traceLabel}}</span>
+</button>
+<sc-if value="{{traceOpen}}" hint-placeholder-val="{{false}}">
+<ol style="margin: 0; padding: 10px; list-style: none; background: #1B232D; border-radius: 8px; display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{a.trace}}" as="t" hint-placeholder-count="3">
+<li style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #F0A35E">{{t.tool}} · {{t.ms}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #C9CFD6; word-break: break-word">{{t.args}}</span>
+</li>
+</sc-for>
+</ol>
+</sc-if>
+<div style="font-size: 12px; color: #5A6068">Datenstand {{a.stand}}</div>
+</article>
+</div>
+</sc-if>
+
+<sc-if value="{{isInbox}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">Postfach · {{openCount}} offen</h2>
+<sc-for list="{{inbox}}" as="i" hint-placeholder-count="3">
+<div style="{{i.box}}">
+<div style="display: flex; justify-content: space-between; gap: 8px; align-items: center"><span style="{{i.badge}}">{{i.prioText}}</span><span style="font-size: 12px; color: #5A6068">{{i.due}}</span></div>
+<div style="font-size: 15px; font-weight: 700; line-height: 1.35">{{i.title}}</div>
+<div style="font-size: 13px; line-height: 1.45; color: #3A4048">{{i.detail}}</div>
+<sc-if value="{{i.taken}}" hint-placeholder-val="{{false}}"><div style="font-size: 13px; font-weight: 600; color: #1F5233">{{i.takenText}}</div></sc-if>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+<button type="button" onClick="{{i.analyze}}" style="min-height: 44px; border: none; border-radius: 8px; background: #1B232D; color: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer">Analysieren</button>
+<button type="button" onClick="{{i.take}}" style="{{i.takeStyle}}">{{i.takeLabel}}</button>
+</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{isFeed}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 700">Meldungen</h2>
+<div style="font-size: 13px; color: #5A6068; margin-bottom: 6px">{{feedFilter}}</div>
+<sc-for list="{{feed}}" as="f" hint-placeholder-count="5">
+<div style="display: flex; gap: 10px; padding: 10px 12px; background: #FFFFFF; border: 1px solid #E3E0D8; border-radius: 8px; margin-bottom: 6px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #5A6068; flex: 0 0 40px">{{f.time}}</span>
+<span style="{{f.dot}}"></span>
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span style="font-size: 13px; font-weight: 700">{{f.src}}</span>
+<span style="font-size: 13px; line-height: 1.4; color: #3A4048">{{f.text}}</span>
+</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+</main>
+
+<nav aria-label="Hauptnavigation" style="flex: 0 0 auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #FFFFFF; border-top: 1px solid #D6D3CB; padding: 6px 4px 18px">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="4">
+<button type="button" onClick="{{t.pick}}" style="{{t.style}}">
+<span style="position: relative; display: inline-flex">
+<sc-if value="{{t.isStart}}" hint-placeholder-val="{{false}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7v9H3z"></path><path d="M9 20v-6h6v6"></path></svg></sc-if>
+<sc-if value="{{t.isAsk}}" hint-placeholder-val="{{false}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"></path></svg></sc-if>
+<sc-if value="{{t.isInbox}}" hint-placeholder-val="{{false}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 13h5l2 3h4l2-3h5"></path><path d="M5 5h14l2 8v6H3v-6z"></path></svg></sc-if>
+<sc-if value="{{t.isFeed}}" hint-placeholder-val="{{false}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 8 3 8H3s3-1 3-8"></path><path d="M10 20a2 2 0 004 0"></path></svg></sc-if>
+<sc-if value="{{t.hasBadge}}" hint-placeholder-val="{{false}}"><span style="{{t.badgeStyle}}">{{t.badge}}</span></sc-if>
+</span>
+<span style="font-size: 11px; font-weight: 600">{{t.label}}</span>
+</button>
+</sc-for>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#C2410C","options":["#C2410C","#2F5D8A","#2E6B45"]},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var st = this.state || {};
+    var accent = this.props.accent ?? '#C2410C';
+    var role = st.role || 'sl';
+    var tab = st.tab || 'start';
+    var taken = st.taken || {};
+
+    var BADGE = {
+      ok:   { t: 'OK',       s: 'background:#E3F0E7;color:#1F5233' },
+      warn: { t: 'Warnung',  s: 'background:#FBEFD6;color:#6B4500' },
+      crit: { t: 'Kritisch', s: 'background:#FBE4E1;color:#8F1C12' },
+      info: { t: 'Info',     s: 'background:#E2ECF6;color:#234A70' }
+    };
+    var COL = { ok: '#3F8A5C', warn: '#C98A12', crit: '#C8402F', info: '#4A78A8' };
+    function badge(k) { return 'display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;' + BADGE[k].s; }
+
+    var A = {
+      sl1: { role: 'sl', q: 'Was muss ich von der Nachtschicht wissen?', prompt: 'schichtuebergabe', form: 'Tabelle + Balken',
+        head: 'Nachtschicht mit 92 % Planerfüllung. Drei Punkte brauchen heute früh deine Aufmerksamkeit.',
+        rows: [
+          ['RT-03 · Störung Gewebegreifer', 'Seit 05:12 offen. Notiz der Nachtschicht: Greifer 2 klemmt, Instandhaltung informiert.', 'crit'],
+          ['RT-01 · Mischung A60', 'Verarbeitbar bis 07:20, danach neue Mischung nötig', 'warn'],
+          ['RT-02 · Pressform F-125-07', '94 % der Standzeit, Grenze gegen 12:40', 'warn'],
+          ['OF-02 · Ofen', 'Bis 10:15 voll belegt, gepresste Scheiben warten davor', 'info']
+        ],
+        chartTitle: 'Nachtschicht: Ist/Soll je Station', max: 110, unit: ' %',
+        bars: [['RT-01', 102, 'ok'], ['RT-02', 98, 'ok'], ['RT-03', 71, 'crit'], ['RT-04', 97, 'ok'], ['VP-01', 99, 'ok'], ['VP-02', 88, 'warn']],
+        insight: 'Der Rückstand der Nacht kommt bei den Pressen fast vollständig von RT-03. VP-02 liegt zurück, weil sie auf Chargen aus OF-02 wartet, nicht wegen eines eigenen Problems.',
+        option: 'Mischung A60 für RT-01 vor 07:00 anfordern. Den Formwechsel an RT-02 mit dem Rüsten um 11:30 bündeln.',
+        stand: '06:04 · Quellen: Schichtbericht Nacht, OPC live, Wartungs-DB',
+        trace: [
+          ['get_shift_summary', '{ scope: "Halle A", schicht: "vorherige" }', 84, 'OPC HistoryRead'],
+          ['get_active_alarms', '{ scope: "Halle A", minSeverity: "mittel" }', 22, 'OPC Alarms & Conditions'],
+          ['get_order_progress', '{ scope: "Halle A" }', 31, 'OPC live'],
+          ['get_material_reach', '{ scope: "Halle A" }', 18, 'OPC live'],
+          ['get_maintenance_due', '{ scope: "Halle A", horizont: "Schicht" }', 46, 'OPC Zähler + Wartungs-DB']
+        ] },
+      sl2: { role: 'sl', q: 'Warum hängt RT-04 hinterher?', form: 'Tabelle + Trend',
+        head: 'RT-04 liegt 11 % unter Soll. Ursache ist eine verlängerte Taktzeit, kein Stillstand.',
+        rows: [
+          ['Taktzeit', 'Soll 4,2 s · Ist 4,6 s', 'warn'],
+          ['Presskraftaufbau', 'Soll 0,8 s · Ist 1,1 s', 'warn'],
+          ['Stück seit 06:00', 'Soll 3.100 · Ist 2.760', 'warn'],
+          ['Stillstände', '0 min in dieser Schicht', 'ok']
+        ],
+        chartTitle: 'Presskraftaufbau je Stunde', max: 1.2, unit: ' s', dec: 2,
+        bars: [['06–07 Uhr', 0.80, 'ok'], ['07–08 Uhr', 0.82, 'ok'], ['08–09 Uhr', 0.95, 'warn'], ['09–09:42 Uhr', 1.10, 'warn']],
+        insight: 'Der Presskraftaufbau wird seit etwa 08:30 kontinuierlich langsamer. Das deutet auf die Hydraulik hin. Die nächste planmäßige Hydraulikwartung ist erst in 3 Wochen.',
+        option: 'Instandhaltung zur Sichtprüfung der Hydraulik anfordern. Bei gleichbleibender Drift fehlen bis Schichtende ca. 400 Stück.',
+        stand: '09:42 · Quellen: RT-04 live, Trend 06:00–09:42, Wartungsplan',
+        trace: [
+          ['get_machine_status', '{ machineId: "RT-04" }', 19, 'OPC live'],
+          ['get_process_trend', '{ machineId: "RT-04", variable: "Presskraftaufbau", zeitraum: "06:00–jetzt" }', 112, 'OPC HistoryRead'],
+          ['get_condition_warnings', '{ scope: "RT-04" }', 27, 'OPC + Grenzwerte DB'],
+          ['get_maintenance_due', '{ scope: "RT-04", baugruppe: "Hydraulik" }', 33, 'Wartungs-DB']
+        ] },
+      sl3: { role: 'sl', q: 'Wie lange reicht das Material an allen Stationen?', form: 'Tabelle + Balken',
+        head: 'RT-01 zuerst: Die Mischung A60 erreicht in 38 min ihre Verarbeitbarkeitsgrenze.',
+        rows: [
+          ['RT-01 · Mischung A60', 'Verarbeitbarkeit endet in 38 min, Füllstand reicht ca. 70 min', 'warn'],
+          ['RT-02 · Gewebemagazin', 'Reichweite 55 min', 'warn'],
+          ['VP-01 · Kartons 25er', 'Reichweite 1 h 40 min', 'ok'],
+          ['Übrige Stationen', 'Alle Materialien länger als 2 h', 'ok']
+        ],
+        chartTitle: 'Kürzeste Materialreichweite je Station', max: 180, unit: ' min',
+        bars: [['RT-01', 38, 'warn'], ['RT-02', 55, 'warn'], ['VP-01', 100, 'ok'], ['RT-04', 150, 'ok'], ['VP-02', 170, 'ok']],
+        insight: 'Bei RT-01 begrenzt nicht der Füllstand, sondern die Verarbeitbarkeit der Mischung. Ein reines Füllstandsdashboard würde das als unkritisch zeigen.',
+        option: 'Neue Mischung A60 im Mischraum anfordern, dort ist mit ca. 30 min Vorlauf zu rechnen.',
+        stand: '09:42 · Quellen: OPC live, Auftragsdaten',
+        trace: [
+          ['get_material_reach', '{ scope: "Halle A" }', 21, 'OPC live'],
+          ['get_order_progress', '{ machineId: "RT-01" }', 15, 'OPC live']
+        ] },
+      sl4: { role: 'sl', q: 'Schaffen wir das Schichtziel?', form: 'Tabelle + Balken',
+        head: 'Hochgerechnet erreichen die Pressen 90 % des Schichtziels. RT-03 und RT-04 sind die Lücke.',
+        rows: [
+          ['Pressen bis jetzt', 'Ist 11.150 · Soll 12.400 Stück', 'warn'],
+          ['Hochrechnung 14:00', '24.100 von 26.800 Stück', 'warn'],
+          ['RT-03', 'Seit 07:05 wieder in Betrieb, Rückstand ca. 1.200 Stück', 'crit'],
+          ['RT-04', 'Taktzeit +9 %, Rückstand ca. 400 Stück', 'warn']
+        ],
+        chartTitle: 'Hochrechnung Schichtende je Rundtisch', max: 110, unit: ' %',
+        bars: [['RT-01', 101, 'ok'], ['RT-02', 97, 'ok'], ['RT-03', 72, 'crit'], ['RT-04', 89, 'warn']],
+        insight: 'RT-01 und RT-02 laufen im Plan. Ohne Eingriff bleibt die Lücke von RT-03 bis Schichtende, bei RT-04 wächst sie mit weiterer Drift. Ofen und Verpackung sind für die heutige Menge nicht der Engpass.',
+        option: 'Teil des Auftrags 4711 (Ø 125, A46) ab 11:30 auf RT-01 verlagern: gleicher Formsatz, Mischungswechsel ca. 20 min.',
+        stand: '09:42 · Quellen: OPC live, Auftragsdaten, Schichtkalender',
+        trace: [
+          ['get_hall_overview', '{ hallId: "A" }', 24, 'OPC live'],
+          ['get_shift_summary', '{ scope: "Halle A", schicht: "aktuell" }', 58, 'OPC HistoryRead'],
+          ['get_order_progress', '{ scope: "Halle A" }', 29, 'OPC live']
+        ] },
+
+      sl5: { role: 'sl', q: 'Warum steht VP-02?', form: 'Tabelle + Balken',
+        head: 'VP-02 hat kein eigenes Problem. Sie wartet auf die Ø-180-Charge aus OF-02.',
+        rows: [
+          ['VP-02', 'Ist/Soll 64 %, seit 09:05 ohne Ware', 'warn'],
+          ['OF-02', 'Voll belegt, Ø-180-Charge fertig ca. 10:15', 'warn'],
+          ['OF-01', 'Belegung 78 %, freie Etage ab 09:50', 'ok'],
+          ['Ursache', 'Alle Ø-180-Platten von RT-04 werden OF-02 zugewiesen', 'info']
+        ],
+        chartTitle: 'Ist/Soll entlang des Materialflusses Ø 180', max: 110, unit: ' %',
+        bars: [['RT-04 · Pressen', 89, 'warn'], ['OF-02 · Belegung', 96, 'warn'], ['VP-02 · Verpacken', 64, 'warn']],
+        insight: 'Die Ursache liegt zwei Stationen vorher. Das Dashboard zeigt nur, dass VP-02 schwach ist. Erst die Verknüpfung von Verpackung, Ofenbelegung und Pressen erklärt, warum.',
+        option: 'Die nächsten Ø-180-Platten an OF-01 geben. VP-02 bekommt dann ab ca. 10:40 wieder laufend Ware.',
+        stand: '09:42 · Quellen: OPC live Verpackung und Öfen, Ofenplanung',
+        trace: [
+          ['get_machine_status', '{ machineId: "VP-02" }', 16, 'OPC live'],
+          ['get_hall_overview', '{ hallId: "A", stationType: "Ofen" }', 21, 'OPC live'],
+          ['get_order_progress', '{ machineId: "VP-02", stufe: "Ofen → Verpackung" }', 34, 'OPC live + Aufträge']
+        ] },
+
+      sl6: { role: 'sl', q: 'Wie ist die Lage in der Halle gerade?', form: 'Übersicht nach Stationen',
+        head: 'Die Halle läuft, aber an 5 von 8 Stationen braucht es Aufmerksamkeit. Kritisch ist nur RT-03.',
+        rows: [
+          ['Pressen', 'Ist/Soll 90 % · RT-03 Rückstand, RT-04 Taktzeit +9 %', 'warn'],
+          ['Öfen', 'OF-02 voll bis 10:15, OF-01 bei 78 %', 'warn'],
+          ['Verpackung', 'VP-01 im Plan, VP-02 wartet auf Ofencharge', 'warn'],
+          ['Offene Aufgaben', '3 im Postfach, davon 1 dringend', 'crit']
+        ],
+        chartTitle: 'Kennzahl je Station (Ist/Soll bzw. Belegung)', max: 110, unit: ' %',
+        bars: [['RT-01', 101, 'ok'], ['RT-02', 97, 'ok'], ['RT-03', 72, 'crit'], ['RT-04', 89, 'warn'], ['OF-01', 78, 'ok'], ['OF-02', 96, 'warn'], ['VP-01', 98, 'ok'], ['VP-02', 64, 'warn']],
+        insight: 'Mehrere Warnungen hängen zusammen: RT-04 liefert Ø 180 an OF-02, OF-02 ist voll, VP-02 wartet. Eigenständig ist nur der Rückstand an RT-03.',
+        option: 'Zuerst über die Umverteilung von RT-03 entscheiden, danach die Ø-180-Platten an OF-01 umleiten.',
+        stand: '09:42 · Quellen: OPC live alle Stationen, Postfach-Regeln',
+        trace: [
+          ['get_hall_overview', '{ hallId: "A" }', 24, 'OPC live'],
+          ['get_active_alarms', '{ scope: "Halle A", minSeverity: "mittel" }', 22, 'OPC Alarms & Conditions'],
+          ['get_action_items', '{ role: "Schichtleiter", hallId: "A" }', 18, 'Eskalationsregeln MCP-Server']
+        ] },
+      sl7: { role: 'sl', q: 'Welche Störungen und Alarme gab es in dieser Schicht?', form: 'Tabelle + Balken',
+        head: 'Seit 06:00 gab es 4 Ereignisse mit zusammen 68 min Stillstand. Eine Warnung ist noch offen.',
+        rows: [
+          ['06:00–07:05 · RT-03', 'Gewebegreifer 2 klemmt, aus der Nacht übernommen · 65 min · behoben', 'warn'],
+          ['08:14 · RT-02', 'Etikettenzufuhr leer · 2 min', 'ok'],
+          ['08:51 · VP-01', 'Kartonstau · 1 min', 'ok'],
+          ['seit 09:41 · RT-04', 'Zustandswarnung Presskraftaufbau · offen, noch kein Stillstand', 'warn']
+        ],
+        chartTitle: 'Stillstand in dieser Schicht je Station', max: 70, unit: ' min',
+        bars: [['RT-03', 65, 'crit'], ['RT-02', 2, 'ok'], ['VP-01', 1, 'ok'], ['übrige', 0, 'ok']],
+        insight: 'Bis auf RT-03 waren es Kurzstopps. Die offene Warnung an RT-04 verursacht noch keinen Stillstand, kostet aber bereits Taktzeit.',
+        option: 'Hydraulik an RT-04 prüfen lassen, bevor daraus ein Stillstand wird.',
+        stand: '09:42 · Quellen: Alarmhistorie, Stillstände seit 06:00',
+        trace: [
+          ['get_active_alarms', '{ scope: "Halle A", zeitraum: "seit 06:00", inklusiveQuittiert: true }', 41, 'OPC Alarms & Conditions'],
+          ['get_downtime_pareto', '{ scope: "Halle A", zeitraum: "Schicht", gruppierung: "Station" }', 63, 'OPC HistoryRead']
+        ] },
+      hl6: { role: 'hl', q: 'Wie läuft die Halle heute?', form: 'Übersicht nach Bereichen',
+        head: 'Halle A liegt heute bei 81 % OEE. Die Pressen bremsen, die Öfen sind ungleich belegt.',
+        rows: [
+          ['Pressen', 'OEE 79 % · Verluste vor allem an RT-03 und RT-04', 'warn'],
+          ['Öfen', 'Belegung Ø 87 % · OF-02 voll, OF-01 mit Luft', 'warn'],
+          ['Verpackung', 'OEE 84 % · VP-02 wartet auf Ware', 'ok'],
+          ['Qualität', 'Ausschuss 1,9 % · Charge M-2410-17 an RT-01 und RT-02', 'warn']
+        ],
+        chartTitle: 'Kennzahl heute je Bereich', max: 100, unit: ' %',
+        bars: [['Pressen · OEE', 79, 'warn'], ['Öfen · Belegung', 87, 'ok'], ['Verpackung · OEE', 84, 'ok'], ['Halle gesamt · OEE', 81, 'warn']],
+        insight: 'Die größten Hebel heute sind der Rückstand an RT-03 und die Ofenbelegung. Beides lässt sich organisatorisch lösen, ohne Eingriff in die Maschinen.',
+        option: 'Umverteilung RT-03 → RT-01 freigeben und die Ofenzuordnung für Ø 180 auf OF-01 erweitern.',
+        stand: '09:42 · Quellen: OEE heute, OPC live, Qualitätsdaten',
+        trace: [
+          ['get_oee', '{ scope: "Halle A", zeitraum: "heute", gruppierung: "Bereich" }', 102, 'OPC HistoryRead'],
+          ['get_hall_overview', '{ hallId: "A" }', 24, 'OPC live'],
+          ['compare', '{ dimension: "Bereich", kpi: "Ausschussquote", zeitraum: "heute" }', 57, 'OPC HistoryRead']
+        ] },
+      hl7: { role: 'hl', q: 'Welche Wartungen stehen heute und morgen an?', form: 'Tabelle + Vergleich',
+        head: 'Heute und morgen stehen 5 Wartungen an. Eine ist überfällig, zwei lassen sich mit Rüsten bündeln.',
+        rows: [
+          ['OF-01 · Türverriegelung', 'Sicherheitsprüfung, seit 2 Tagen überfällig', 'crit'],
+          ['RT-02 · Form F-125-07', 'Fällig ca. 12:40 · mit dem Rüsten um 11:30 bündelbar', 'warn'],
+          ['RT-04 · Hydraulik', 'Sichtprüfung empfohlen wegen Drift im Presskraftaufbau', 'warn'],
+          ['RT-01 · Waage', 'Kalibrierung morgen · beim Mischungswechsel bündelbar', 'info'],
+          ['VP-01 · Umreifer', 'Planmäßig morgen 14:00', 'ok']
+        ],
+        chartTitle: 'Zusätzlicher Stillstand durch Wartungen', max: 100, unit: ' min',
+        bars: [['Einzeln geplant', 95, 'warn'], ['Gebündelt', 40, 'ok']],
+        insight: 'Durch Bündeln mit Rüst- und Mischungswechseln sinkt der zusätzliche Stillstand von 95 auf 40 min. Die Sicherheitsprüfung an OF-01 hat Vorrang vor allem anderen.',
+        option: 'OF-01 heute prüfen lassen, Formwartung RT-02 auf 11:30 und Waage RT-01 auf den Mischungswechsel legen.',
+        stand: '09:42 · Quellen: Wartungs-DB, OPC-Zähler, Auftragsplan',
+        trace: [
+          ['get_maintenance_due', '{ scope: "Halle A", horizont: "48 h" }', 44, 'OPC Zähler + Wartungs-DB'],
+          ['check_maintenance_conflicts', '{ hallId: "A", zeitraum: "heute–morgen" }', 71, 'Wartungs-DB + Aufträge'],
+          ['get_condition_warnings', '{ scope: "Halle A" }', 29, 'OPC + Grenzwerte DB']
+        ] },
+      pl6: { role: 'pl', q: 'Was haben uns Ausschuss und Stillstände diese Woche gekostet?', form: 'Tabelle + Balken',
+        head: 'KW 42 kosten Ausschuss und ungeplante Stillstände zusammen rund 41.000 €. Größter Einzelposten ist RT-03.',
+        rows: [
+          ['Ausschuss', 'ca. 14.500 € · 1,4 % der Ausbringung', 'warn'],
+          ['Ungeplante Stillstände', 'ca. 26.500 € · entgangene Deckungsbeiträge', 'warn'],
+          ['Größter Posten', 'Gewebezuführung RT-03 · ca. 9.800 €', 'crit'],
+          ['Vorwoche', 'ca. 46.000 € · Rückgang um 11 %', 'ok']
+        ],
+        chartTitle: 'Kosten KW 42 je Halle', max: 25, unit: ' Tsd. €', dec: 1,
+        bars: [['Halle A', 19.2, 'warn'], ['Halle B', 11.9, 'ok'], ['Halle C', 9.9, 'ok']],
+        insight: 'In Halle A geht rund die Hälfte der Kosten auf zwei Ursachen zurück: die Gewebezuführung an RT-03 und die Charge M-2410-17. Beide liegen bereits im Postfach.',
+        option: 'Ein Angebot für die Teilüberholung der Gewebezuführung RT-03 den wöchentlichen Kosten von ca. 9.800 € gegenüberstellen.',
+        stand: 'KW 42 · Kostensätze aus Controlling-Stammdaten (simuliert)',
+        trace: [
+          ['get_downtime_pareto', '{ scope: "Werk", zeitraum: "KW 42", bewertung: "Kosten" }', 118, 'OPC HistoryRead + Stammdaten'],
+          ['compare', '{ dimension: "Halle", kpi: "Ausschusskosten", zeitraum: "KW 42" }', 84, 'OPC HistoryRead + Stammdaten'],
+          ['get_reliability_kpis', '{ scope: "Werk", zeitraum: "KW 42" }', 73, 'Wartungs-DB + OPC']
+        ] },
+      hl1: { role: 'hl', q: 'Wo verlieren wir diese Woche am meisten Zeit?', form: 'Pareto',
+        head: 'Die Gewebezuführung kostet diese Woche am meisten Zeit, vor allem an RT-03.',
+        rows: [
+          ['Störung Gewebezuführung', '6,4 h · 14 Ereignisse, davon 9 an RT-03', 'crit'],
+          ['Warten auf Mischung', '4,1 h · gehäuft in den Nachtschichten', 'warn'],
+          ['Warten auf Ofen', '3,5 h · Pressteile vor OF-02 im Puffer', 'warn'],
+          ['Rüsten über Soll', '3,2 h · im Schnitt +18 min je Rüstvorgang', 'info']
+        ],
+        chartTitle: 'Stillstand nach Grund, KW 42', max: 7, unit: ' h', dec: 1,
+        bars: [['Gewebezuführung', 6.4, 'crit'], ['Warten auf Mischung', 4.1, 'warn'], ['Warten auf Ofen', 3.5, 'warn'], ['Rüsten über Soll', 3.2, 'info'], ['Formwechsel ungeplant', 2.0, 'info']],
+        insight: '9 von 14 Ausfällen der Gewebezuführung betreffen RT-03, jedes Mal Greifer 2. Das ist kein Zufallsmuster, sondern ein Kandidat für eine gezielte Instandsetzung.',
+        option: 'Greifer 2 an RT-03 beim nächsten geplanten Stillstand tauschen statt erneut zu justieren.',
+        stand: '09:42 · Quellen: Stillstandshistorie KW 42',
+        trace: [
+          ['get_downtime_pareto', '{ scope: "Halle A", zeitraum: "KW 42" }', 96, 'OPC HistoryRead'],
+          ['compare', '{ dimension: "Station", kpi: "Stillstand Gewebezuführung", zeitraum: "KW 42" }', 74, 'OPC HistoryRead']
+        ] },
+      hl2: { role: 'hl', q: 'Wie ist die Qualitätslage in der Halle?', form: 'Tabelle + Balken',
+        head: 'Ja: RT-01 und RT-02 zeigen seit gestern 22:00 dieselbe Füllgewichtsdrift. Beide verarbeiten Mischungscharge M-2410-17.',
+        rows: [
+          ['RT-01 · Füllgewicht', 'Ø 113,4 g · Soll 112 g ± 1,5 g', 'warn'],
+          ['RT-02 · Füllgewicht', 'Ø 113,6 g · Soll 112 g ± 1,5 g', 'warn'],
+          ['RT-03 und RT-04', 'Ø 112,1 g, andere Mischung', 'ok'],
+          ['Gemeinsamer Faktor', 'Charge M-2410-17 (A60), an beiden ab 22:00', 'crit']
+        ],
+        chartTitle: 'Ausschussquote letzte 24 h', max: 4, unit: ' %', dec: 1,
+        bars: [['RT-01', 2.8, 'crit'], ['RT-02', 3.1, 'crit'], ['RT-03', 1.2, 'ok'], ['RT-04', 0.9, 'ok']],
+        insight: 'Die Waagen beider Rundtische wurden laut Wartungs-DB im Juli kalibriert und sind seither unauffällig. Eine Maschinenursache ist deshalb unwahrscheinlich, die Charge ist der gemeinsame Faktor.',
+        option: 'Mischraum informieren und die Schüttdichte der Charge M-2410-17 prüfen lassen. Bis dahin die Dosiermenge an RT-01 und RT-02 nachführen.',
+        stand: '09:42 · Quellen: Prozesshistorie 24 h, Auftragsdaten, Wartungs-DB',
+        trace: [
+          ['compare', '{ dimension: "Rundtisch", kpi: "Ausschussquote", zeitraum: "24 h" }', 81, 'OPC HistoryRead'],
+          ['get_process_trend', '{ machineId: ["RT-01","RT-02"], variable: "Füllgewicht", zeitraum: "24 h" }', 138, 'OPC HistoryRead'],
+          ['get_order_progress', '{ machineId: ["RT-01","RT-02"] }', 26, 'OPC live (Charge)'],
+          ['get_maintenance_due', '{ scope: ["RT-01","RT-02"], baugruppe: "Waage", historie: true }', 41, 'Wartungs-DB']
+        ] },
+      hl3: { role: 'hl', q: 'Können wir die Formwartung an RT-02 mit dem Rüsten bündeln?', form: 'Tabelle + Vergleich',
+        head: 'Ja. Das Rüsten an RT-02 um 11:30 ist der passende Zeitpunkt, die Form steht dann bei 97 %.',
+        rows: [
+          ['Form F-125-07', 'Jetzt 94 %, 100 % erreicht ca. 12:40', 'warn'],
+          ['Geplantes Rüsten RT-02', '11:30, Wechsel auf Ø 115 mit anderem Formsatz', 'info'],
+          ['Gebündelt', 'Form wird beim Rüsten ohnehin ausgebaut, Wartung danach in der Werkstatt', 'ok'],
+          ['Konflikte', 'Keine: Auftrag 4698 ist bis 11:20 fertig', 'ok']
+        ],
+        chartTitle: 'Zusätzlicher Maschinenstillstand', max: 30, unit: ' min',
+        bars: [['Getrennt', 25, 'warn'], ['Gebündelt', 0, 'ok']],
+        insight: 'Die Form erreicht ihre Grenze erst nach dem Rüstzeitpunkt. Beim Bündeln entfällt der separate Stillstand vollständig.',
+        option: 'Wartungsauftrag W-3381 auf 11:30 legen und mit dem Rüstauftrag verknüpfen.',
+        stand: '09:42 · Quellen: Hubzähler OPC, Wartungs-DB, Auftragsplan',
+        trace: [
+          ['check_maintenance_conflicts', '{ hallId: "A", zeitraum: "heute" }', 64, 'Wartungs-DB + Aufträge'],
+          ['get_maintenance_due', '{ scope: "RT-02" }', 28, 'OPC Zähler + Wartungs-DB'],
+          ['get_order_progress', '{ machineId: "RT-02" }', 17, 'OPC live']
+        ] },
+      hl4: { role: 'hl', q: 'Sind die Öfen heute der Engpass?', form: 'Tabelle + Balken',
+        head: 'Teilweise: OF-02 ist voll, OF-01 hat Luft. Die Belegung ist ungleich verteilt, nicht zu knapp.',
+        rows: [
+          ['OF-01', 'Belegung 78 %, nächste freie Etage ab 09:50', 'ok'],
+          ['OF-02', 'Belegung 96 %, nächste Freigabe 10:15', 'warn'],
+          ['Puffer vor den Öfen', '42 Ofenplatten, Ø Wartezeit 45 min', 'warn'],
+          ['VP-02', 'Wartet auf die Ø-180-Charge aus OF-02', 'warn']
+        ],
+        chartTitle: 'Ofenbelegung bis Schichtende', max: 100, unit: ' %',
+        bars: [['OF-01', 78, 'ok'], ['OF-02', 96, 'warn']],
+        insight: 'Alle Ø-180-Platten von RT-04 werden derzeit OF-02 zugewiesen. Das Temperaturprofil ist für beide Öfen gleich, die Zuordnung ist also eine Planungsregel, keine technische Notwendigkeit.',
+        option: 'Die nächsten Ø-180-Platten an OF-01 geben. Damit sinkt die Wartezeit vor den Öfen und VP-02 bekommt früher Ware.',
+        stand: '09:42 · Quellen: OPC live Öfen, Ofenplanung, Verpackung',
+        trace: [
+          ['get_hall_overview', '{ hallId: "A", stationType: "Ofen" }', 21, 'OPC live'],
+          ['get_process_trend', '{ machineId: ["OF-01","OF-02"], variable: "Temperaturprofil", zeitraum: "heute" }', 97, 'OPC HistoryRead'],
+          ['get_order_progress', '{ scope: "Halle A", stufe: "Ofen → Verpackung" }', 38, 'OPC live + Aufträge']
+        ] },
+      hl5: { role: 'hl', q: 'Bereite die Tagesbesprechung vor.', prompt: 'tagesbesprechung_halle', form: 'Tabelle + Balken',
+        head: 'Gestern lief Halle A mit 78 % OEE. Die Nachtschicht zieht den Schnitt nach unten.',
+        rows: [
+          ['Frühschicht', 'OEE 82 %', 'ok'],
+          ['Spätschicht', 'OEE 80 %', 'ok'],
+          ['Nachtschicht', 'OEE 72 %, Hauptgrund Warten auf Mischung (2,3 h)', 'warn'],
+          ['Heute geplant', 'Rüsten RT-02, Formwechsel F-125-07, Hydraulikprüfung RT-04 empfohlen', 'info']
+        ],
+        chartTitle: 'OEE gestern je Schicht', max: 100, unit: ' %',
+        bars: [['Früh', 82, 'ok'], ['Spät', 80, 'ok'], ['Nacht', 72, 'warn']],
+        insight: 'Leistung und Qualität sind über alle Schichten vergleichbar. Der Unterschied entsteht in der Verfügbarkeit, und dort fast ausschließlich durch Wartezeiten auf Mischung.',
+        option: 'Mischungsbedarf der Nachtschicht schon in der Spätschicht vorbereiten lassen.',
+        stand: '07:30 · Quellen: Schichtberichte, Stillstände, Wartungs-DB, Material',
+        trace: [
+          ['get_shift_summary', '{ scope: "Halle A", schicht: "gestern", alle: true }', 142, 'OPC HistoryRead'],
+          ['get_downtime_pareto', '{ scope: "Halle A", zeitraum: "gestern" }', 88, 'OPC HistoryRead'],
+          ['check_maintenance_conflicts', '{ hallId: "A", zeitraum: "heute" }', 59, 'Wartungs-DB + Aufträge'],
+          ['get_material_reach', '{ scope: "Halle A" }', 20, 'OPC live']
+        ] },
+
+      pl1: { role: 'pl', q: 'Fass mir die Woche zusammen.', prompt: 'wochenreport', form: 'Tabelle + Balken',
+        head: 'KW 42: Planerfüllung 96 %, OEE stabil bei 79 %. Größtes Risiko sind zwei Ø-230-Aufträge.',
+        rows: [
+          ['Ausbringung', '1,41 Mio. Scheiben · Plan 1,47 Mio.', 'warn'],
+          ['OEE Werk', '79 % · Vorwoche 78 %', 'ok'],
+          ['Ausschuss', '1,4 % · Spitze durch Charge M-2410-17', 'warn'],
+          ['Liefertermine', '2 Aufträge gefährdet, beide Ø 230 mm', 'crit']
+        ],
+        chartTitle: 'OEE KW 42 je Halle', max: 100, unit: ' %',
+        bars: [['Halle A', 77, 'warn'], ['Halle B', 81, 'ok'], ['Halle C', 80, 'ok']],
+        insight: 'Halle A liegt wegen der Gewebezuführung an RT-03 unter dem Werksschnitt. Die gefährdeten Aufträge hängen an der Ø-230-Kapazität, die nur in Halle B vorhanden ist.',
+        option: 'Zusatzschicht am Samstag in Halle B für die zwei Ø-230-Aufträge prüfen.',
+        stand: 'KW 42, Stand Do 09:42 · Quellen: OEE-Historie, Aufträge, Instandhaltung',
+        trace: [
+          ['get_oee', '{ scope: "Werk", zeitraum: "KW 42", gruppierung: "Halle" }', 167, 'OPC HistoryRead'],
+          ['compare', '{ dimension: "Woche", kpi: "OEE", zeitraum: "KW 41–42" }', 92, 'OPC HistoryRead'],
+          ['get_order_progress', '{ scope: "Werk", filter: "gefährdet" }', 48, 'Auftragsdaten'],
+          ['get_reliability_kpis', '{ scope: "Werk", zeitraum: "KW 42" }', 73, 'Wartungs-DB + OPC']
+        ] },
+      pl2: { role: 'pl', q: 'Welche Schicht hat diese Woche die schlechteste OEE und warum?', form: 'Tabelle + Balken',
+        head: 'Die Nachtschicht liegt mit 73 % OEE am niedrigsten. Ursache ist die Verfügbarkeit, nicht Leistung oder Qualität.',
+        rows: [
+          ['Frühschicht', 'OEE 82 % · V 90 · L 93 · Q 98', 'ok'],
+          ['Spätschicht', 'OEE 81 % · V 89 · L 93 · Q 98', 'ok'],
+          ['Nachtschicht', 'OEE 73 % · V 79 · L 93 · Q 99', 'warn'],
+          ['Größter Verlust Nacht', 'Warten auf Mischung, 5,8 h in KW 42', 'crit']
+        ],
+        chartTitle: 'Verfügbarkeit KW 42 je Schicht', max: 100, unit: ' %',
+        bars: [['Früh', 90, 'ok'], ['Spät', 89, 'ok'], ['Nacht', 79, 'warn']],
+        insight: 'Leistung und Qualität sind in allen Schichten nahezu gleich. Die Lücke entsteht durch Wartezeiten auf Mischung. Das spricht eher für einen Engpass in der Mischungsbereitstellung als für ein Problem an den Maschinen.',
+        option: 'Ablauf der Mischungsbereitstellung in der Nacht mit dem Mischraum klären.',
+        stand: 'KW 42, Stand Do 09:42 · Quellen: OEE-Historie, Stillstände',
+        trace: [
+          ['get_oee', '{ scope: "Werk", zeitraum: "KW 42", gruppierung: "Schicht" }', 151, 'OPC HistoryRead'],
+          ['get_downtime_pareto', '{ scope: "Werk", zeitraum: "KW 42", filter: "Nachtschicht" }', 97, 'OPC HistoryRead']
+        ] },
+      pl3: { role: 'pl', q: 'Lohnt sich eine Überholung von RT-03?', form: 'Tabelle + Balken',
+        head: 'Für die Gewebezuführung ja, für die ganze Maschine nicht.',
+        rows: [
+          ['MTBF RT-03', '31 h · Schnitt der anderen Rundtische 78 h', 'crit'],
+          ['MTTR RT-03', '42 min · Hallenschnitt 38 min', 'ok'],
+          ['Störungen nach Baugruppe', '78 % Gewebezuführung, Rest verteilt', 'warn'],
+          ['Presse und Hydraulik', 'Unauffällig, Wartungen planmäßig', 'ok']
+        ],
+        chartTitle: 'MTBF letzte 90 Tage', max: 100, unit: ' h',
+        bars: [['RT-01', 82, 'ok'], ['RT-02', 77, 'ok'], ['RT-03', 31, 'crit'], ['RT-04', 74, 'ok']],
+        insight: 'Die Ausfälle konzentrieren sich auf eine Baugruppe. Eine Teilüberholung der Gewebezuführung adressiert den Großteil der Stillstände, eine Gesamtüberholung bringt nach diesen Daten wenig Zusatznutzen.',
+        option: 'Angebot für eine Teilüberholung der Gewebezuführung einholen und den Stillstandskosten der letzten 3 Monate gegenüberstellen.',
+        stand: 'Stand Do 09:42 · Quellen: Störungshistorie 90 Tage, Wartungs-DB',
+        trace: [
+          ['get_reliability_kpis', '{ scope: "Halle A", zeitraum: "90 Tage" }', 121, 'Wartungs-DB + OPC'],
+          ['get_downtime_pareto', '{ scope: "RT-03", zeitraum: "90 Tage", gruppierung: "Baugruppe" }', 104, 'OPC HistoryRead'],
+          ['get_maintenance_due', '{ scope: "RT-03" }', 30, 'Wartungs-DB']
+        ] },
+      pl4: { role: 'pl', q: 'Wie entwickelt sich der Anteil ungeplanter Stillstände seit Juli?', form: 'Tabelle + Verlauf',
+        head: 'Der Anteil ungeplanter Stillstände ist seit Juli von 48 % auf 33 % gesunken.',
+        rows: [
+          ['Geplante Instandhaltung', 'Anteil 67 % im Oktober · Ziel 75 %', 'warn'],
+          ['Wartungsplantreue', '92 % der Aufträge termingerecht', 'ok'],
+          ['Gebündelte Wartungen', '18 im Oktober, mit Rüsten kombiniert', 'ok'],
+          ['Überfällig', '1 sicherheitsrelevante Prüfung: OF-01 Türverriegelung, seit 2 Tagen', 'crit']
+        ],
+        chartTitle: 'Anteil ungeplanter Stillstände je Monat', max: 60, unit: ' %',
+        bars: [['Juli', 48, 'info'], ['August', 45, 'info'], ['September', 39, 'info'], ['Oktober (bis KW 42)', 33, 'info']],
+        insight: 'Der Trend ist klar positiv, das Ziel von 75 % geplanter Instandhaltung ist aber noch nicht erreicht. Die überfällige Sicherheitsprüfung hat Vorrang vor allen Optimierungen.',
+        option: 'Prüfung der Türverriegelung an OF-01 heute einplanen.',
+        stand: 'Stand Do 09:42 · Quellen: Wartungs-DB, Stillstandshistorie',
+        trace: [
+          ['get_reliability_kpis', '{ scope: "Werk", zeitraum: "Jul–Okt", gruppierung: "Monat" }', 133, 'Wartungs-DB + OPC'],
+          ['get_maintenance_due', '{ scope: "Werk", filter: "überfällig" }', 37, 'Wartungs-DB']
+        ] },
+      pl5: { role: 'pl', q: 'Welche Aufträge sind diese Woche gefährdet?', form: 'Tabelle + Balken',
+        head: 'Zwei Aufträge sind ernsthaft gefährdet, einer ist knapp, aber aufholbar.',
+        rows: [
+          ['Auftrag 4730 · Ø 230 A36', 'Fertig 58 %, Liefertermin Dienstag', 'crit'],
+          ['Auftrag 4733 · Ø 230 A30', 'Fertig 41 %, Liefertermin Dienstag', 'crit'],
+          ['Auftrag 4711 · Ø 125 A46', 'Fertig 76 %, Rückstand RT-03, bis Freitag aufholbar', 'warn'],
+          ['Übrige 14 Aufträge', 'Im Plan', 'ok']
+        ],
+        chartTitle: 'Fertigstellung kritischer Aufträge', max: 100, unit: ' %',
+        bars: [['4730 · Ø 230', 58, 'crit'], ['4733 · Ø 230', 41, 'crit'], ['4711 · Ø 125', 76, 'warn']],
+        insight: 'Beide Ø-230-Aufträge hängen an derselben Kapazität in Halle B. Ohne Zusatzschicht reicht sie bis Dienstag nur für einen der beiden.',
+        option: 'Zusatzschicht am Samstag in Halle B freigeben oder mit dem Kunden einen Teilliefertermin vereinbaren.',
+        stand: 'KW 42, Stand Do 09:42 · Quellen: Auftragsdaten, OPC-Historie',
+        trace: [
+          ['get_order_progress', '{ scope: "Werk", filter: "gefährdet" }', 48, 'Auftragsdaten'],
+          ['get_oee', '{ scope: "Halle B", zeitraum: "KW 42" }', 88, 'OPC HistoryRead'],
+          ['compare', '{ dimension: "Auftrag", kpi: "Fertigstellung vs. Termin" }', 61, 'Auftragsdaten']
+        ] },
+    };
+
+    var ORDER = { sl: ['sl1', 'sl6', 'sl3', 'sl4', 'sl7'], hl: ['hl5', 'hl6', 'hl1', 'hl2', 'hl7'], pl: ['pl1', 'pl2', 'pl5', 'pl4', 'pl6'] };
+    var SHORT = { sl1: 'Schichtübergabe', sl6: 'Hallenlage', sl3: 'Materialreichweite', sl4: 'Schichtziel', sl7: 'Störungen & Alarme',
+      sl2: 'RT-04 langsam?', sl5: 'VP-02 steht?',
+      hl5: 'Tagesbesprechung', hl6: 'Hallen-OEE heute', hl1: 'Zeitverluste', hl2: 'Qualitätslage', hl7: 'Wartungsplan',
+      hl3: 'Wartung bündeln', hl4: 'Öfen Engpass?',
+      pl1: 'Wochenbericht', pl2: 'OEE-Vergleich', pl5: 'Gefährdete Aufträge', pl4: 'Instandhaltung', pl6: 'Kosten der Woche',
+      pl3: 'RT-03 überholen?' };
+    var sel = st.sel && A[st.sel] ? st.sel : ORDER[role][0];
+    var raw = A[sel];
+
+    function fmt(v, d) { return (d ? v.toFixed(d) : String(v)).replace('.', ','); }
+    var a = { q: raw.q, head: raw.head, insight: raw.insight, option: raw.option, stand: raw.stand, chartTitle: raw.chartTitle,
+      rows: raw.rows.map(function (r) { return { label: r[0], value: r[1], badgeText: BADGE[r[2]].t, badge: badge(r[2]) }; }),
+      bars: raw.bars.map(function (b) { var p = Math.min(100, b[1] / raw.max * 100);
+        return { label: b[0], display: fmt(b[1], raw.dec) + raw.unit, fill: 'width:' + p.toFixed(1) + '%;height:100%;border-radius:3px;background:' + COL[b[2]] }; }),
+      trace: raw.trace.map(function (t) { return { tool: t[0], args: t[1], ms: t[2] + ' ms' }; }) };
+    var totalMs = raw.trace.reduce(function (s, t) { return s + t[2]; }, 0);
+
+    var USERS = {
+      sl: { initials: 'MH', first: 'Martin', title: 'Schichtleiter Halle A · Frühschicht' },
+      hl: { initials: 'KG', first: 'Katharina', title: 'Hallenleiterin Halle A' },
+      pl: { initials: 'SW', first: 'Stefan', title: 'Produktionsleiter Werk' }
+    };
+    var user = USERS[role];
+
+    var roles = [['sl', 'Schicht'], ['hl', 'Halle'], ['pl', 'Produktion']].map(function (r) {
+      var on = r[0] === role;
+      return { label: r[1], pick: function () { self.setState({ role: r[0], sel: ORDER[r[0]][0] }); },
+        style: 'min-height:36px;border:none;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;' +
+          (on ? 'background:' + accent + ';color:#FFFFFF' : 'background:transparent;color:#C9CFD6') };
+    });
+
+    var queries = ORDER[role].map(function (id) {
+      var on = id === sel;
+      return { short: SHORT[id], pick: function () { self.setState({ sel: id }); },
+        style: 'min-height:40px;padding:0 14px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer;' +
+          (on ? 'background:#1B232D;color:#FFFFFF;border:1px solid #1B232D' : 'background:#FFFFFF;color:#1B1F24;border:1px solid #B9B5AB') };
+    });
+
+    var WORD = { ok: 'Läuft', warn: 'Warnung', crit: 'Problem' };
+    var PILL = { ok: 'background:#E3F0E7;color:#1F5233', warn: 'background:#FBEFD6;color:#6B4500', crit: 'background:#B42318;color:#FFFFFF' };
+    var GROUPS = role === 'pl' ? [
+      { title: 'Hallen', kpi: 'OEE KW 42', items: [['Halle A', '77 %', 'RT-03 Rückstand, OF-02 voll', 'warn'], ['Halle B', '81 %', 'Im Plan', 'ok'], ['Halle C', '80 %', 'Im Plan', 'ok']] }
+    ] : [
+      { title: '1 · Pressen', kpi: 'Ist/Soll', items: [['RT-01', '101 %', 'Mischung A60 noch 38 min', 'warn'], ['RT-02', '97 %', 'Form 94 % · Füllgewicht ↑', 'warn'], ['RT-03', '72 %', 'Rückstand nach Störung', 'crit'], ['RT-04', '89 %', 'Taktzeit +9 %', 'warn']] },
+      { title: '2 · Aushärten', kpi: 'Belegung', items: [['OF-01', '78 %', 'Temperaturprofil im Soll', 'ok'], ['OF-02', '96 %', 'Voll · Freigabe 10:15', 'warn']] },
+      { title: '3 · Verpackung', kpi: 'Ist/Soll', items: [['VP-01', '98 %', '1.240 Kartons seit 06:00', 'ok'], ['VP-02', '64 %', 'Wartet auf Ofencharge', 'warn']] }
+    ];
+    var cnt = { ok: 0, warn: 0, crit: 0 };
+    var tileGroups = GROUPS.map(function (g) {
+      return { title: g.title, kpi: g.kpi, items: g.items.map(function (m) {
+        cnt[m[3]]++;
+        return { id: m[0], pct: m[1], note: m[2], word: WORD[m[3]],
+          pill: 'flex:0 0 76px;text-align:center;padding:6px 0;border-radius:6px;font-size:13px;font-weight:700;' + PILL[m[3]] };
+      }) };
+    });
+    var summary = [['crit', 'Problem'], ['warn', 'Warnung'], ['ok', 'Läuft']].map(function (s) {
+      return { n: String(cnt[s[0]]), label: s[1],
+        box: 'display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;border-radius:10px;' + PILL[s[0]] };
+    });
+
+    var INBOX = {
+      sl: [['i1', 'crit', 'Rückstand RT-03: Umverteilung entscheiden', 'Ca. 1.200 Stück Rückstand. RT-01 hat ab 11:30 Kapazität.', 'bis 11:30', 'sl1'],
+        ['i2', 'warn', 'Mischung A60 für RT-01 anfordern', 'Verarbeitbarkeit endet 10:20.', 'bis 09:50', 'sl3'],
+        ['i3', 'warn', 'Hydraulik RT-04 prüfen lassen', 'Presskraftaufbau seit 08:30 langsamer.', 'heute', 'sl2']],
+      hl: [['i4', 'crit', 'Qualitätsabweichung Charge M-2410-17', 'Drift an RT-01 und RT-02, Ausschuss rund 3 %.', 'sofort', 'hl2'],
+        ['i9', 'warn', 'Ofenbelegung ungleich verteilt', 'OF-02 bei 96 %, OF-01 bei 78 %. VP-02 wartet.', 'bis 10:15', 'hl4'],
+        ['i5', 'warn', 'Freigabe: Formwartung RT-02 bündeln', 'W-3381 auf 11:30 legen.', 'bis 11:00', 'hl3'],
+        ['i6', 'warn', 'Wiederkehrende Störung Greifer 2', '9 Ausfälle an RT-03 in KW 42.', 'diese Woche', 'hl1']],
+      pl: [['i7', 'crit', 'Zwei Ø-230-Aufträge gefährdet', 'Zusatzschicht Samstag in Halle B als Option.', 'bis Freitag', 'pl1'],
+        ['i8', 'warn', 'Investition Teilüberholung RT-03', 'MTBF 31 h statt 74 h im Schnitt.', 'Investitionsrunde', 'pl3']]
+    };
+    var PRIO = { crit: 'Dringend', warn: 'Zeitnah' };
+    var inbox = INBOX[role].map(function (x) {
+      var t = !!taken[x[0]];
+      return { title: x[2], detail: x[3], due: x[4], prioText: PRIO[x[1]], badge: badge(x[1]), level: x[1], taken: t,
+        takenText: 'Übernommen · 09:42',
+        box: 'display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:10px;' + (t ? 'background:#F7F6F2;border:1px solid #E3E0D8' : 'background:#FFFFFF;border:1px solid #D6D3CB'),
+        analyze: function () { self.setState({ sel: x[5], tab: 'ask' }); },
+        take: function () { var n = Object.assign({}, taken); n[x[0]] = !t; self.setState({ taken: n }); },
+        takeLabel: t ? 'Zurückgeben' : 'Übernehmen',
+        takeStyle: 'min-height:44px;border-radius:8px;background:#FFFFFF;color:#1B1F24;border:1px solid #B9B5AB;font-size:14px;font-weight:600;cursor:pointer' };
+    });
+    var open = inbox.filter(function (i) { return !i.taken; });
+    var urgent = open.slice(0, 2);
+    var hasCrit = open.some(function (i) { return i.level === 'crit'; });
+
+    var LEVEL = { info: 0, ok: 0, warn: 1, crit: 2 };
+    var MIN = { sl: 0, hl: 1, pl: 2 };
+    var FEED = [
+      ['09:41', 'RT-04 · Zustandswarnung', 'Presskraftaufbau 1,1 s, Soll 0,8 s', 'warn'],
+      ['09:38', 'RT-01 · Material', 'Mischung A60 endet 10:20', 'warn'],
+      ['09:30', 'RT-02 · Qualität', 'Füllgewicht über Warngrenze', 'warn'],
+      ['08:55', 'RT-01 · Auftrag', 'Auftrag 4702 abgeschlossen', 'info'],
+      ['07:05', 'RT-03 · Störung', 'Gewebegreifer instandgesetzt', 'ok'],
+      ['09:20', 'OF-02 · Belegung', 'Ofen voll, 42 Platten im Puffer', 'warn'],
+      ['09:05', 'VP-02 · Zustand', 'Wartet auf Ofencharge', 'info'],
+      ['06:40', 'OF-01 · Wartung', 'Sicherheitsprüfung Türverriegelung überfällig', 'crit']
+    ];
+    var feed = FEED.filter(function (f) { return LEVEL[f[3]] >= MIN[role]; }).map(function (f) {
+      return { time: f[0], src: f[1], text: f[2], dot: 'flex:0 0 8px;width:8px;height:8px;border-radius:50%;margin-top:5px;background:' + COL[f[3]] };
+    });
+
+    var tabs = [['start', 'Übersicht', null], ['ask', 'Fragen', null], ['inbox', 'Postfach', open.length], ['feed', 'Meldungen', feed.length]].map(function (t) {
+      var on = t[0] === tab;
+      return { label: t[1], isStart: t[0] === 'start', isAsk: t[0] === 'ask', isInbox: t[0] === 'inbox', isFeed: t[0] === 'feed',
+        hasBadge: !!t[2], badge: String(t[2] || ''),
+        badgeStyle: 'position:absolute;top:-6px;right:-12px;min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:999px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#FFFFFF;background:' +
+          (t[0] === 'inbox' && hasCrit ? '#B42318' : '#3A4654'),
+        pick: function () { self.setState({ tab: t[0] }); },
+        style: 'min-height:52px;border:none;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:' + (on ? accent : '#5A6068') };
+    });
+
+    return {
+      accent: accent, user: user, roles: roles, queries: queries, tileGroups: tileGroups, a: a, summary: summary,
+      inbox: inbox, urgent: urgent, openCount: String(open.length), feed: feed, tabs: tabs,
+      feedFilter: { sl: 'Alle Meldungen Halle A', hl: 'Ab Warnung', pl: 'Nur Eskalationen' }[role],
+      barScope: { sl: 'Halle A · Frühschicht 06–14', hl: 'Halle A · 4 RT · 2 Öfen · 2 VP', pl: 'Werk · Hallen A–C' }[role],
+      isStart: tab === 'start', isAsk: tab === 'ask', isInbox: tab === 'inbox', isFeed: tab === 'feed',
+      goInbox: function () { self.setState({ tab: 'inbox' }); },
+      traceOpen: !!st.trace,
+      traceLabel: st.trace ? 'Ausblenden' : 'Tool-Aufrufe',
+      traceSummary: raw.trace.length + ' Tools · ' + totalMs + ' ms',
+      toggleTrace: function () { self.setState({ trace: !st.trace }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

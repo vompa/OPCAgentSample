@@ -1,0 +1,46 @@
+name: Uptime
+
+# Verfügbarkeitsprüfung der Live-Demo. Schlägt ein Job fehl, benachrichtigt GitHub den Besitzer per E-Mail.
+#
+# Die Demo besteht aus zwei Teilen mit unterschiedlichem Verhalten:
+#   Oberfläche (Static Web App, https://opc.vompa.dev)  immer da, kostenlos: täglich prüfen.
+#   Backend (Container App, https://api.opc.vompa.dev)   schläft im Leerlauf; jede Prüfung weckt es für etwa eine Stunde
+#                                                        (cooldownPeriod) und kostet rund 0,16 USD je Laufstunde:
+#                                                        nur wöchentlich, mit Kaltstart.
+#
+# Hinweis: GitHub deaktiviert geplante Workflows nach 60 Tagen ohne Aktivität im Repository. Dann im Actions-Tab den
+# Workflow wieder aktivieren.
+
+on:
+  schedule:
+    - cron: "37 6 * * *"   # täglich: Oberfläche
+    - cron: "17 6 * * 1"   # montags: zusätzlich Backend mit Kaltstart
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Oberfläche prüfen (ohne das Backend zu wecken)
+        run: bash infra/smoke-test-web.sh https://opc.vompa.dev https://api.opc.vompa.dev
+
+  backend:
+    # Nur der wöchentliche Lauf und manuelle Starts wecken das Backend, der tägliche Lauf nicht.
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '17 6 * * 1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Backend prüfen (inklusive Kaltstart)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Kaltstart: bis zu zehn Minuten Geduld
+          curl --fail --silent --show-error --output /dev/null \
+            --retry 20 --retry-delay 30 --retry-all-errors --max-time 60 \
+            https://api.opc.vompa.dev/api/health
+          echo "Backend erreichbar"

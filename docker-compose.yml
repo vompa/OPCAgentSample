@@ -1,0 +1,13 @@
+# Lokale Infrastruktur: Redis (einziger Speicher: aktueller Zustand und verdichtete Zeitbereiche).
+# Start: docker compose up -d
+services:
+  # Redis ist der einzige Speicher: kein Verdrängen (noeviction), keine Persistenz; Daten entstehen bei jedem Start aus dem Seed.
+  redis:
+    image: redis:7
+    command: ["redis-server", "--maxmemory", "300mb", "--maxmemory-policy", "noeviction", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10

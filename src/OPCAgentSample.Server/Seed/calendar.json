@@ -1,0 +1,17 @@
+{
+  "note": "Feiertage AT und Betriebsurlaub im Datenhorizont der Demo (Spezifikation Abschnitt 8). Das Ende eines Betriebsurlaubs ist exklusiv: Neustart Do 07.01.2027.",
+  "firstDay": "2026-10-05",
+  "lastDay": "2027-01-17",
+  "holidays": [
+    { "date": "2026-10-26", "name": "Nationalfeiertag" },
+    { "date": "2026-11-01", "name": "Allerheiligen" },
+    { "date": "2026-12-08", "name": "Mariä Empfängnis" },
+    { "date": "2026-12-25", "name": "Christtag" },
+    { "date": "2026-12-26", "name": "Stefanitag" },
+    { "date": "2027-01-01", "name": "Neujahr" },
+    { "date": "2027-01-06", "name": "Heilige Drei Könige" }
+  ],
+  "closures": [
+    { "from": "2026-12-24", "until": "2027-01-06", "name": "Betriebsurlaub (Wartungsfenster)" }
+  ]
+}

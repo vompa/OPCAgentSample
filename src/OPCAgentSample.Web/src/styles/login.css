@@ -1,0 +1,58 @@
+/* Abmelden im Benutzermenü und Hinweisbanner (Kaltstart, Zeitbasis). Farben aus base.css, keine Inline-Stile.
+   Die Anmeldung selbst steht in about.css (Erklärseite). */
+.user-logout {
+  min-height: var(--touch);
+  margin-top: 14px;
+}
+
+/* Hinweisband unter dem Kopf: Historie wird noch geladen oder Zeitbasis passt nicht. */
+.data-notice {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.data-notice.is-loading {
+  background: var(--info-bg);
+  color: var(--info-text);
+}
+
+.data-notice-dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.data-notice.is-loading .data-notice-dot {
+  animation: live-pulse 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .data-notice.is-loading .data-notice-dot,
+  .live-dot {
+    animation: none;
+  }
+}
+
+/* Knopf im Hinweisband (z. B. „Erneut versuchen“, wenn die Halle nicht innerhalb der Frist antwortet). */
+.data-notice-action {
+  flex: 0 0 auto;
+  min-height: 28px;
+  margin-left: auto;
+  padding: 2px 12px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}

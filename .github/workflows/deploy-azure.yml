@@ -1,0 +1,197 @@
+name: Deploy to Azure
+
+# Nur manuell auslösbar: Das Deployment veröffentlicht die Demo und kostet Geld.
+on:
+  workflow_dispatch:
+    inputs:
+      refresh-mirrors:
+        description: "Redis von Docker Hub neu spiegeln (sonst nur, wenn der Spiegel fehlt)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-azure
+  cancel-in-progress: false
+
+env:
+  # Paketnamen auf ghcr.io müssen klein geschrieben sein
+  IMAGE_PREFIX: ghcr.io/vompa/opcagentsample
+  REDIS_SOURCE: docker.io/library/redis:7-alpine
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Bei ghcr.io anmelden
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Die Images verweisen per Label auf dieses Repository; so erscheinen sie unter dessen "Packages".
+      - name: Server und Simulator bauen und hochladen
+        run: |
+          for component in server simulator; do
+            docker buildx build \
+              --file "deploy/docker/$component.Dockerfile" \
+              --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
+              --tag "$IMAGE_PREFIX-$component:$GITHUB_SHA" \
+              --push .
+          done
+
+      # Redis wird gespiegelt: Docker Hub begrenzt anonyme Abrufe, Azure holt sie dann von ghcr.io.
+      # Nur wenn der Spiegel noch fehlt, damit ein Deploy nicht an Störungen von Docker Hub scheitert. Neu spiegeln
+      # (z. B. für Sicherheitsupdates): Workflow mit der Eingabe refresh-mirrors starten.
+      - name: Redis spiegeln
+        env:
+          REFRESH_MIRRORS: ${{ inputs.refresh-mirrors }}
+        run: |
+          mirror() {
+            local target="$1" source="$2"
+            if [ "$REFRESH_MIRRORS" != "true" ] && docker buildx imagetools inspect "$target" > /dev/null 2>&1; then
+              echo "vorhanden, nicht neu gespiegelt: $target"
+            else
+              docker buildx imagetools create --tag "$target" "$source"
+            fi
+          }
+          mirror "$IMAGE_PREFIX-redis:7" "$REDIS_SOURCE"
+
+      # Azure holt die Images ohne Anmeldung. Neue Pakete sind auf ghcr.io zunächst privat (einmalig öffentlich stellen,
+      # siehe infra/README.md).
+      - name: Prüfen, ob die Images öffentlich abrufbar sind
+        run: |
+          docker logout ghcr.io
+          failed=0
+          for ref in "server:$GITHUB_SHA" "simulator:$GITHUB_SHA" "redis:7"; do
+            if docker buildx imagetools inspect "$IMAGE_PREFIX-$ref" > /dev/null 2>&1; then
+              echo "öffentlich: $IMAGE_PREFIX-$ref"
+            else
+              echo "::error::$IMAGE_PREFIX-$ref ist nicht öffentlich abrufbar. Paket unter github.com/vompa?tab=packages auf 'Public' stellen und den Workflow erneut starten."
+              failed=1
+            fi
+          done
+          exit $failed
+
+  deploy:
+    needs: images
+    runs-on: ubuntu-latest
+    # Optional: In den Repository-Einstellungen eine Umgebung "azure" mit Genehmigung anlegen.
+    environment: azure
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bei Azure anmelden (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Infrastruktur, Static Web App und Container App ausrollen
+        id: deploy
+        env:
+          RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          # Region der App (leer = Region der Resource Group). Ein Abo erlaubt je Region nur eine
+          # Container-Apps-Umgebung; Germany West Central belegt bereits demo.vompa.dev.
+          AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+          # 1 = immer wach, leer/0 = Scale-to-zero (Standard, Backend schläft und wird nach der Anmeldung geweckt)
+          MIN_REPLICAS: ${{ vars.MIN_REPLICAS }}
+          # true = zusätzlich tägliches Wach-Zeitfenster (Bürozeiten, ca. 49 USD/Monat); leer/false = aus (Standard)
+          AWAKE_WINDOW: ${{ vars.AWAKE_WINDOW }}
+          # Domain des Backends (API), z. B. api.opc.vompa.dev, samt verwaltetem Zertifikat
+          CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
+          CUSTOM_DOMAIN_CERTIFICATE: ${{ vars.CUSTOM_DOMAIN_CERTIFICATE }}
+          # Domain der Oberfläche, z. B. opc.vompa.dev (CNAME auf die Static Web App muss im DNS stehen)
+          WEB_CUSTOM_DOMAIN: ${{ vars.WEB_CUSTOM_DOMAIN }}
+          DEMO_ACCESS_CODE_SHA256: ${{ secrets.DEMO_ACCESS_CODE_SHA256 }}
+          DEMO_COOKIE_KEY: ${{ secrets.DEMO_COOKIE_KEY }}
+          # Leer = keine Einladungslinks (Format name=sha256hex;name2=sha256hex)
+          DEMO_INVITE_CODES: ${{ secrets.DEMO_INVITE_CODES }}
+          # Leer = Claude ist nicht angebunden, die Demo beantwortet nur die vorbereiteten Fragen
+          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+        run: |
+          az deployment group create \
+            --resource-group "$RESOURCE_GROUP" \
+            --template-file infra/main.bicep \
+            --parameters imagePrefix="$IMAGE_PREFIX" \
+                         imageTag="$GITHUB_SHA" \
+                         customDomain="$CUSTOM_DOMAIN" \
+                         customDomainCertificate="$CUSTOM_DOMAIN_CERTIFICATE" \
+                         webCustomDomain="$WEB_CUSTOM_DOMAIN" \
+                         demoAccessCodeSha256="$DEMO_ACCESS_CODE_SHA256" \
+                         demoCookieKey="$DEMO_COOKIE_KEY" \
+                         demoInviteCodes="$DEMO_INVITE_CODES" \
+                         claudeApiKey="$CLAUDE_API_KEY" \
+                         ${AZURE_LOCATION:+location="$AZURE_LOCATION"} \
+                         awakeWindow="${AWAKE_WINDOW:-false}" \
+                         minReplicas="${MIN_REPLICAS:-0}" \
+            --query properties.outputs --output json > outputs.json
+          echo "api-host=$(jq -r .publicHost.value outputs.json)" >> "$GITHUB_OUTPUT"
+          echo "web-host=$(jq -r .webHost.value outputs.json)" >> "$GITHUB_OUTPUT"
+          echo "web-name=$(jq -r .webName.value outputs.json)" >> "$GITHUB_OUTPUT"
+
+      # Deployment-Token der Static Web App: gehört nicht in die Bicep-Ausgabe (stünde im Deployment-Verlauf).
+      - name: Deployment-Token der Static Web App holen
+        id: token
+        env:
+          RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          WEB_NAME: ${{ steps.deploy.outputs.web-name }}
+        run: |
+          token="$(az staticwebapp secrets list --name "$WEB_NAME" --resource-group "$RESOURCE_GROUP" --query properties.apiKey --output tsv)"
+          echo "::add-mask::$token"
+          echo "value=$token" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: src/OPCAgentSample.Web/.nvmrc
+          cache: npm
+          cache-dependency-path: src/OPCAgentSample.Web/package-lock.json
+
+      # Die Oberfläche kennt die API-Adresse und den Demo-Zugang schon beim Bauen. Ihre CSP (connect-src) steht in
+      # staticwebapp.config.json mit der Standardadresse api.opc.vompa.dev und wird hier auf die tatsächliche Adresse gesetzt.
+      - name: Oberfläche bauen
+        working-directory: src/OPCAgentSample.Web
+        env:
+          API_HOST: ${{ steps.deploy.outputs.api-host }}
+          VITE_DEMO_ACCESS: "true"
+          WEB_OUT_DIR: dist
+        run: |
+          export VITE_API_BASE="https://$API_HOST"
+          npm ci
+          npm run build
+          sed -i "s#https://api.opc.vompa.dev#$VITE_API_BASE#g" dist/staticwebapp.config.json
+
+      - name: Oberfläche auf die Static Web App ausrollen
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ steps.token.outputs.value }}
+          action: upload
+          app_location: src/OPCAgentSample.Web/dist
+          skip_app_build: true
+          skip_api_build: true
+
+      # Oberfläche: rein statisch, weckt das Backend nicht.
+      - name: Smoke-Test Oberfläche (ohne Backend)
+        env:
+          WEB_HOST: ${{ steps.deploy.outputs.web-host }}
+          API_HOST: ${{ steps.deploy.outputs.api-host }}
+        run: bash infra/smoke-test-web.sh "https://$WEB_HOST" "https://$API_HOST"
+
+      # Backend: weckt die App (Kaltstart) und prüft Zugriffsschutz, CORS und (mit Code) Anmeldung.
+      - name: Smoke-Test Backend
+        env:
+          WEB_HOST: ${{ steps.deploy.outputs.web-host }}
+          API_HOST: ${{ steps.deploy.outputs.api-host }}
+          SMOKE_ACCESS_CODE: ${{ secrets.SMOKE_ACCESS_CODE }}
+        run: SMOKE_WEB_ORIGIN="https://$WEB_HOST" bash infra/smoke-test.sh "https://$API_HOST"

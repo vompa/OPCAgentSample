@@ -1,0 +1,927 @@
+/* Maschinen-Report (Reiter „Maschinen“ der Report-Seite). Farben der Diagramme: Blau = Nutzen (OEE, Stillstand), Orange-Töne = Verluste.
+   Bewertungen tragen immer Form und Wort zusätzlich zur Farbe. */
+.reports-view {
+  --loss-availability: #c2410c;
+  --loss-performance: #de7e4b;
+  --loss-quality: #f0b88f;
+}
+
+/* Reiter: Maschinen | KI-Nutzung */
+.reports-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.reports-tab {
+  min-height: var(--touch);
+  padding: 0 16px;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.reports-tab.is-active {
+  border-bottom-color: var(--accent);
+  color: var(--text);
+}
+
+.reports-tab:focus-visible,
+.mc-chip:focus-visible,
+.mc-tile:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.reports-panel,
+.mc {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Überschriften der Karten: ohne den Standardabstand von h4 */
+.mc h3,
+.mc h4,
+.mc-detail h3,
+.mc-detail h4 {
+  margin: 0;
+}
+
+/* Zeitraum und Optionen */
+.mc-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 20px;
+}
+
+.mc-ranges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mc-chip {
+  min-height: 40px;
+  padding: 0 14px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.mc-chip.is-active {
+  background: var(--dark);
+  border-color: var(--dark);
+  color: var(--text-on-dark);
+}
+
+.mc-chip:disabled {
+  border-style: dashed;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.mc-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+}
+
+.mc-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  font-size: 13px;
+  color: var(--text-2);
+  cursor: pointer;
+}
+
+.mc-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--dark);
+}
+
+.mc-context {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.mc-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.mc-section-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin-bottom: 8px;
+}
+
+.mc-hint,
+.mc-muted {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.mc-hint {
+  font-size: 12px;
+}
+
+/* Kennzahlen der Halle */
+.mc-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.mc-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--dark-4);
+  border-radius: var(--radius);
+}
+
+.mc-kpi-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.mc-kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.mc-kpi-note {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Änderung gegenüber der Vorperiode: Pfeil (Form) und Wort; Farbe nur als Zusatz */
+.mc-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.mc-delta.is-better {
+  color: var(--ok-text);
+}
+
+.mc-delta.is-worse {
+  color: var(--crit-text);
+}
+
+.mc-arrow {
+  display: inline-block;
+  width: 0;
+  height: 0;
+}
+
+.mc-delta.is-up .mc-arrow {
+  border-right: 5px solid transparent;
+  border-bottom: 8px solid currentColor;
+  border-left: 5px solid transparent;
+}
+
+.mc-delta.is-down .mc-arrow {
+  border-top: 8px solid currentColor;
+  border-right: 5px solid transparent;
+  border-left: 5px solid transparent;
+}
+
+.mc-delta.is-flat .mc-arrow {
+  width: 10px;
+  height: 2px;
+  background: currentColor;
+}
+
+/* Bewertung: Kreis = in Ordnung, Dreieck = Warnung, Raute = kritisch */
+.mc-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mc-mark {
+  display: inline-block;
+  flex: none;
+  width: 12px;
+  height: 12px;
+  background: currentColor;
+}
+
+.mc-rating.is-ok {
+  color: var(--ok-text);
+}
+
+.mc-rating.is-ok .mc-mark {
+  border-radius: 50%;
+  background: var(--ok);
+}
+
+.mc-rating.is-warn {
+  color: var(--warn-text);
+}
+
+.mc-rating.is-warn .mc-mark {
+  background: var(--warn);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.mc-rating.is-crit {
+  color: var(--crit-text);
+}
+
+.mc-rating.is-crit .mc-mark {
+  background: var(--crit);
+  transform: rotate(45deg) scale(0.8);
+}
+
+.mc-rating.is-info {
+  color: var(--info-text);
+}
+
+.mc-rating.is-info .mc-mark {
+  border-radius: 2px;
+  background: var(--info);
+}
+
+/* Raster der Stationen */
+.mc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mc-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--touch);
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border-strong);
+  border-radius: var(--radius);
+  text-align: left;
+}
+
+.mc-tile.is-ok {
+  border-left-color: var(--ok);
+}
+
+.mc-tile.is-warn {
+  border-left-color: var(--warn);
+}
+
+.mc-tile.is-crit {
+  border-left-color: var(--crit);
+}
+
+.mc-tile:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-alt);
+}
+
+.mc-tile.is-selected {
+  border-color: var(--dark);
+  box-shadow: 0 0 0 2px var(--dark);
+}
+
+.mc-tile-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+}
+
+.mc-tile-id {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.mc-tile-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.mc-tile-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+
+.mc-tile-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.mc-tile-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.mc-tile-facts {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  font-size: 12px;
+}
+
+.mc-tile-facts > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 8px;
+}
+
+.mc-tile-facts dt {
+  color: var(--text-muted);
+}
+
+.mc-tile-facts dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Übersicht unter dem Raster */
+.mc-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.mc-costs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.mc-cost-total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  font-size: 13px;
+}
+
+.mc-cost-total strong {
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mc-subtitle {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* Auffälligkeiten */
+.mc-findings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mc-finding {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border-soft);
+  border-left: 4px solid var(--warn);
+  border-radius: 6px;
+}
+
+.mc-finding.is-crit {
+  border-left-color: var(--crit);
+}
+
+.mc-finding-body {
+  display: flex;
+  gap: 8px;
+}
+
+.mc-finding-body .mc-rating {
+  margin-top: 3px;
+}
+
+.mc-finding-title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mc-finding-text {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.mc-analyze {
+  min-height: 36px;
+}
+
+/* Balken (Pareto, Ausschuss, Kosten) */
+.mc-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mc-bar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) 7.5rem;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 13px;
+}
+
+.mc-bar-label {
+  overflow-wrap: anywhere;
+}
+
+.mc-bar-track {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  background: var(--surface-sunken);
+  border-radius: 3px;
+}
+
+.mc-bar-fill {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: 3px;
+  background: var(--chart-a);
+}
+
+.mc-bar-fill.is-scrap {
+  background: var(--chart-b);
+}
+
+.mc-bar-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mc-bar-sub {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Gestapelte OEE-Zerlegung */
+.mc-stack {
+  display: flex;
+  gap: 2px;
+  height: 34px;
+}
+
+.mc-seg {
+  display: flex;
+  flex-basis: 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 3px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+
+.mc-seg.is-oee,
+.mc-swatch.is-oee {
+  background: var(--chart-a);
+}
+
+.mc-seg.is-availability,
+.mc-swatch.is-availability {
+  background: var(--loss-availability);
+}
+
+.mc-seg.is-performance,
+.mc-swatch.is-performance {
+  background: var(--loss-performance);
+}
+
+.mc-seg.is-quality,
+.mc-swatch.is-quality {
+  background: var(--loss-quality);
+}
+
+.mc-seg.is-performance,
+.mc-seg.is-quality {
+  color: var(--text);
+}
+
+.mc-stack-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.mc-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  vertical-align: -1px;
+  border-radius: 3px;
+}
+
+.mc-factors {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.mc-factors > div {
+  padding: 8px 10px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+}
+
+.mc-factors dt {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.mc-factors dd {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.mc-shift-oee {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 13px;
+}
+
+.mc-shift-oee-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.mc-big {
+  font-size: 34px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Prozesswerte mit Toleranzband */
+.mc-trends {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.mc-trend-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 13px;
+}
+
+.mc-band {
+  fill: var(--chart-a);
+  fill-opacity: 0.12;
+}
+
+.mc-target {
+  stroke: var(--chart-a);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.mc-flag {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--chart-b);
+  background: var(--surface);
+  transform: translate(-50%, -50%) rotate(45deg);
+  pointer-events: none;
+}
+
+.mc-outside {
+  margin-left: 6px;
+  font-weight: 600;
+  color: var(--warn-text);
+}
+
+.mc-trend-key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.mc-key-band {
+  display: inline-block;
+  width: 16px;
+  height: 10px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--chart-a) 22%, var(--surface));
+}
+
+.mc-key-band.is-down {
+  background: var(--chart-a);
+}
+
+.mc-key-band.is-scrap {
+  margin-left: 8px;
+  background: var(--chart-b);
+}
+
+.mc-key-target {
+  display: inline-block;
+  width: 16px;
+  margin-left: 8px;
+  border-top: 2px dashed var(--chart-a);
+}
+
+.mc-key-flag {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-left: 8px;
+  border: 2px solid var(--chart-b);
+  transform: rotate(45deg);
+}
+
+/* Stationsbereich */
+.mc-detail-wrap {
+  min-width: 0;
+}
+
+.mc-station-findings {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mc-detail-trio {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+  align-items: stretch;
+}
+
+.mc-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 16px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  scroll-margin-top: 64px;
+}
+
+.mc-detail-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.mc-detail-title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.mc-back {
+  gap: 6px;
+  min-height: var(--touch);
+}
+
+.mc-back .icon {
+  transform: rotate(180deg);
+}
+
+.mc-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+}
+
+.mc-facts {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mc-mould {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mc-mould-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  font-size: 13px;
+}
+
+.mc-hbar {
+  display: inline-block;
+  width: 64px;
+  height: 10px;
+  margin-right: 8px;
+  vertical-align: middle;
+  background: var(--surface-sunken);
+  border-radius: 3px;
+}
+
+.mc-hbar-wide {
+  display: block;
+  width: 100%;
+  height: 12px;
+  margin: 0;
+}
+
+.mc-hbar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--chart-a);
+}
+
+.mc-hbar-fill.is-warn {
+  background: var(--warn);
+}
+
+.mc-hbar-fill.is-crit {
+  background: var(--crit);
+}
+
+.mc-maint-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.mc-maint-list li {
+  display: flex;
+  flex-direction: column;
+  padding-left: 8px;
+  border-left: 3px solid var(--border-strong);
+}
+
+.mc-maint-list li.is-overdue {
+  border-left-color: var(--crit);
+}
+
+.mc-maint-due {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.mc-oee-cell {
+  white-space: nowrap;
+}
+
+/* Mobil: Liste der Stationen, Detailseite je Station, einspaltige Diagramme, Touch-Ziele ab 44 px */
+@media (max-width: 1100px) {
+  .mc-findings,
+  .mc-station-findings,
+  .mc-costs-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .mc,
+  .reports-panel {
+    gap: 12px;
+  }
+
+  .mc-chip,
+  .mc-check {
+    min-height: var(--touch);
+  }
+
+  .mc-options {
+    flex-direction: column;
+  }
+
+  .mc-grid,
+  .mc-detail-grid,
+  .mc-trends,
+  .mc-detail-trio {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mc-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mc-tile {
+    min-height: 88px;
+  }
+
+  .mc-tile-value {
+    font-size: 26px;
+  }
+
+  /* Detailseite statt Liste: Raster, Kennzahlen und Übersicht treten zurück. */
+  .mc.has-detail .mc-main,
+  .mc.has-detail .mc-controls,
+  .mc.has-detail .mc-context {
+    display: none;
+  }
+
+  .mc-detail {
+    padding: 12px;
+  }
+
+  .mc-bar-row {
+    grid-template-columns: minmax(0, 1fr) 7.5rem;
+  }
+
+  .mc-bar-label {
+    grid-column: 1 / -1;
+    font-weight: 600;
+  }
+
+  .mc-bar-track {
+    grid-column: 1;
+  }
+
+  .mc-finding {
+    gap: 10px;
+  }
+
+  .mc-analyze {
+    width: 100%;
+    min-height: var(--touch);
+  }
+
+  .mc-factors {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

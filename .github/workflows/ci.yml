@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: src/OPCAgentSample.Web/.nvmrc
+          cache: npm
+          cache-dependency-path: src/OPCAgentSample.Web/package-lock.json
+      # Weboberfläche (Vue 3, TypeScript, Vite): baut nach src/OPCAgentSample.Server/wwwroot, das der Server ausliefert.
+      - name: Weboberfläche installieren
+        working-directory: src/OPCAgentSample.Web
+        run: npm ci
+      - name: Weboberfläche prüfen (Lint, Format)
+        working-directory: src/OPCAgentSample.Web
+        run: |
+          npm run lint
+          npm run format:check
+      - name: Weboberfläche bauen
+        working-directory: src/OPCAgentSample.Web
+        run: npm run build
+      - name: Weboberfläche testen (Vitest)
+        working-directory: src/OPCAgentSample.Web
+        run: npm run test
+      - name: npm-Pakete auf bekannte Schwachstellen prüfen
+        working-directory: src/OPCAgentSample.Web
+        run: npm audit --audit-level=high
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore
+        run: dotnet restore OPCAgentSample.slnx
+      - name: Build (Warnungen sind Fehler)
+        run: dotnet build OPCAgentSample.slnx --no-restore -c Release
+      - name: Test (Redis über Testcontainers)
+        run: dotnet test OPCAgentSample.slnx --no-build -c Release
+      - name: Pakete auf bekannte Schwachstellen prüfen
+        run: dotnet list OPCAgentSample.slnx package --vulnerable --include-transitive

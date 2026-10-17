@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Speicherbibliothek: verdichtet die Historie in Redis (Zähler je Schicht bis Jahr, Prozessstatistik, Ereignis-Streams,
+    Rückverfolgung, Ringpuffer) und liest sie als Kennzahlenblock zurück. Schema und Aufbewahrung: docs/spec.md, Abschnitt 15.
+  -->
+  <ItemGroup>
+    <PackageReference Include="StackExchange.Redis" Version="3.4.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OPCAgentSample.Domain\OPCAgentSample.Domain.csproj" />
+    <ProjectReference Include="..\OPCAgentSample.Kpi\OPCAgentSample.Kpi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OPCAgentSample.Tests" />
+  </ItemGroup>
+
+</Project>

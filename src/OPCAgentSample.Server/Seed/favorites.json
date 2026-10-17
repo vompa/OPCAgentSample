@@ -1,0 +1,26 @@
+{
+  "note": "Standard-Favoriten je Rolle (Spezifikation Abschnitt 10). Kurztitel höchstens 22 Zeichen; jeder Benutzer der Rolle erhält sie einmalig, später bearbeitete Favoriten bleiben unangetastet.",
+  "byRole": {
+    "shift_lead": [
+      { "shortTitle": "Schichtübergabe", "question": "Was muss ich von der Nachtschicht wissen?" },
+      { "shortTitle": "Hallenlage", "question": "Wie ist die Lage in der Halle gerade?" },
+      { "shortTitle": "Materialreichweite", "question": "Wie lange reicht das Material an allen Stationen?" },
+      { "shortTitle": "Schichtziel", "question": "Schaffen wir das Schichtziel?" },
+      { "shortTitle": "Störungen & Alarme", "question": "Welche Störungen und Alarme gab es in dieser Schicht?" }
+    ],
+    "hall_lead": [
+      { "shortTitle": "Tagesbesprechung", "question": "Bereite die Tagesbesprechung vor." },
+      { "shortTitle": "Hallen-OEE heute", "question": "Wie läuft die Halle heute?" },
+      { "shortTitle": "Zeitverluste", "question": "Wo verlieren wir diese Woche am meisten Zeit?" },
+      { "shortTitle": "Qualitätslage", "question": "Wie ist die Qualitätslage in der Halle?" },
+      { "shortTitle": "Wartungsplan", "question": "Welche Wartungen stehen heute und morgen an?" }
+    ],
+    "production_lead": [
+      { "shortTitle": "Wochenbericht", "question": "Fass mir die Woche zusammen." },
+      { "shortTitle": "OEE-Vergleich", "question": "Welche Schicht hat diese Woche die schlechteste OEE und warum?" },
+      { "shortTitle": "Gefährdete Aufträge", "question": "Welche Aufträge sind diese Woche gefährdet?" },
+      { "shortTitle": "Instandhaltung", "question": "Wie entwickelt sich der Anteil ungeplanter Stillstände?" },
+      { "shortTitle": "Kosten der Woche", "question": "Was haben uns Ausschuss und Stillstände diese Woche gekostet?" }
+    ]
+  }
+}

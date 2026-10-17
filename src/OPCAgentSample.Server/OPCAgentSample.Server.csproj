@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <!-- dotnet user-secrets set Claude:ApiKey ... (nur lokal, nie im Repo) -->
+    <UserSecretsId>opcagentsample-server-7d3f1c2a</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OPCAgentSample.Domain\OPCAgentSample.Domain.csproj" />
+    <ProjectReference Include="..\OPCAgentSample.Kpi\OPCAgentSample.Kpi.csproj" />
+    <ProjectReference Include="..\OPCAgentSample.Rollup\OPCAgentSample.Rollup.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Anthropic" Version="12.57.0" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+    <!-- Gleiche Version wie der Simulator (OPCFoundation.NetStandard.Opc.Ua.Server); nicht auf 2.x wechseln -->
+    <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua.Client" Version="1.5.378.182" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.19.1" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.19.1" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.19.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.19.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.19.0" />
+    <PackageReference Include="StackExchange.Redis" Version="3.4.5" />
+  </ItemGroup>
+
+  <!-- Seed-Daten werden als Ressource eingebettet und sind damit in Tests, Container und Publish immer vorhanden. -->
+  <ItemGroup>
+    <Content Remove="Seed\*.json" />
+    <EmbeddedResource Include="Seed\*.json" LogicalName="Seed/%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- Referenzdaten der Vorschau-Implementierungen (aus dem Mockup erzeugt, siehe Demo/ReferenceData/extract-reference-data.mjs). -->
+  <ItemGroup>
+    <Content Remove="Demo\ReferenceData\*.json" />
+    <EmbeddedResource Include="Demo\ReferenceData\*.json" LogicalName="Demo/ReferenceData/%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OPCAgentSample.Tests" />
+  </ItemGroup>
+
+  <!--
+    Die Weboberfläche (Vue/Vite, src/OPCAgentSample.Web) baut nach wwwroot. Fehlt das Ergebnis, weist der Build darauf hin;
+    npm wird bewusst nicht automatisch aufgerufen, damit .NET-Builds ohne Node weiter laufen (die CI baut zuerst die Oberfläche).
+  -->
+  <Target Name="CheckWebUiBuild" BeforeTargets="Build" Condition="!Exists('$(MSBuildProjectDirectory)/wwwroot/index.html')">
+    <Message Importance="high" Text="Hinweis: Die Weboberfläche fehlt (wwwroot/index.html). Bauen mit: cd src/OPCAgentSample.Web &amp;&amp; npm ci &amp;&amp; npm run build" />
+  </Target>
+
+</Project>

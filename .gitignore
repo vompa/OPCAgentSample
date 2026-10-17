@@ -1,0 +1,31 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.idea/
+.vscode/
+*.log
+TestResults/
+
+## Laufzeitdaten
+logs/
+pki/
+*.db
+*.db-wal
+*.db-shm
+
+## Lokale Geheimnisse
+.env
+appsettings.Local.json
+
+## Absturzdateien der Shell
+*.stackdump
+
+## Weboberfläche (Vue/Vite): Build-Ergebnis und Abhängigkeiten
+node_modules/
+src/OPCAgentSample.Server/wwwroot/
+
+## Oberfläche für Azure Static Web Apps (WEB_OUT_DIR=dist)
+src/OPCAgentSample.Web/dist/

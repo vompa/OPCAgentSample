@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\OPCAgentSample.Domain\OPCAgentSample.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,43 @@
+# Nachbau der Azure Container App auf dem eigenen Rechner: dieselben Images, alle Container teilen sich wie in Azure ein
+# Netzwerk (localhost), nur der Server ist von außen erreichbar (http://localhost:8080). Flüchtig, ohne Volumes.
+#
+#   export DEMO_ACCESS_CODE_SHA256=$(printf %s "<code>" | sha256sum | cut -d' ' -f1)
+#   export DEMO_COOKIE_KEY=$(openssl rand -base64 48)
+#   export DEMO_INVITE_CODES="anna=$(printf %s "<key>" | sha256sum | cut -d' ' -f1)"   # optional: Einladungslinks
+#   docker compose -f deploy/docker/compose.azure-local.yml up --build -d
+#   (getrennte Oberfläche wie in Azure: zusätzlich CORS_ALLOWED_ORIGIN=http://localhost:4173 WEB_SERVE_UI=false setzen)
+#   infra/smoke-test.sh http://localhost:8080
+#   DEMO_ACCESS_CODE_SHA256=x DEMO_COOKIE_KEY=x docker compose -f deploy/docker/compose.azure-local.yml down
+#   (auch "down" verlangt die beiden Variablen, der Wert ist dabei egal)
+#
+# Ohne CLAUDE_API_KEY beantwortet die Demo nur die vorbereiteten Fragen (gekennzeichnet).
+name: opcagentsample-azure-local
+
+services:
+  server:
+    build: { context: ../.., dockerfile: deploy/docker/server.Dockerfile }
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Redis: localhost:6379
+      Redis__StartupAttempts: "60"
+      Opc__Endpoint: opc.tcp://localhost:4840
+      Live__MaxStreamDuration: "00:15:00"
+      # Getrennt wie in Azure: CORS_ALLOWED_ORIGIN=http://localhost:4173 WEB_SERVE_UI=false (Oberfläche z. B. per "vite preview")
+      Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGIN:-}
+      Web__ServeUi: ${WEB_SERVE_UI:-true}
+      Demo__Enabled: "true"
+      Demo__AccessCodeSha256: ${DEMO_ACCESS_CODE_SHA256:?DEMO_ACCESS_CODE_SHA256 setzen}
+      Demo__CookieKey: ${DEMO_COOKIE_KEY:?DEMO_COOKIE_KEY setzen}
+      Demo__InviteCodes: ${DEMO_INVITE_CODES:-}
+      Claude__ApiKey: ${CLAUDE_API_KEY:-}
+
+  simulator:
+    build: { context: ../.., dockerfile: deploy/docker/simulator.Dockerfile }
+    network_mode: service:server
+
+  redis:
+    image: redis:7-alpine
+    network_mode: service:server
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "300mb", "--maxmemory-policy", "noeviction"]

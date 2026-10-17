@@ -1,0 +1,23 @@
+# Build-Kontext der Images ist das Repository-Root (deploy/docker/*.Dockerfile).
+# Nur Quelltext gehört hinein: keine Build-Ergebnisse, Abhängigkeiten, Zertifikate oder lokalen Geheimnisse.
+**/bin/
+**/obj/
+**/node_modules/
+**/TestResults/
+src/OPCAgentSample.Server/wwwroot/
+pki/
+**/pki/
+.git/
+.github/
+.vs/
+.vscode/
+.idea/
+docs/
+tests/
+infra/
+*.stackdump
+**/*.stackdump
+**/*.user
+**/appsettings.Local.json
+**/.env
+CLAUDE.md

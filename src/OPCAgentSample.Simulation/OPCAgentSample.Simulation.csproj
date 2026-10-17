@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\OPCAgentSample.Domain\OPCAgentSample.Domain.csproj" />
+    <ProjectReference Include="..\OPCAgentSample.Kpi\OPCAgentSample.Kpi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OPCAgentSample.Tests" />
+  </ItemGroup>
+
+</Project>

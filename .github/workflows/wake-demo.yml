@@ -1,0 +1,58 @@
+name: Demo aufwecken
+
+# Weckt das Backend der Live-Demo (Container App) und hält es die gewünschte Zeit wach, z. B. vor einem Termin oder einer
+# Vorführung. Manuell auslösbar (Actions → "Demo aufwecken" → "Run workflow").
+#
+# Warum Aufrufe statt minReplicas zu ändern: Die Container App skaliert erst eine Stunde (cooldownPeriod) nach der letzten
+# Anfrage auf null. Ein GET /api/health alle 20 Minuten hält sie deshalb sicher wach, braucht weder Azure-Anmeldung noch
+# Schreibrechte und lässt die per Bicep ausgerollte Konfiguration unberührt (eine Änderung von minReplicas würde beim
+# nächsten Deployment überschrieben oder vergessen, und die Kosten bleiben bei aktiver Zeit gleich). Nachteil: Der Job
+# läuft so lange wie das Wachhalten (GitHub erlaubt höchstens 6 Stunden je Job); Abbrechen beendet das Wachhalten, danach
+# schläft die App nach höchstens einer Stunde wieder ein.
+
+on:
+  workflow_dispatch:
+    inputs:
+      hours:
+        description: "Wie viele Stunden wach halten (1 bis 6)"
+        type: number
+        default: 2
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wake-demo
+  cancel-in-progress: true
+
+env:
+  API_URL: https://api.opc.vompa.dev
+
+jobs:
+  wake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 370
+    steps:
+      - name: Backend wecken und wach halten
+        shell: bash
+        env:
+          HOURS: ${{ inputs.hours }}
+        run: |
+          set -euo pipefail
+          hours="${HOURS:-2}"
+          [[ "$hours" =~ ^[0-9]+$ ]] && (( hours >= 1 && hours <= 6 )) || { echo "::error::hours muss zwischen 1 und 6 liegen"; exit 1; }
+
+          # Wecken: Kaltstart typisch etwa 40 s, im schlechtesten Fall mehrere Minuten
+          curl --fail --silent --show-error --output /dev/null \
+            --retry 30 --retry-delay 20 --retry-all-errors --max-time 60 \
+            "$API_URL/api/health"
+          echo "Backend ist wach. Halte es $hours Stunde(n) wach."
+
+          # Wachhalten: alle 20 Minuten ein Aufruf (der Nachlauf vor dem Einschlafen beträgt eine Stunde)
+          end=$(( $(date +%s) + hours * 3600 ))
+          while (( $(date +%s) + 1200 < end )); do
+            sleep 1200
+            curl --fail --silent --show-error --output /dev/null --retry 5 --retry-delay 20 --retry-all-errors --max-time 60 \
+              "$API_URL/api/health" && echo "$(date -u +%H:%M) wach"
+          done
+          echo "Fertig. Das Backend schläft spätestens eine Stunde nach dem letzten Aufruf wieder ein."

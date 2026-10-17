@@ -1,0 +1,28 @@
+{
+  "status": "kalibriert mit dem Szenario",
+  "note": "Kostensätze (simuliert) aus dem Szenario der Simulation (ProductionStationSpec.DowntimeEuroPerMinute, OvenSpec, Article.ScrapCostEuro). Sie sind auf die Referenzantwort Kosten der Woche kalibriert (RT-03 9.800 EUR bei 291 min, Halle A ca. 19.200 EUR, Werk KW 42 ca. 41.000 EUR). Der Abgleich mit dem Szenario ist durch DemoSeedConsistencyTests gesichert.",
+  "isCalibrated": true,
+  "downtimeMinuteByStation": {
+    "RT-01": 4.0,
+    "RT-02": 4.0,
+    "RT-03": 33.7,
+    "RT-04": 4.2,
+    "OF-01": 2.0,
+    "OF-02": 2.0,
+    "VP-01": 2.0,
+    "VP-02": 2.0
+  },
+  "scrapPieceByArticle": {
+    "A-115-A60": 0.95,
+    "A-115-A46": 1.05,
+    "A-125-A60": 1.10,
+    "A-125-A46": 1.25,
+    "A-180-A30": 2.40,
+    "A-180-A36": 2.30,
+    "A-230-A36": 3.10,
+    "A-230-A30": 3.20,
+    "K-125-25": 0.60,
+    "K-115-25": 0.55,
+    "K-180-10": 0.80
+  }
+}

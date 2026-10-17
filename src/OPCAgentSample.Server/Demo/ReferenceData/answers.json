@@ -1,0 +1,2542 @@
+{
+  "note": "Erzeugt aus docs/mockup/Main.dc.html (Objekt A, ORDER, SHORT) mit extract-reference-data.mjs. Nicht von Hand ändern.",
+  "sampleByRole": {
+    "shift_lead": "sl1",
+    "hall_lead": "hl5",
+    "production_lead": "pl1"
+  },
+  "answers": [
+    {
+      "id": "sl1",
+      "role": "shift_lead",
+      "question": "Was muss ich von der Nachtschicht wissen?",
+      "shortTitle": "Schichtübergabe",
+      "card": {
+        "headline": "Nachtschicht mit 92 % Planerfüllung. Drei Punkte brauchen heute früh deine Aufmerksamkeit.",
+        "todo": [
+          "Mischung A60 für RT-01 vor 07:00 anfordern. Den Formwechsel an RT-02 mit dem Rüsten um 11:30 bündeln."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "RT-03 · Störung Gewebegreifer",
+                "Seit 05:12 offen. Notiz der Nachtschicht: Greifer 2 klemmt, Instandhaltung informiert."
+              ],
+              "rating": "crit"
+            },
+            {
+              "cells": [
+                "RT-01 · Mischung A60",
+                "Verarbeitbar bis 07:20, danach neue Mischung nötig"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "RT-02 · Pressform F-125-07",
+                "94 % der Standzeit, Grenze gegen 12:40"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "OF-02 · Ofen",
+                "Bis 10:15 voll belegt, gepresste Scheiben warten davor"
+              ],
+              "rating": "info"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Nachtschicht: Ist/Soll je Station",
+          "max": 110,
+          "unit": " %",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "RT-01",
+              "value": 102,
+              "rating": "ok"
+            },
+            {
+              "label": "RT-02",
+              "value": 98,
+              "rating": "ok"
+            },
+            {
+              "label": "RT-03",
+              "value": 71,
+              "rating": "crit"
+            },
+            {
+              "label": "RT-04",
+              "value": 97,
+              "rating": "ok"
+            },
+            {
+              "label": "VP-01",
+              "value": 99,
+              "rating": "ok"
+            },
+            {
+              "label": "VP-02",
+              "value": 88,
+              "rating": "warn"
+            }
+          ]
+        },
+        "why": [
+          "Der Rückstand der Nacht kommt bei den Pressen fast vollständig von RT-03. VP-02 liegt zurück, weil sie auf Chargen aus OF-02 wartet, nicht wegen eines eigenen Problems."
+        ],
+        "dataAsOf": "06:04",
+        "sources": [
+          "Schichtbericht Nacht",
+          "OPC live",
+          "Wartungs-DB"
+        ],
+        "prompt": "schichtuebergabe",
+        "form": "Tabelle + Balken"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_shift_summary",
+          "parameters": {
+            "scope": "Halle A",
+            "schicht": "vorherige"
+          },
+          "durationMs": 84,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "get_active_alarms",
+          "parameters": {
+            "scope": "Halle A",
+            "minSeverity": "mittel"
+          },
+          "durationMs": 22,
+          "source": "reference",
+          "dataSource": "OPC Alarms & Conditions"
+        },
+        {
+          "tool": "get_order_progress",
+          "parameters": {
+            "scope": "Halle A"
+          },
+          "durationMs": 31,
+          "source": "reference",
+          "dataSource": "OPC live"
+        },
+        {
+          "tool": "get_material_reach",
+          "parameters": {
+            "scope": "Halle A"
+          },
+          "durationMs": 18,
+          "source": "reference",
+          "dataSource": "OPC live"
+        },
+        {
+          "tool": "get_maintenance_due",
+          "parameters": {
+            "scope": "Halle A",
+            "horizont": "Schicht"
+          },
+          "durationMs": 46,
+          "source": "reference",
+          "dataSource": "OPC Zähler + Wartungs-DB"
+        }
+      ]
+    },
+    {
+      "id": "sl2",
+      "role": "shift_lead",
+      "question": "Warum hängt RT-04 hinterher?",
+      "shortTitle": "RT-04 langsam?",
+      "card": {
+        "headline": "RT-04 liegt 11 % unter Soll. Ursache ist eine verlängerte Taktzeit, kein Stillstand.",
+        "todo": [
+          "Instandhaltung zur Sichtprüfung der Hydraulik anfordern. Bei gleichbleibender Drift fehlen bis Schichtende ca. 400 Stück."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Taktzeit",
+                "Soll 4,2 s · Ist 4,6 s"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Presskraftaufbau",
+                "Soll 0,8 s · Ist 1,1 s"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Stück seit 06:00",
+                "Soll 3.100 · Ist 2.760"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Stillstände",
+                "0 min in dieser Schicht"
+              ],
+              "rating": "ok"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Presskraftaufbau je Stunde",
+          "max": 1.2,
+          "unit": " s",
+          "decimals": 2,
+          "bars": [
+            {
+              "label": "06–07 Uhr",
+              "value": 0.8,
+              "rating": "ok"
+            },
+            {
+              "label": "07–08 Uhr",
+              "value": 0.82,
+              "rating": "ok"
+            },
+            {
+              "label": "08–09 Uhr",
+              "value": 0.95,
+              "rating": "warn"
+            },
+            {
+              "label": "09–09:42 Uhr",
+              "value": 1.1,
+              "rating": "warn"
+            }
+          ]
+        },
+        "why": [
+          "Der Presskraftaufbau wird seit etwa 08:30 kontinuierlich langsamer. Das deutet auf die Hydraulik hin. Die nächste planmäßige Hydraulikwartung ist erst in 3 Wochen."
+        ],
+        "dataAsOf": "09:42",
+        "sources": [
+          "RT-04 live",
+          "Trend 06:00–09:42",
+          "Wartungsplan"
+        ],
+        "prompt": null,
+        "form": "Tabelle + Trend"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_machine_status",
+          "parameters": {
+            "machineId": "RT-04"
+          },
+          "durationMs": 19,
+          "source": "reference",
+          "dataSource": "OPC live"
+        },
+        {
+          "tool": "get_process_trend",
+          "parameters": {
+            "machineId": "RT-04",
+            "variable": "Presskraftaufbau",
+            "zeitraum": "06:00–jetzt"
+          },
+          "durationMs": 112,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "get_condition_warnings",
+          "parameters": {
+            "scope": "RT-04"
+          },
+          "durationMs": 27,
+          "source": "reference",
+          "dataSource": "OPC + Grenzwerte DB"
+        },
+        {
+          "tool": "get_maintenance_due",
+          "parameters": {
+            "scope": "RT-04",
+            "baugruppe": "Hydraulik"
+          },
+          "durationMs": 33,
+          "source": "reference",
+          "dataSource": "Wartungs-DB"
+        }
+      ]
+    },
+    {
+      "id": "sl3",
+      "role": "shift_lead",
+      "question": "Wie lange reicht das Material an allen Stationen?",
+      "shortTitle": "Materialreichweite",
+      "card": {
+        "headline": "RT-01 zuerst: Die Mischung A60 erreicht in 38 min ihre Verarbeitbarkeitsgrenze.",
+        "todo": [
+          "Neue Mischung A60 im Mischraum anfordern, dort ist mit ca. 30 min Vorlauf zu rechnen."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "RT-01 · Mischung A60",
+                "Verarbeitbarkeit endet in 38 min, Füllstand reicht ca. 70 min"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "RT-02 · Gewebemagazin",
+                "Reichweite 55 min"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "VP-01 · Kartons 25er",
+                "Reichweite 1 h 40 min"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "Übrige Stationen",
+                "Alle Materialien länger als 2 h"
+              ],
+              "rating": "ok"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Kürzeste Materialreichweite je Station",
+          "max": 180,
+          "unit": " min",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "RT-01",
+              "value": 38,
+              "rating": "warn"
+            },
+            {
+              "label": "RT-02",
+              "value": 55,
+              "rating": "warn"
+            },
+            {
+              "label": "VP-01",
+              "value": 100,
+              "rating": "ok"
+            },
+            {
+              "label": "RT-04",
+              "value": 150,
+              "rating": "ok"
+            },
+            {
+              "label": "VP-02",
+              "value": 170,
+              "rating": "ok"
+            }
+          ]
+        },
+        "why": [
+          "Bei RT-01 begrenzt nicht der Füllstand, sondern die Verarbeitbarkeit der Mischung. Ein reines Füllstandsdashboard würde das als unkritisch zeigen."
+        ],
+        "dataAsOf": "09:42",
+        "sources": [
+          "OPC live",
+          "Auftragsdaten"
+        ],
+        "prompt": null,
+        "form": "Tabelle + Balken"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_material_reach",
+          "parameters": {
+            "scope": "Halle A"
+          },
+          "durationMs": 21,
+          "source": "reference",
+          "dataSource": "OPC live"
+        },
+        {
+          "tool": "get_order_progress",
+          "parameters": {
+            "machineId": "RT-01"
+          },
+          "durationMs": 15,
+          "source": "reference",
+          "dataSource": "OPC live"
+        }
+      ]
+    },
+    {
+      "id": "sl4",
+      "role": "shift_lead",
+      "question": "Schaffen wir das Schichtziel?",
+      "shortTitle": "Schichtziel",
+      "card": {
+        "headline": "Hochgerechnet erreichen die Pressen 90 % des Schichtziels. RT-03 und RT-04 sind die Lücke.",
+        "todo": [
+          "Teil des Auftrags 4711 (Ø 125, A46) ab 11:30 auf RT-01 verlagern: gleicher Formsatz, Mischungswechsel ca. 20 min."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Pressen bis jetzt",
+                "Ist 11.150 · Soll 12.400 Stück"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Hochrechnung 14:00",
+                "24.100 von 26.800 Stück"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "RT-03",
+                "Seit 07:05 wieder in Betrieb, Rückstand ca. 1.200 Stück"
+              ],
+              "rating": "crit"
+            },
+            {
+              "cells": [
+                "RT-04",
+                "Taktzeit +9 %, Rückstand ca. 400 Stück"
+              ],
+              "rating": "warn"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Hochrechnung Schichtende je Rundtisch",
+          "max": 110,
+          "unit": " %",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "RT-01",
+              "value": 101,
+              "rating": "ok"
+            },
+            {
+              "label": "RT-02",
+              "value": 97,
+              "rating": "ok"
+            },
+            {
+              "label": "RT-03",
+              "value": 72,
+              "rating": "crit"
+            },
+            {
+              "label": "RT-04",
+              "value": 89,
+              "rating": "warn"
+            }
+          ]
+        },
+        "why": [
+          "RT-01 und RT-02 laufen im Plan. Ohne Eingriff bleibt die Lücke von RT-03 bis Schichtende, bei RT-04 wächst sie mit weiterer Drift. Ofen und Verpackung sind für die heutige Menge nicht der Engpass."
+        ],
+        "dataAsOf": "09:42",
+        "sources": [
+          "OPC live",
+          "Auftragsdaten",
+          "Schichtkalender"
+        ],
+        "prompt": null,
+        "form": "Tabelle + Balken"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_hall_overview",
+          "parameters": {
+            "hallId": "A"
+          },
+          "durationMs": 24,
+          "source": "reference",
+          "dataSource": "OPC live"
+        },
+        {
+          "tool": "get_shift_summary",
+          "parameters": {
+            "scope": "Halle A",
+            "schicht": "aktuell"
+          },
+          "durationMs": 58,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "get_order_progress",
+          "parameters": {
+            "scope": "Halle A"
+          },
+          "durationMs": 29,
+          "source": "reference",
+          "dataSource": "OPC live"
+        }
+      ]
+    },
+    {
+      "id": "sl5",
+      "role": "shift_lead",
+      "question": "Warum steht VP-02?",
+      "shortTitle": "VP-02 steht?",
+      "card": {
+        "headline": "VP-02 hat kein eigenes Problem. Sie wartet auf die Ø-180-Charge aus OF-02.",
+        "todo": [
+          "Die nächsten Ø-180-Platten an OF-01 geben. VP-02 bekommt dann ab ca. 10:40 wieder laufend Ware."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "VP-02",
+                "Ist/Soll 64 %, seit 09:05 ohne Ware"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "OF-02",
+                "Voll belegt, Ø-180-Charge fertig ca. 10:15"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "OF-01",
+                "Belegung 78 %, freie Etage ab 09:50"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "Ursache",
+                "Alle Ø-180-Platten von RT-04 werden OF-02 zugewiesen"
+              ],
+              "rating": "info"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Ist/Soll entlang des Materialflusses Ø 180",
+          "max": 110,
+          "unit": " %",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "RT-04 · Pressen",
+              "value": 89,
+              "rating": "warn"
+            },
+            {
+              "label": "OF-02 · Belegung",
+              "value": 96,
+              "rating": "warn"
+            },
+            {
+              "label": "VP-02 · Verpacken",
+              "value": 64,
+              "rating": "warn"
+            }
+          ]
+        },
+        "why": [
+          "Die Ursache liegt zwei Stationen vorher. Das Dashboard zeigt nur, dass VP-02 schwach ist. Erst die Verknüpfung von Verpackung, Ofenbelegung und Pressen erklärt, warum."
+        ],
+        "dataAsOf": "09:42",
+        "sources": [
+          "OPC live Verpackung und Öfen",
+          "Ofenplanung"
+        ],
+        "prompt": null,
+        "form": "Tabelle + Balken"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_machine_status",
+          "parameters": {
+            "machineId": "VP-02"
+          },
+          "durationMs": 16,
+          "source": "reference",
+          "dataSource": "OPC live"
+        },
+        {
+          "tool": "get_hall_overview",
+          "parameters": {
+            "hallId": "A",
+            "stationType": "Ofen"
+          },
+          "durationMs": 21,
+          "source": "reference",
+          "dataSource": "OPC live"
+        },
+        {
+          "tool": "get_order_progress",
+          "parameters": {
+            "machineId": "VP-02",
+            "stufe": "Ofen → Verpackung"
+          },
+          "durationMs": 34,
+          "source": "reference",
+          "dataSource": "OPC live + Aufträge"
+        }
+      ]
+    },
+    {
+      "id": "sl6",
+      "role": "shift_lead",
+      "question": "Wie ist die Lage in der Halle gerade?",
+      "shortTitle": "Hallenlage",
+      "card": {
+        "headline": "Die Halle läuft, aber an 5 von 8 Stationen braucht es Aufmerksamkeit. Kritisch ist nur RT-03.",
+        "todo": [
+          "Zuerst über die Umverteilung von RT-03 entscheiden, danach die Ø-180-Platten an OF-01 umleiten."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Pressen",
+                "Ist/Soll 90 % · RT-03 Rückstand, RT-04 Taktzeit +9 %"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Öfen",
+                "OF-02 voll bis 10:15, OF-01 bei 78 %"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Verpackung",
+                "VP-01 im Plan, VP-02 wartet auf Ofencharge"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Offene Aufgaben",
+                "3 im Postfach, davon 1 dringend"
+              ],
+              "rating": "crit"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Kennzahl je Station (Ist/Soll bzw. Belegung)",
+          "max": 110,
+          "unit": " %",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "RT-01",
+              "value": 101,
+              "rating": "ok"
+            },
+            {
+              "label": "RT-02",
+              "value": 97,
+              "rating": "ok"
+            },
+            {
+              "label": "RT-03",
+              "value": 72,
+              "rating": "crit"
+            },
+            {
+              "label": "RT-04",
+              "value": 89,
+              "rating": "warn"
+            },
+            {
+              "label": "OF-01",
+              "value": 78,
+              "rating": "ok"
+            },
+            {
+              "label": "OF-02",
+              "value": 96,
+              "rating": "warn"
+            },
+            {
+              "label": "VP-01",
+              "value": 98,
+              "rating": "ok"
+            },
+            {
+              "label": "VP-02",
+              "value": 64,
+              "rating": "warn"
+            }
+          ]
+        },
+        "why": [
+          "Mehrere Warnungen hängen zusammen: RT-04 liefert Ø 180 an OF-02, OF-02 ist voll, VP-02 wartet. Eigenständig ist nur der Rückstand an RT-03."
+        ],
+        "dataAsOf": "09:42",
+        "sources": [
+          "OPC live alle Stationen",
+          "Postfach-Regeln"
+        ],
+        "prompt": null,
+        "form": "Übersicht nach Stationen"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_hall_overview",
+          "parameters": {
+            "hallId": "A"
+          },
+          "durationMs": 24,
+          "source": "reference",
+          "dataSource": "OPC live"
+        },
+        {
+          "tool": "get_active_alarms",
+          "parameters": {
+            "scope": "Halle A",
+            "minSeverity": "mittel"
+          },
+          "durationMs": 22,
+          "source": "reference",
+          "dataSource": "OPC Alarms & Conditions"
+        },
+        {
+          "tool": "get_action_items",
+          "parameters": {
+            "role": "Schichtleiter",
+            "hallId": "A"
+          },
+          "durationMs": 18,
+          "source": "reference",
+          "dataSource": "Eskalationsregeln MCP-Server"
+        }
+      ]
+    },
+    {
+      "id": "sl7",
+      "role": "shift_lead",
+      "question": "Welche Störungen und Alarme gab es in dieser Schicht?",
+      "shortTitle": "Störungen & Alarme",
+      "card": {
+        "headline": "Seit 06:00 gab es 4 Ereignisse mit zusammen 68 min Stillstand. Eine Warnung ist noch offen.",
+        "todo": [
+          "Hydraulik an RT-04 prüfen lassen, bevor daraus ein Stillstand wird."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "06:00–07:05 · RT-03",
+                "Gewebegreifer 2 klemmt, aus der Nacht übernommen · 65 min · behoben"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "08:14 · RT-02",
+                "Etikettenzufuhr leer · 2 min"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "08:51 · VP-01",
+                "Kartonstau · 1 min"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "seit 09:41 · RT-04",
+                "Zustandswarnung Presskraftaufbau · offen, noch kein Stillstand"
+              ],
+              "rating": "warn"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Stillstand in dieser Schicht je Station",
+          "max": 70,
+          "unit": " min",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "RT-03",
+              "value": 65,
+              "rating": "crit"
+            },
+            {
+              "label": "RT-02",
+              "value": 2,
+              "rating": "ok"
+            },
+            {
+              "label": "VP-01",
+              "value": 1,
+              "rating": "ok"
+            },
+            {
+              "label": "übrige",
+              "value": 0,
+              "rating": "ok"
+            }
+          ]
+        },
+        "why": [
+          "Bis auf RT-03 waren es Kurzstopps. Die offene Warnung an RT-04 verursacht noch keinen Stillstand, kostet aber bereits Taktzeit."
+        ],
+        "dataAsOf": "09:42",
+        "sources": [
+          "Alarmhistorie",
+          "Stillstände seit 06:00"
+        ],
+        "prompt": null,
+        "form": "Tabelle + Balken"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_active_alarms",
+          "parameters": {
+            "scope": "Halle A",
+            "zeitraum": "seit 06:00",
+            "inklusiveQuittiert": true
+          },
+          "durationMs": 41,
+          "source": "reference",
+          "dataSource": "OPC Alarms & Conditions"
+        },
+        {
+          "tool": "get_downtime_pareto",
+          "parameters": {
+            "scope": "Halle A",
+            "zeitraum": "Schicht",
+            "gruppierung": "Station"
+          },
+          "durationMs": 63,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        }
+      ]
+    },
+    {
+      "id": "hl6",
+      "role": "hall_lead",
+      "question": "Wie läuft die Halle heute?",
+      "shortTitle": "Hallen-OEE heute",
+      "card": {
+        "headline": "Halle A liegt heute bei 81 % OEE. Die Pressen bremsen, die Öfen sind ungleich belegt.",
+        "todo": [
+          "Umverteilung RT-03 → RT-01 freigeben und die Ofenzuordnung für Ø 180 auf OF-01 erweitern."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Pressen",
+                "OEE 79 % · Verluste vor allem an RT-03 und RT-04"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Öfen",
+                "Belegung Ø 87 % · OF-02 voll, OF-01 mit Luft"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Verpackung",
+                "OEE 84 % · VP-02 wartet auf Ware"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "Qualität",
+                "Ausschuss 1,9 % · Charge M-2410-17 an RT-01 und RT-02"
+              ],
+              "rating": "warn"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Kennzahl heute je Bereich",
+          "max": 100,
+          "unit": " %",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "Pressen · OEE",
+              "value": 79,
+              "rating": "warn"
+            },
+            {
+              "label": "Öfen · Belegung",
+              "value": 87,
+              "rating": "ok"
+            },
+            {
+              "label": "Verpackung · OEE",
+              "value": 84,
+              "rating": "ok"
+            },
+            {
+              "label": "Halle gesamt · OEE",
+              "value": 81,
+              "rating": "warn"
+            }
+          ]
+        },
+        "why": [
+          "Die größten Hebel heute sind der Rückstand an RT-03 und die Ofenbelegung. Beides lässt sich organisatorisch lösen, ohne Eingriff in die Maschinen."
+        ],
+        "dataAsOf": "09:42",
+        "sources": [
+          "OEE heute",
+          "OPC live",
+          "Qualitätsdaten"
+        ],
+        "prompt": null,
+        "form": "Übersicht nach Bereichen"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_oee",
+          "parameters": {
+            "scope": "Halle A",
+            "zeitraum": "heute",
+            "gruppierung": "Bereich"
+          },
+          "durationMs": 102,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "get_hall_overview",
+          "parameters": {
+            "hallId": "A"
+          },
+          "durationMs": 24,
+          "source": "reference",
+          "dataSource": "OPC live"
+        },
+        {
+          "tool": "compare",
+          "parameters": {
+            "dimension": "Bereich",
+            "kpi": "Ausschussquote",
+            "zeitraum": "heute"
+          },
+          "durationMs": 57,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        }
+      ]
+    },
+    {
+      "id": "hl7",
+      "role": "hall_lead",
+      "question": "Welche Wartungen stehen heute und morgen an?",
+      "shortTitle": "Wartungsplan",
+      "card": {
+        "headline": "Heute und morgen stehen 5 Wartungen an. Eine ist überfällig, zwei lassen sich mit Rüsten bündeln.",
+        "todo": [
+          "OF-01 heute prüfen lassen, Formwartung RT-02 auf 11:30 und Waage RT-01 auf den Mischungswechsel legen."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "OF-01 · Türverriegelung",
+                "Sicherheitsprüfung, seit 2 Tagen überfällig"
+              ],
+              "rating": "crit"
+            },
+            {
+              "cells": [
+                "RT-02 · Form F-125-07",
+                "Fällig ca. 12:40 · mit dem Rüsten um 11:30 bündelbar"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "RT-04 · Hydraulik",
+                "Sichtprüfung empfohlen wegen Drift im Presskraftaufbau"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "RT-01 · Waage",
+                "Kalibrierung morgen · beim Mischungswechsel bündelbar"
+              ],
+              "rating": "info"
+            },
+            {
+              "cells": [
+                "VP-01 · Umreifer",
+                "Planmäßig morgen 14:00"
+              ],
+              "rating": "ok"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Zusätzlicher Stillstand durch Wartungen",
+          "max": 100,
+          "unit": " min",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "Einzeln geplant",
+              "value": 95,
+              "rating": "warn"
+            },
+            {
+              "label": "Gebündelt",
+              "value": 40,
+              "rating": "ok"
+            }
+          ]
+        },
+        "why": [
+          "Durch Bündeln mit Rüst- und Mischungswechseln sinkt der zusätzliche Stillstand von 95 auf 40 min. Die Sicherheitsprüfung an OF-01 hat Vorrang vor allem anderen."
+        ],
+        "dataAsOf": "09:42",
+        "sources": [
+          "Wartungs-DB",
+          "OPC-Zähler",
+          "Auftragsplan"
+        ],
+        "prompt": null,
+        "form": "Tabelle + Vergleich"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_maintenance_due",
+          "parameters": {
+            "scope": "Halle A",
+            "horizont": "48 h"
+          },
+          "durationMs": 44,
+          "source": "reference",
+          "dataSource": "OPC Zähler + Wartungs-DB"
+        },
+        {
+          "tool": "check_maintenance_conflicts",
+          "parameters": {
+            "hallId": "A",
+            "zeitraum": "heute–morgen"
+          },
+          "durationMs": 71,
+          "source": "reference",
+          "dataSource": "Wartungs-DB + Aufträge"
+        },
+        {
+          "tool": "get_condition_warnings",
+          "parameters": {
+            "scope": "Halle A"
+          },
+          "durationMs": 29,
+          "source": "reference",
+          "dataSource": "OPC + Grenzwerte DB"
+        }
+      ]
+    },
+    {
+      "id": "pl6",
+      "role": "production_lead",
+      "question": "Was haben uns Ausschuss und Stillstände diese Woche gekostet?",
+      "shortTitle": "Kosten der Woche",
+      "card": {
+        "headline": "KW 42 kosten Ausschuss und ungeplante Stillstände zusammen rund 41.000 €. Größter Einzelposten ist RT-03.",
+        "todo": [
+          "Ein Angebot für die Teilüberholung der Gewebezuführung RT-03 den wöchentlichen Kosten von ca. 9.800 € gegenüberstellen."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Ausschuss",
+                "ca. 14.500 € · 1,4 % der Ausbringung"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Ungeplante Stillstände",
+                "ca. 26.500 € · entgangene Deckungsbeiträge"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Größter Posten",
+                "Gewebezuführung RT-03 · ca. 9.800 €"
+              ],
+              "rating": "crit"
+            },
+            {
+              "cells": [
+                "Vorwoche",
+                "ca. 46.000 € · Rückgang um 11 %"
+              ],
+              "rating": "ok"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Kosten KW 42 je Halle",
+          "max": 25,
+          "unit": " Tsd. €",
+          "decimals": 1,
+          "bars": [
+            {
+              "label": "Halle A",
+              "value": 19.2,
+              "rating": "warn"
+            },
+            {
+              "label": "Halle B",
+              "value": 11.9,
+              "rating": "ok"
+            },
+            {
+              "label": "Halle C",
+              "value": 9.9,
+              "rating": "ok"
+            }
+          ]
+        },
+        "why": [
+          "In Halle A geht rund die Hälfte der Kosten auf zwei Ursachen zurück: die Gewebezuführung an RT-03 und die Charge M-2410-17. Beide liegen bereits im Postfach."
+        ],
+        "dataAsOf": "KW 42 · Kostensätze aus Controlling-Stammdaten (simuliert)",
+        "sources": [],
+        "prompt": null,
+        "form": "Tabelle + Balken"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_downtime_pareto",
+          "parameters": {
+            "scope": "Werk",
+            "zeitraum": "KW 42",
+            "bewertung": "Kosten"
+          },
+          "durationMs": 118,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead + Stammdaten"
+        },
+        {
+          "tool": "compare",
+          "parameters": {
+            "dimension": "Halle",
+            "kpi": "Ausschusskosten",
+            "zeitraum": "KW 42"
+          },
+          "durationMs": 84,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead + Stammdaten"
+        },
+        {
+          "tool": "get_reliability_kpis",
+          "parameters": {
+            "scope": "Werk",
+            "zeitraum": "KW 42"
+          },
+          "durationMs": 73,
+          "source": "reference",
+          "dataSource": "Wartungs-DB + OPC"
+        }
+      ]
+    },
+    {
+      "id": "wk1",
+      "role": "hall_lead",
+      "question": "Welche Wartungen sind in der nächsten KW geplant?",
+      "shortTitle": "Wartungen KW 43",
+      "card": {
+        "headline": "In KW 43 sind 4 Wartungen geplant. Eine weitere sollte wegen der Drift an RT-04 vorgezogen werden.",
+        "todo": [
+          "Hydraulikwartung RT-04 auf Mi 21.10. zusammen mit dem Formwechsel legen. Dann entsteht dafür kein zusätzlicher Stillstand."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Mo 19.10. · RT-02",
+                "Hydrauliköl wechseln · zeitbasiert · 45 min"
+              ],
+              "rating": "info"
+            },
+            {
+              "cells": [
+                "Di 20.10. · OF-02",
+                "Temperaturfühler Zone 1–3 kalibrieren · Prüfmittel · 60 min"
+              ],
+              "rating": "info"
+            },
+            {
+              "cells": [
+                "ca. Mi 21.10. · RT-04",
+                "Pressform F-180-03 · Prognose aus 4.100 Hüben/Tag · bündelbar mit Rüsten 13:00"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "ca. Do 22.10. · VP-02",
+                "Umreifer Verschleißteile · Prognose aus Betriebsstunden · 30 min"
+              ],
+              "rating": "info"
+            },
+            {
+              "cells": [
+                "Empfohlen · RT-04",
+                "Hydraulikwartung aus KW 45 vorziehen · Presskraftaufbau driftet seit heute 08:30"
+              ],
+              "rating": "crit"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Geplanter Stillstand je Tag in KW 43",
+          "max": 120,
+          "unit": " min",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "Mo 19.10.",
+              "value": 45,
+              "rating": "ok"
+            },
+            {
+              "label": "Di 20.10.",
+              "value": 60,
+              "rating": "ok"
+            },
+            {
+              "label": "Mi 21.10.",
+              "value": 0,
+              "rating": "ok"
+            },
+            {
+              "label": "Do 22.10.",
+              "value": 30,
+              "rating": "ok"
+            },
+            {
+              "label": "Fr 23.10.",
+              "value": 0,
+              "rating": "ok"
+            }
+          ]
+        },
+        "why": [
+          "Zwei Termine stehen fest im Wartungsplan, zwei sind aus Zählerständen hochgerechnet. Die Hydraulik an RT-04 steht nicht im Plan für KW 43, die Zustandsdaten aus OPC sprechen aber dafür, sie vorzuziehen."
+        ],
+        "dataAsOf": "09:42",
+        "sources": [
+          "Wartungs-DB",
+          "OPC-Zähler mit Prognose",
+          "Zustandsdaten",
+          "Auftragsplan"
+        ],
+        "prompt": null,
+        "form": "Tabelle + Wochenplan"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_maintenance_due",
+          "parameters": {
+            "scope": "Halle A",
+            "von": "2026-10-19",
+            "bis": "2026-10-25",
+            "prognose": true
+          },
+          "durationMs": 52,
+          "source": "reference",
+          "dataSource": "Wartungs-DB + OPC-Zähler"
+        },
+        {
+          "tool": "get_condition_warnings",
+          "parameters": {
+            "scope": "Halle A"
+          },
+          "durationMs": 29,
+          "source": "reference",
+          "dataSource": "OPC + Grenzwerte DB"
+        },
+        {
+          "tool": "check_maintenance_conflicts",
+          "parameters": {
+            "hallId": "A",
+            "zeitraum": "KW 43"
+          },
+          "durationMs": 68,
+          "source": "reference",
+          "dataSource": "Wartungs-DB + Aufträge"
+        }
+      ]
+    },
+    {
+      "id": "hl1",
+      "role": "hall_lead",
+      "question": "Wo verlieren wir diese Woche am meisten Zeit?",
+      "shortTitle": "Zeitverluste",
+      "card": {
+        "headline": "Die Gewebezuführung kostet diese Woche am meisten Zeit, vor allem an RT-03.",
+        "todo": [
+          "Greifer 2 an RT-03 beim nächsten geplanten Stillstand tauschen statt erneut zu justieren."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Störung Gewebezuführung",
+                "6,4 h · 14 Ereignisse, davon 9 an RT-03"
+              ],
+              "rating": "crit"
+            },
+            {
+              "cells": [
+                "Warten auf Mischung",
+                "4,1 h · gehäuft in den Nachtschichten"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Warten auf Ofen",
+                "3,5 h · Pressteile vor OF-02 im Puffer"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Rüsten über Soll",
+                "3,2 h · im Schnitt +18 min je Rüstvorgang"
+              ],
+              "rating": "info"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Stillstand nach Grund, KW 42",
+          "max": 7,
+          "unit": " h",
+          "decimals": 1,
+          "bars": [
+            {
+              "label": "Gewebezuführung",
+              "value": 6.4,
+              "rating": "crit"
+            },
+            {
+              "label": "Warten auf Mischung",
+              "value": 4.1,
+              "rating": "warn"
+            },
+            {
+              "label": "Warten auf Ofen",
+              "value": 3.5,
+              "rating": "warn"
+            },
+            {
+              "label": "Rüsten über Soll",
+              "value": 3.2,
+              "rating": "info"
+            },
+            {
+              "label": "Formwechsel ungeplant",
+              "value": 2,
+              "rating": "info"
+            }
+          ]
+        },
+        "why": [
+          "9 von 14 Ausfällen der Gewebezuführung betreffen RT-03, jedes Mal Greifer 2. Das ist kein Zufallsmuster, sondern ein Kandidat für eine gezielte Instandsetzung."
+        ],
+        "dataAsOf": "09:42",
+        "sources": [
+          "Stillstandshistorie KW 42"
+        ],
+        "prompt": null,
+        "form": "Pareto"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_downtime_pareto",
+          "parameters": {
+            "scope": "Halle A",
+            "zeitraum": "KW 42"
+          },
+          "durationMs": 96,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "compare",
+          "parameters": {
+            "dimension": "Station",
+            "kpi": "Stillstand Gewebezuführung",
+            "zeitraum": "KW 42"
+          },
+          "durationMs": 74,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        }
+      ]
+    },
+    {
+      "id": "hl2",
+      "role": "hall_lead",
+      "question": "Wie ist die Qualitätslage in der Halle?",
+      "shortTitle": "Qualitätslage",
+      "card": {
+        "headline": "Ja: RT-01 und RT-02 zeigen seit gestern 22:00 dieselbe Füllgewichtsdrift. Beide verarbeiten Mischungscharge M-2410-17.",
+        "todo": [
+          "Mischraum informieren und die Schüttdichte der Charge M-2410-17 prüfen lassen. Bis dahin die Dosiermenge an RT-01 und RT-02 nachführen."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "RT-01 · Füllgewicht",
+                "Ø 113,4 g · Soll 112 g ± 1,5 g"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "RT-02 · Füllgewicht",
+                "Ø 113,6 g · Soll 112 g ± 1,5 g"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "RT-03 und RT-04",
+                "Ø 112,1 g, andere Mischung"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "Gemeinsamer Faktor",
+                "Charge M-2410-17 (A60), an beiden ab 22:00"
+              ],
+              "rating": "crit"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Ausschussquote letzte 24 h",
+          "max": 4,
+          "unit": " %",
+          "decimals": 1,
+          "bars": [
+            {
+              "label": "RT-01",
+              "value": 2.8,
+              "rating": "crit"
+            },
+            {
+              "label": "RT-02",
+              "value": 3.1,
+              "rating": "crit"
+            },
+            {
+              "label": "RT-03",
+              "value": 1.2,
+              "rating": "ok"
+            },
+            {
+              "label": "RT-04",
+              "value": 0.9,
+              "rating": "ok"
+            }
+          ]
+        },
+        "why": [
+          "Die Waagen beider Rundtische wurden laut Wartungs-DB im Juli kalibriert und sind seither unauffällig. Eine Maschinenursache ist deshalb unwahrscheinlich, die Charge ist der gemeinsame Faktor."
+        ],
+        "dataAsOf": "09:42",
+        "sources": [
+          "Prozesshistorie 24 h",
+          "Auftragsdaten",
+          "Wartungs-DB"
+        ],
+        "prompt": null,
+        "form": "Tabelle + Balken"
+      },
+      "toolCalls": [
+        {
+          "tool": "compare",
+          "parameters": {
+            "dimension": "Rundtisch",
+            "kpi": "Ausschussquote",
+            "zeitraum": "24 h"
+          },
+          "durationMs": 81,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "get_process_trend",
+          "parameters": {
+            "machineId": [
+              "RT-01",
+              "RT-02"
+            ],
+            "variable": "Füllgewicht",
+            "zeitraum": "24 h"
+          },
+          "durationMs": 138,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "get_order_progress",
+          "parameters": {
+            "machineId": [
+              "RT-01",
+              "RT-02"
+            ]
+          },
+          "durationMs": 26,
+          "source": "reference",
+          "dataSource": "OPC live (Charge)"
+        },
+        {
+          "tool": "get_maintenance_due",
+          "parameters": {
+            "scope": [
+              "RT-01",
+              "RT-02"
+            ],
+            "baugruppe": "Waage",
+            "historie": true
+          },
+          "durationMs": 41,
+          "source": "reference",
+          "dataSource": "Wartungs-DB"
+        }
+      ]
+    },
+    {
+      "id": "hl3",
+      "role": "hall_lead",
+      "question": "Können wir die Formwartung an RT-02 mit dem Rüsten bündeln?",
+      "shortTitle": "Wartung bündeln",
+      "card": {
+        "headline": "Ja. Das Rüsten an RT-02 um 11:30 ist der passende Zeitpunkt, die Form steht dann bei 97 %.",
+        "todo": [
+          "Wartungsauftrag W-3381 auf 11:30 legen und mit dem Rüstauftrag verknüpfen."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Form F-125-07",
+                "Jetzt 94 %, 100 % erreicht ca. 12:40"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Geplantes Rüsten RT-02",
+                "11:30, Wechsel auf Ø 115 mit anderem Formsatz"
+              ],
+              "rating": "info"
+            },
+            {
+              "cells": [
+                "Gebündelt",
+                "Form wird beim Rüsten ohnehin ausgebaut, Wartung danach in der Werkstatt"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "Konflikte",
+                "Keine: Auftrag 4698 ist bis 11:20 fertig"
+              ],
+              "rating": "ok"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Zusätzlicher Maschinenstillstand",
+          "max": 30,
+          "unit": " min",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "Getrennt",
+              "value": 25,
+              "rating": "warn"
+            },
+            {
+              "label": "Gebündelt",
+              "value": 0,
+              "rating": "ok"
+            }
+          ]
+        },
+        "why": [
+          "Die Form erreicht ihre Grenze erst nach dem Rüstzeitpunkt. Beim Bündeln entfällt der separate Stillstand vollständig."
+        ],
+        "dataAsOf": "09:42",
+        "sources": [
+          "Hubzähler OPC",
+          "Wartungs-DB",
+          "Auftragsplan"
+        ],
+        "prompt": null,
+        "form": "Tabelle + Vergleich"
+      },
+      "toolCalls": [
+        {
+          "tool": "check_maintenance_conflicts",
+          "parameters": {
+            "hallId": "A",
+            "zeitraum": "heute"
+          },
+          "durationMs": 64,
+          "source": "reference",
+          "dataSource": "Wartungs-DB + Aufträge"
+        },
+        {
+          "tool": "get_maintenance_due",
+          "parameters": {
+            "scope": "RT-02"
+          },
+          "durationMs": 28,
+          "source": "reference",
+          "dataSource": "OPC Zähler + Wartungs-DB"
+        },
+        {
+          "tool": "get_order_progress",
+          "parameters": {
+            "machineId": "RT-02"
+          },
+          "durationMs": 17,
+          "source": "reference",
+          "dataSource": "OPC live"
+        }
+      ]
+    },
+    {
+      "id": "hl4",
+      "role": "hall_lead",
+      "question": "Sind die Öfen heute der Engpass?",
+      "shortTitle": "Öfen Engpass?",
+      "card": {
+        "headline": "Teilweise: OF-02 ist voll, OF-01 hat Luft. Die Belegung ist ungleich verteilt, nicht zu knapp.",
+        "todo": [
+          "Die nächsten Ø-180-Platten an OF-01 geben. Damit sinkt die Wartezeit vor den Öfen und VP-02 bekommt früher Ware."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "OF-01",
+                "Belegung 78 %, nächste freie Etage ab 09:50"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "OF-02",
+                "Belegung 96 %, nächste Freigabe 10:15"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Puffer vor den Öfen",
+                "42 Ofenplatten, Ø Wartezeit 45 min"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "VP-02",
+                "Wartet auf die Ø-180-Charge aus OF-02"
+              ],
+              "rating": "warn"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Ofenbelegung bis Schichtende",
+          "max": 100,
+          "unit": " %",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "OF-01",
+              "value": 78,
+              "rating": "ok"
+            },
+            {
+              "label": "OF-02",
+              "value": 96,
+              "rating": "warn"
+            }
+          ]
+        },
+        "why": [
+          "Alle Ø-180-Platten von RT-04 werden derzeit OF-02 zugewiesen. Das Temperaturprofil ist für beide Öfen gleich, die Zuordnung ist also eine Planungsregel, keine technische Notwendigkeit."
+        ],
+        "dataAsOf": "09:42",
+        "sources": [
+          "OPC live Öfen",
+          "Ofenplanung",
+          "Verpackung"
+        ],
+        "prompt": null,
+        "form": "Tabelle + Balken"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_hall_overview",
+          "parameters": {
+            "hallId": "A",
+            "stationType": "Ofen"
+          },
+          "durationMs": 21,
+          "source": "reference",
+          "dataSource": "OPC live"
+        },
+        {
+          "tool": "get_process_trend",
+          "parameters": {
+            "machineId": [
+              "OF-01",
+              "OF-02"
+            ],
+            "variable": "Temperaturprofil",
+            "zeitraum": "heute"
+          },
+          "durationMs": 97,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "get_order_progress",
+          "parameters": {
+            "scope": "Halle A",
+            "stufe": "Ofen → Verpackung"
+          },
+          "durationMs": 38,
+          "source": "reference",
+          "dataSource": "OPC live + Aufträge"
+        }
+      ]
+    },
+    {
+      "id": "hl5",
+      "role": "hall_lead",
+      "question": "Bereite die Tagesbesprechung vor.",
+      "shortTitle": "Tagesbesprechung",
+      "card": {
+        "headline": "Gestern lief Halle A mit 78 % OEE. Die Nachtschicht zieht den Schnitt nach unten.",
+        "todo": [
+          "Mischungsbedarf der Nachtschicht schon in der Spätschicht vorbereiten lassen."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Frühschicht",
+                "OEE 82 %"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "Spätschicht",
+                "OEE 80 %"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "Nachtschicht",
+                "OEE 72 %, Hauptgrund Warten auf Mischung (2,3 h)"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Heute geplant",
+                "Rüsten RT-02, Formwechsel F-125-07, Hydraulikprüfung RT-04 empfohlen"
+              ],
+              "rating": "info"
+            }
+          ]
+        },
+        "chart": {
+          "title": "OEE gestern je Schicht",
+          "max": 100,
+          "unit": " %",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "Früh",
+              "value": 82,
+              "rating": "ok"
+            },
+            {
+              "label": "Spät",
+              "value": 80,
+              "rating": "ok"
+            },
+            {
+              "label": "Nacht",
+              "value": 72,
+              "rating": "warn"
+            }
+          ]
+        },
+        "why": [
+          "Leistung und Qualität sind über alle Schichten vergleichbar. Der Unterschied entsteht in der Verfügbarkeit, und dort fast ausschließlich durch Wartezeiten auf Mischung."
+        ],
+        "dataAsOf": "07:30",
+        "sources": [
+          "Schichtberichte",
+          "Stillstände",
+          "Wartungs-DB",
+          "Material"
+        ],
+        "prompt": "tagesbesprechung_halle",
+        "form": "Tabelle + Balken"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_shift_summary",
+          "parameters": {
+            "scope": "Halle A",
+            "schicht": "gestern",
+            "alle": true
+          },
+          "durationMs": 142,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "get_downtime_pareto",
+          "parameters": {
+            "scope": "Halle A",
+            "zeitraum": "gestern"
+          },
+          "durationMs": 88,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "check_maintenance_conflicts",
+          "parameters": {
+            "hallId": "A",
+            "zeitraum": "heute"
+          },
+          "durationMs": 59,
+          "source": "reference",
+          "dataSource": "Wartungs-DB + Aufträge"
+        },
+        {
+          "tool": "get_material_reach",
+          "parameters": {
+            "scope": "Halle A"
+          },
+          "durationMs": 20,
+          "source": "reference",
+          "dataSource": "OPC live"
+        }
+      ]
+    },
+    {
+      "id": "pl1",
+      "role": "production_lead",
+      "question": "Fass mir die Woche zusammen.",
+      "shortTitle": "Wochenbericht",
+      "card": {
+        "headline": "KW 42: Planerfüllung 96 %, OEE stabil bei 79 %. Größtes Risiko sind zwei Ø-230-Aufträge.",
+        "todo": [
+          "Zusatzschicht am Samstag in Halle B für die zwei Ø-230-Aufträge prüfen."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Ausbringung",
+                "1,41 Mio. Scheiben · Plan 1,47 Mio."
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "OEE Werk",
+                "79 % · Vorwoche 78 %"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "Ausschuss",
+                "1,4 % · Spitze durch Charge M-2410-17"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Liefertermine",
+                "2 Aufträge gefährdet, beide Ø 230 mm"
+              ],
+              "rating": "crit"
+            }
+          ]
+        },
+        "chart": {
+          "title": "OEE KW 42 je Halle",
+          "max": 100,
+          "unit": " %",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "Halle A",
+              "value": 77,
+              "rating": "warn"
+            },
+            {
+              "label": "Halle B",
+              "value": 81,
+              "rating": "ok"
+            },
+            {
+              "label": "Halle C",
+              "value": 80,
+              "rating": "ok"
+            }
+          ]
+        },
+        "why": [
+          "Halle A liegt wegen der Gewebezuführung an RT-03 unter dem Werksschnitt. Die gefährdeten Aufträge hängen an der Ø-230-Kapazität, die nur in Halle B vorhanden ist."
+        ],
+        "dataAsOf": "KW 42, Stand Do 09:42",
+        "sources": [
+          "OEE-Historie",
+          "Aufträge",
+          "Instandhaltung"
+        ],
+        "prompt": "wochenreport",
+        "form": "Tabelle + Balken"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_oee",
+          "parameters": {
+            "scope": "Werk",
+            "zeitraum": "KW 42",
+            "gruppierung": "Halle"
+          },
+          "durationMs": 167,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "compare",
+          "parameters": {
+            "dimension": "Woche",
+            "kpi": "OEE",
+            "zeitraum": "KW 41–42"
+          },
+          "durationMs": 92,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "get_order_progress",
+          "parameters": {
+            "scope": "Werk",
+            "filter": "gefährdet"
+          },
+          "durationMs": 48,
+          "source": "reference",
+          "dataSource": "Auftragsdaten"
+        },
+        {
+          "tool": "get_reliability_kpis",
+          "parameters": {
+            "scope": "Werk",
+            "zeitraum": "KW 42"
+          },
+          "durationMs": 73,
+          "source": "reference",
+          "dataSource": "Wartungs-DB + OPC"
+        }
+      ]
+    },
+    {
+      "id": "pl2",
+      "role": "production_lead",
+      "question": "Welche Schicht hat diese Woche die schlechteste OEE und warum?",
+      "shortTitle": "OEE-Vergleich",
+      "card": {
+        "headline": "Die Nachtschicht liegt mit 73 % OEE am niedrigsten. Ursache ist die Verfügbarkeit, nicht Leistung oder Qualität.",
+        "todo": [
+          "Ablauf der Mischungsbereitstellung in der Nacht mit dem Mischraum klären."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Frühschicht",
+                "OEE 82 % · V 90 · L 93 · Q 98"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "Spätschicht",
+                "OEE 81 % · V 89 · L 93 · Q 98"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "Nachtschicht",
+                "OEE 73 % · V 79 · L 93 · Q 99"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Größter Verlust Nacht",
+                "Warten auf Mischung, 5,8 h in KW 42"
+              ],
+              "rating": "crit"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Verfügbarkeit KW 42 je Schicht",
+          "max": 100,
+          "unit": " %",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "Früh",
+              "value": 90,
+              "rating": "ok"
+            },
+            {
+              "label": "Spät",
+              "value": 89,
+              "rating": "ok"
+            },
+            {
+              "label": "Nacht",
+              "value": 79,
+              "rating": "warn"
+            }
+          ]
+        },
+        "why": [
+          "Leistung und Qualität sind in allen Schichten nahezu gleich. Die Lücke entsteht durch Wartezeiten auf Mischung. Das spricht eher für einen Engpass in der Mischungsbereitstellung als für ein Problem an den Maschinen."
+        ],
+        "dataAsOf": "KW 42, Stand Do 09:42",
+        "sources": [
+          "OEE-Historie",
+          "Stillstände"
+        ],
+        "prompt": null,
+        "form": "Tabelle + Balken"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_oee",
+          "parameters": {
+            "scope": "Werk",
+            "zeitraum": "KW 42",
+            "gruppierung": "Schicht"
+          },
+          "durationMs": 151,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "get_downtime_pareto",
+          "parameters": {
+            "scope": "Werk",
+            "zeitraum": "KW 42",
+            "filter": "Nachtschicht"
+          },
+          "durationMs": 97,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        }
+      ]
+    },
+    {
+      "id": "pl3",
+      "role": "production_lead",
+      "question": "Lohnt sich eine Überholung von RT-03?",
+      "shortTitle": "RT-03 überholen?",
+      "card": {
+        "headline": "Für die Gewebezuführung ja, für die ganze Maschine nicht.",
+        "todo": [
+          "Angebot für eine Teilüberholung der Gewebezuführung einholen und den Stillstandskosten der letzten 3 Monate gegenüberstellen."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "MTBF RT-03",
+                "31 h · Schnitt der anderen Rundtische 78 h"
+              ],
+              "rating": "crit"
+            },
+            {
+              "cells": [
+                "MTTR RT-03",
+                "42 min · Hallenschnitt 38 min"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "Störungen nach Baugruppe",
+                "78 % Gewebezuführung, Rest verteilt"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Presse und Hydraulik",
+                "Unauffällig, Wartungen planmäßig"
+              ],
+              "rating": "ok"
+            }
+          ]
+        },
+        "chart": {
+          "title": "MTBF letzte 90 Tage",
+          "max": 100,
+          "unit": " h",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "RT-01",
+              "value": 82,
+              "rating": "ok"
+            },
+            {
+              "label": "RT-02",
+              "value": 77,
+              "rating": "ok"
+            },
+            {
+              "label": "RT-03",
+              "value": 31,
+              "rating": "crit"
+            },
+            {
+              "label": "RT-04",
+              "value": 74,
+              "rating": "ok"
+            }
+          ]
+        },
+        "why": [
+          "Die Ausfälle konzentrieren sich auf eine Baugruppe. Eine Teilüberholung der Gewebezuführung adressiert den Großteil der Stillstände, eine Gesamtüberholung bringt nach diesen Daten wenig Zusatznutzen."
+        ],
+        "dataAsOf": "Do 09:42",
+        "sources": [
+          "Störungshistorie 90 Tage",
+          "Wartungs-DB"
+        ],
+        "prompt": null,
+        "form": "Tabelle + Balken"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_reliability_kpis",
+          "parameters": {
+            "scope": "Halle A",
+            "zeitraum": "90 Tage"
+          },
+          "durationMs": 121,
+          "source": "reference",
+          "dataSource": "Wartungs-DB + OPC"
+        },
+        {
+          "tool": "get_downtime_pareto",
+          "parameters": {
+            "scope": "RT-03",
+            "zeitraum": "90 Tage",
+            "gruppierung": "Baugruppe"
+          },
+          "durationMs": 104,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "get_maintenance_due",
+          "parameters": {
+            "scope": "RT-03"
+          },
+          "durationMs": 30,
+          "source": "reference",
+          "dataSource": "Wartungs-DB"
+        }
+      ]
+    },
+    {
+      "id": "pl4",
+      "role": "production_lead",
+      "question": "Wie entwickelt sich der Anteil ungeplanter Stillstände seit Juli?",
+      "shortTitle": "Instandhaltung",
+      "card": {
+        "headline": "Der Anteil ungeplanter Stillstände ist seit Juli von 48 % auf 33 % gesunken.",
+        "todo": [
+          "Prüfung der Türverriegelung an OF-01 heute einplanen."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Geplante Instandhaltung",
+                "Anteil 67 % im Oktober · Ziel 75 %"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Wartungsplantreue",
+                "92 % der Aufträge termingerecht"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "Gebündelte Wartungen",
+                "18 im Oktober, mit Rüsten kombiniert"
+              ],
+              "rating": "ok"
+            },
+            {
+              "cells": [
+                "Überfällig",
+                "1 sicherheitsrelevante Prüfung: OF-01 Türverriegelung, seit 2 Tagen"
+              ],
+              "rating": "crit"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Anteil ungeplanter Stillstände je Monat",
+          "max": 60,
+          "unit": " %",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "Juli",
+              "value": 48,
+              "rating": "info"
+            },
+            {
+              "label": "August",
+              "value": 45,
+              "rating": "info"
+            },
+            {
+              "label": "September",
+              "value": 39,
+              "rating": "info"
+            },
+            {
+              "label": "Oktober (bis KW 42)",
+              "value": 33,
+              "rating": "info"
+            }
+          ]
+        },
+        "why": [
+          "Der Trend ist klar positiv, das Ziel von 75 % geplanter Instandhaltung ist aber noch nicht erreicht. Die überfällige Sicherheitsprüfung hat Vorrang vor allen Optimierungen."
+        ],
+        "dataAsOf": "Do 09:42",
+        "sources": [
+          "Wartungs-DB",
+          "Stillstandshistorie"
+        ],
+        "prompt": null,
+        "form": "Tabelle + Verlauf"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_reliability_kpis",
+          "parameters": {
+            "scope": "Werk",
+            "zeitraum": "Jul–Okt",
+            "gruppierung": "Monat"
+          },
+          "durationMs": 133,
+          "source": "reference",
+          "dataSource": "Wartungs-DB + OPC"
+        },
+        {
+          "tool": "get_maintenance_due",
+          "parameters": {
+            "scope": "Werk",
+            "filter": "überfällig"
+          },
+          "durationMs": 37,
+          "source": "reference",
+          "dataSource": "Wartungs-DB"
+        }
+      ]
+    },
+    {
+      "id": "pl5",
+      "role": "production_lead",
+      "question": "Welche Aufträge sind diese Woche gefährdet?",
+      "shortTitle": "Gefährdete Aufträge",
+      "card": {
+        "headline": "Zwei Aufträge sind ernsthaft gefährdet, einer ist knapp, aber aufholbar.",
+        "todo": [
+          "Zusatzschicht am Samstag in Halle B freigeben oder mit dem Kunden einen Teilliefertermin vereinbaren."
+        ],
+        "table": {
+          "columns": [
+            "Thema",
+            "Daten",
+            "Bewertung"
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Auftrag 4730 · Ø 230 A36",
+                "Fertig 58 %, Liefertermin Dienstag"
+              ],
+              "rating": "crit"
+            },
+            {
+              "cells": [
+                "Auftrag 4733 · Ø 230 A30",
+                "Fertig 41 %, Liefertermin Dienstag"
+              ],
+              "rating": "crit"
+            },
+            {
+              "cells": [
+                "Auftrag 4711 · Ø 125 A46",
+                "Fertig 76 %, Rückstand RT-03, bis Freitag aufholbar"
+              ],
+              "rating": "warn"
+            },
+            {
+              "cells": [
+                "Übrige 14 Aufträge",
+                "Im Plan"
+              ],
+              "rating": "ok"
+            }
+          ]
+        },
+        "chart": {
+          "title": "Fertigstellung kritischer Aufträge",
+          "max": 100,
+          "unit": " %",
+          "decimals": 0,
+          "bars": [
+            {
+              "label": "4730 · Ø 230",
+              "value": 58,
+              "rating": "crit"
+            },
+            {
+              "label": "4733 · Ø 230",
+              "value": 41,
+              "rating": "crit"
+            },
+            {
+              "label": "4711 · Ø 125",
+              "value": 76,
+              "rating": "warn"
+            }
+          ]
+        },
+        "why": [
+          "Beide Ø-230-Aufträge hängen an derselben Kapazität in Halle B. Ohne Zusatzschicht reicht sie bis Dienstag nur für einen der beiden."
+        ],
+        "dataAsOf": "KW 42, Stand Do 09:42",
+        "sources": [
+          "Auftragsdaten",
+          "OPC-Historie"
+        ],
+        "prompt": null,
+        "form": "Tabelle + Balken"
+      },
+      "toolCalls": [
+        {
+          "tool": "get_order_progress",
+          "parameters": {
+            "scope": "Werk",
+            "filter": "gefährdet"
+          },
+          "durationMs": 48,
+          "source": "reference",
+          "dataSource": "Auftragsdaten"
+        },
+        {
+          "tool": "get_oee",
+          "parameters": {
+            "scope": "Halle B",
+            "zeitraum": "KW 42"
+          },
+          "durationMs": 88,
+          "source": "reference",
+          "dataSource": "OPC HistoryRead"
+        },
+        {
+          "tool": "compare",
+          "parameters": {
+            "dimension": "Auftrag",
+            "kpi": "Fertigstellung vs. Termin"
+          },
+          "durationMs": 61,
+          "source": "reference",
+          "dataSource": "Auftragsdaten"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "note": "Fiktive Demo-Benutzer und Rollen (Spezifikation Abschnitt 2 und 9). Keine personenbezogene Leistungsauswertung.",
+  "roles": [
+    {
+      "id": "shift_lead",
+      "title": "Schichtleiter",
+      "scopeHallId": "A",
+      "scopeDescription": "Halle A (8 Stationen)",
+      "devices": "Hallenbüro-PC und Handy",
+      "rights": ["Lesen", "Notizen", "Stillstandsgründe"],
+      "messageFilter": "alle"
+    },
+    {
+      "id": "hall_lead",
+      "title": "Hallenleiterin",
+      "scopeHallId": "A",
+      "scopeDescription": "Halle A inkl. Wartungsplanung",
+      "devices": "PC, Handy",
+      "rights": ["Lesen", "Notizen", "Wartungsfreigabe"],
+      "messageFilter": "ab Warnung"
+    },
+    {
+      "id": "production_lead",
+      "title": "Produktionsleiter",
+      "scopeHallId": null,
+      "scopeDescription": "Werk (Hallen A-C)",
+      "devices": "PC, Handy",
+      "rights": ["Lesen", "Freigaben"],
+      "messageFilter": "nur Eskalationen"
+    }
+  ],
+  "users": [
+    { "id": "martin.huber", "displayName": "Martin Huber", "roleId": "shift_lead" },
+    { "id": "katharina.gruber", "displayName": "Katharina Gruber", "roleId": "hall_lead" },
+    { "id": "stefan.wallner", "displayName": "Stefan Wallner", "roleId": "production_lead" }
+  ],
+  "escalationRules": [
+    { "id": "ER-SAFETY-OVERDUE", "name": "sicherheitsrelevant und > 24 h überfällig → Produktionsleiter", "subject": "maintenance_overdue", "safetyRelevantOnly": true, "thresholdMinutes": 1440, "targetRoleId": "production_lead" },
+    { "id": "ER-MAINT-OVERDUE", "name": "Wartung überfällig → Hallenleiterin", "subject": "maintenance_overdue", "safetyRelevantOnly": false, "thresholdMinutes": 0, "targetRoleId": "hall_lead" },
+    { "id": "ER-MIXTURE-EXPIRING", "name": "Mischung nicht mehr verarbeitbar in < 60 min → Schichtleiter", "subject": "mixture_processable_until", "safetyRelevantOnly": false, "thresholdMinutes": 60, "targetRoleId": "shift_lead" },
+    { "id": "ER-FAULT-OPEN", "name": "Störung seit > 60 min offen → Hallenleiterin", "subject": "fault_open", "safetyRelevantOnly": false, "thresholdMinutes": 60, "targetRoleId": "hall_lead" }
+  ]
+}

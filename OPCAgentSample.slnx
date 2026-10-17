@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OPCAgentSample.Domain/OPCAgentSample.Domain.csproj" />
+    <Project Path="src/OPCAgentSample.Kpi/OPCAgentSample.Kpi.csproj" />
+    <Project Path="src/OPCAgentSample.Rollup/OPCAgentSample.Rollup.csproj" />
+    <Project Path="src/OPCAgentSample.Server/OPCAgentSample.Server.csproj" />
+    <Project Path="src/OPCAgentSample.Simulation/OPCAgentSample.Simulation.csproj" />
+    <Project Path="src/OPCAgentSample.Simulator/OPCAgentSample.Simulator.csproj" />
+    <Project Path="src/OPCAgentSample.Snapshot/OPCAgentSample.Snapshot.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OPCAgentSample.Tests/OPCAgentSample.Tests.csproj" />
+  </Folder>
+</Solution>

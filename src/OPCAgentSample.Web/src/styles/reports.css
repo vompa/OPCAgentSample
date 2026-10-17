@@ -1,0 +1,695 @@
+/* Report-Seite: Kennzahl-Kacheln, Diagramme als SVG/HTML ohne Bibliothek. Reihenfolge der Farben der Reihen: Blau, Orange. */
+.reports-view {
+  --chart-a: #2a68ad;
+  --chart-b: #c2410c;
+
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  padding: 16px;
+}
+
+.reports-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.reports-title-block {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.reports-back {
+  gap: 6px;
+}
+
+.reports-back .icon {
+  transform: rotate(180deg);
+}
+
+/* Desktop: Der Rückweg zum Leitstand bleibt beim Scrollen sichtbar. */
+@media (min-width: 901px) {
+  .reports-head {
+    position: sticky;
+    top: -16px;
+    z-index: 2;
+    margin: -16px -16px 0;
+    padding: 12px 16px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border-soft);
+  }
+}
+
+@media (max-width: 900px) {
+  .reports-back {
+    display: none;
+  }
+}
+
+/* Hinweis zu leeren Werten: einmal oberhalb der Kacheln statt verstreut. */
+.reports-note {
+  max-width: 820px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--info);
+  background: var(--info-bg);
+  color: var(--info-text);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.reports-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.reports-actions .btn,
+.reports-empty .btn {
+  min-height: var(--touch);
+  text-decoration: none;
+}
+
+.reports-empty,
+.reports-stale {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 640px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-2);
+}
+
+.reports-stale {
+  max-width: none;
+  background: var(--warn-bg);
+  border-color: var(--warn);
+  color: var(--warn-text);
+  font-size: 13px;
+}
+
+/* Kennzahl-Kacheln */
+.rp-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (min-width: 1360px) {
+  .rp-tiles {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+.rp-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--dark-4);
+  border-radius: var(--radius);
+}
+
+.rp-hero {
+  background: var(--dark);
+  border-color: var(--dark);
+  border-top-color: var(--accent-on-dark);
+  color: var(--text-on-dark);
+}
+
+.rp-tile-label,
+.rp-fact dt {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.rp-hero .rp-tile-label {
+  color: var(--text-on-dark-muted);
+}
+
+.rp-tile-value {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.rp-hero-value {
+  font-size: 34px;
+  color: var(--accent-on-dark);
+}
+
+.rp-tile-note {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.rp-hero .rp-tile-note {
+  color: var(--text-on-dark-2);
+}
+
+/* Karten mit Diagrammen */
+.rp-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.rp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.rp-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.rp-chart-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.rp-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.rp-key {
+  display: inline-block;
+  width: 14px;
+  height: 4px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-radius: 2px;
+  background: var(--chart-a);
+}
+
+.rp-key.tone-b {
+  background: var(--chart-b);
+}
+
+.rp-readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  min-height: 20px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.rp-readout-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.rp-readout strong {
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* Liniendiagramm */
+.rp-plot-wrap {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  height: 112px;
+}
+
+.rp-yaxis {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.rp-yaxis li {
+  position: absolute;
+  right: 6px;
+  transform: translateY(-50%);
+}
+
+.rp-plot {
+  position: relative;
+  border-radius: 4px;
+  cursor: crosshair;
+}
+
+.rp-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.rp-grid {
+  stroke: var(--border-soft);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.rp-cursor {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.rp-line {
+  fill: none;
+  stroke: var(--chart-a);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.rp-area {
+  fill: var(--chart-a);
+  fill-opacity: 0.1;
+  stroke: none;
+}
+
+.rp-line.tone-b {
+  stroke: var(--chart-b);
+}
+
+.rp-dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--chart-a);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.rp-dot.tone-b {
+  background: var(--chart-b);
+}
+
+.rp-xaxis {
+  display: flex;
+  justify-content: space-between;
+  margin-left: 40px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Säulendiagramm (Histogramm) */
+.rp-columns {
+  display: flex;
+  gap: 2px;
+  border-radius: 4px;
+}
+
+.rp-column {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.rp-column-track {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: 100px;
+  border-bottom: 1px solid var(--border);
+}
+
+.rp-column-bar {
+  width: 100%;
+  max-width: 24px;
+  border-radius: 4px 4px 0 0;
+  background: var(--chart-a);
+  opacity: 0.7;
+}
+
+.rp-column.is-active .rp-column-bar {
+  opacity: 1;
+}
+
+.rp-column-label {
+  padding-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.rp-axis-caption {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Tabellen (auch als Alternative zu den Diagrammen) */
+/* Die Tabelle zu einem Diagramm ist ein sichtbarer Schalter (Pfeil, Rand), kein Textlink. */
+.rp-table-toggle summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  list-style: none;
+}
+
+.rp-table-toggle summary::-webkit-details-marker {
+  display: none;
+}
+
+.rp-table-toggle summary::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 160ms var(--ease-out);
+}
+
+.rp-table-toggle[open] summary::before {
+  transform: rotate(45deg);
+}
+
+.rp-table-toggle[open] .rp-table-scroll {
+  margin-top: 8px;
+}
+
+.rp-table-scroll {
+  max-width: 100%;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.rp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.rp-table th,
+.rp-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-soft);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.rp-table thead th {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.rp-table tbody th {
+  font-weight: 500;
+}
+
+.rp-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rp-mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.rp-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.rp-tools > .chart {
+  align-self: stretch;
+}
+
+.rp-outcome {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.rp-outcome.is-ok {
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+.rp-outcome.is-denied {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
+
+.rp-outcome.is-error {
+  background: var(--crit-bg);
+  color: var(--crit-text);
+}
+
+/* Datenaufnahme: kleine Wertekacheln */
+.rp-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.rp-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+}
+
+.rp-fact dd {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.rp-fact dd.rp-tile-note {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.rp-privacy {
+  max-width: 760px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Verweigerung durch die Rolle: dezent markiert, kein Fehler. */
+.trace-call.is-denied {
+  border-left: 2px dotted var(--text-on-dark-muted);
+  padding-left: 8px;
+}
+
+.trace-call.is-denied .trace-tool {
+  color: var(--text-on-dark-muted);
+}
+
+.trace-call.is-denied .trace-src {
+  font-style: italic;
+}
+
+/* Desktop: Reports ersetzen Verlauf und MCP-Band; Anlagenliste und Statusleiste bleiben. */
+@media (min-width: 901px) {
+  .app.is-reports .col-main,
+  .app.is-reports .col-right {
+    display: none;
+  }
+
+  .app.is-reports #mview-reports {
+    display: flex;
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  body[data-mview='reports'] #mview-reports {
+    display: flex;
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+
+  /* Kennzahlen als eine Liste (Bezeichnung links, Wert rechts) statt sechs einzelner Kacheln: gut halb so hoch. */
+  .rp-tiles {
+    display: flex;
+    flex: 0 0 auto; /* sonst schrumpft die Liste im scrollenden Container auf 0 (overflow: hidden) */
+    flex-direction: column;
+    gap: 0;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .rp-tile {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 2px 12px;
+    padding: 10px 14px;
+    border: none;
+    border-top: 1px solid var(--surface-sunken);
+    border-radius: 0;
+  }
+
+  .rp-tile-note {
+    grid-column: 1 / -1;
+  }
+
+  .rp-hero {
+    border-top: none;
+  }
+
+  .rp-hero-value {
+    font-size: 36px;
+  }
+
+  .rp-tile-value {
+    font-size: 22px;
+  }
+
+  .rp-grid-2,
+  .rp-tools {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rp-plot-wrap {
+    height: 130px;
+  }
+
+  .rp-column-track {
+    height: 110px;
+  }
+
+  .rp-column-label {
+    font-size: 11px;
+  }
+
+  .rp-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rp-fact {
+    padding: 8px 10px;
+  }
+
+  /* Werkzeugnamen stehen über dem Balken und werden nicht abgeschnitten. */
+  .rp-tools .bar-row {
+    flex-wrap: wrap;
+    gap: 2px 10px;
+  }
+
+  .rp-tools .bar-label {
+    flex: 0 0 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  /* Die Tabelle zeigt jede Zeile als Karte, ohne seitliches Wischen. */
+  .rp-table-scroll {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .rp-table,
+  .rp-table tbody {
+    display: block;
+  }
+
+  .rp-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  /* Zeile mit einem Wert (Verteilung): Name links, Wert rechts; mit mehreren Werten: Name oben, Werte darunter. */
+  .rp-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 4px 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .rp-table tr:has(> td + td) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .rp-table tr:has(> td + td) > th {
+    grid-column: 1 / -1;
+  }
+
+  .rp-table th,
+  .rp-table td {
+    padding: 0;
+    border: none;
+    white-space: normal;
+  }
+
+  .rp-table tbody th {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .rp-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .rp-table .num {
+    text-align: left;
+  }
+}

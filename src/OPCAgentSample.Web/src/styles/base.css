@@ -1,0 +1,467 @@
+/* Grundlagen: Farben und Schriften als Variablen (Spezifikation Abschnitt 11), Zurücksetzen, gemeinsame Bausteine. */
+:root {
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --bg: #eeece6;
+  --surface: #ffffff;
+  --surface-alt: #f7f6f2;
+  --surface-sunken: #efede7;
+  --surface-query: #e4e1d9;
+  --dark: #1b232d;
+  --dark-2: #26313d;
+  --dark-3: #2f3b48;
+  --dark-4: #3a4654;
+  --accent: #c2410c;
+  --accent-text: #a93a0a;
+  --accent-on-dark: #f0a35e;
+
+  --text: #1b1f24;
+  --text-2: #3a4048;
+  --text-muted: #5a6068;
+  --text-on-dark: #f2f0ea;
+  --text-on-dark-2: #c9cfd6;
+  --text-on-dark-muted: #a9b1bc;
+
+  --border: #d6d3cb;
+  --border-soft: #e3e0d8;
+  --border-strong: #b9b5ab;
+  /* Rand von Eingabefeldern: mindestens 3 : 1 gegen Weiß und Hintergrund (WCAG 1.4.11). */
+  --border-input: #78736a;
+
+  --ok: #3f8a5c;
+  --warn: #c98a12;
+  --crit: #c8402f;
+  --crit-strong: #b42318;
+  --info: #4a78a8;
+
+  --ok-bg: #e3f0e7;
+  --ok-text: #1f5233;
+  --warn-bg: #fbefd6;
+  --warn-text: #6b4500;
+  --crit-bg: #fbe4e1;
+  --crit-text: #8f1c12;
+  --crit-row: #fdf3f1;
+  --info-bg: #e2ecf6;
+  --info-text: #234a70;
+
+  --focus: #1d5fa8;
+  --focus-on-dark: #f0a35e;
+  --radius: 8px;
+  --touch: 44px;
+
+  /* Bewegung: Eingänge mit kräftigem Ease-out, Bewegung auf dem Bildschirm mit Ease-in-out (nie Ease-in). */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Breite der Seitenspalten (Desktop); kleinere und größere Fenster passen sie in layout.css an. */
+  --plant-w: 290px;
+  --trace-w: 330px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.4;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+dl,
+figure {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Touch: kein graues Tipp-Rechteck (die Rückmeldung kommt aus :active), kein Zoom durch Doppeltipp. */
+button,
+a,
+input,
+summary {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+a {
+  color: #2f5d8a;
+}
+
+[tabindex='-1']:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.on-dark :focus-visible,
+.col-right :focus-visible,
+.statusbar :focus-visible,
+.app-header :focus-visible,
+.bottom-nav :focus-visible {
+  outline-color: var(--focus-on-dark);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -48px;
+  z-index: 100;
+  padding: 10px 14px;
+  background: var(--dark);
+  color: #fff;
+  border-radius: var(--radius);
+}
+
+/* Beim Fokus als Pill unter der Kopfzeile, nicht über dem Markentitel; heller Ring (3:1 auf Dunkel, WCAG 1.4.11). */
+.skip-link:focus {
+  top: 68px;
+}
+
+.skip-link:focus-visible {
+  outline-color: var(--focus-on-dark);
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* Statuswörter und Bewertungen: Farbe immer zusammen mit Text. */
+.pill {
+  display: inline-block;
+  flex: 0 0 62px;
+  padding: 1px 0;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.pill-running,
+.status-running {
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+.pill-warning,
+.status-warning {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
+
+.pill-problem,
+.status-problem {
+  background: var(--crit-strong);
+  color: #fff;
+}
+
+/* Keine Messwerte: weder grün noch rot, sondern neutral mit gestricheltem Rand. */
+.pill-nodata,
+.status-nodata {
+  border: 1px dashed var(--border-strong);
+  background: var(--surface-sunken);
+  color: var(--text-2);
+}
+
+.pill-nodata {
+  flex: 0 0 auto;
+  padding: 0 7px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-ok {
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+.badge-warn {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
+
+.badge-crit {
+  background: var(--crit-bg);
+  color: var(--crit-text);
+}
+
+.badge-info {
+  background: var(--info-bg);
+  color: var(--info-text);
+}
+
+.icon {
+  flex: 0 0 auto;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-2);
+}
+
+.link-btn {
+  min-height: 28px;
+  padding: 0 4px;
+  border: none;
+  background: transparent;
+  color: #2f5d8a;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn-dark {
+  background: var(--dark);
+  border-color: var(--dark);
+  color: #fff;
+}
+
+.btn:disabled {
+  background: var(--border);
+  border-color: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* Rückmeldung: links über der Statusleiste, nie über Hinweistext oder Eingabe. */
+.toast-host {
+  position: fixed;
+  left: 12px;
+  bottom: 52px;
+  z-index: 60;
+  max-width: min(90vw, 460px);
+  pointer-events: none;
+}
+
+.toast {
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  background: var(--dark);
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 8px 24px rgb(27 35 45 / 0.3);
+}
+
+.toast-enter-active {
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+}
+
+.toast-leave-active {
+  transition:
+    opacity 140ms ease-out,
+    transform 140ms ease-out;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+/* Press-Rückmeldung für alles, was sich drücken lässt; Hover nur mit Maus (nie auf Touch). */
+:is(
+    .fav,
+    .send-btn,
+    .btn,
+    .icon-btn,
+    .close-btn,
+    .role-btn,
+    .requery-btn,
+    .suggest-btn,
+    .recent-btn
+  ):not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.session-btn:active {
+  transform: scale(0.99);
+}
+
+.group-toggle:active {
+  background: var(--surface-sunken);
+}
+
+.trace-toggle:active,
+button.statusbar-item:active {
+  background: var(--dark-3);
+}
+
+:is(
+  .fav,
+  .send-btn,
+  .btn,
+  .icon-btn,
+  .close-btn,
+  .role-btn,
+  .link-btn,
+  .requery-btn,
+  .suggest-btn,
+  .recent-btn,
+  .session-btn,
+  .group-toggle,
+  .trace-toggle,
+  .statusbar-item
+) {
+  transition:
+    transform 140ms var(--ease-out),
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .fav:hover {
+    background: var(--dark-2);
+  }
+
+  .fav.is-custom:hover,
+  .btn:hover:not(:disabled),
+  .icon-btn:hover,
+  .requery-btn:hover:not(:disabled),
+  .suggest-btn:hover:not(:disabled),
+  .recent-btn:hover,
+  .session-btn:hover {
+    background: var(--surface-sunken);
+  }
+
+  .btn-dark:hover:not(:disabled),
+  .send-btn:hover:not(:disabled) {
+    background: var(--dark-2);
+  }
+
+  .close-btn:hover {
+    background: var(--surface-sunken);
+  }
+
+  .role-btn:hover:not([aria-pressed='true']) {
+    background: var(--dark-3);
+  }
+
+  .group-toggle:hover {
+    background: var(--surface-sunken);
+  }
+
+  .link-btn:hover {
+    color: var(--text);
+  }
+
+  button.statusbar-item:hover {
+    background: var(--dark-2);
+  }
+
+  .trace-toggle:hover .trace-q {
+    color: #fff;
+  }
+}
+
+/* Weniger Bewegung heißt weniger, nicht keine: Ein- und Ausblenden bleibt kurz, Verschiebungen und Skalierungen entfallen. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+
+  .fav:active,
+  .send-btn:active,
+  .btn:active,
+  .icon-btn:active,
+  .close-btn:active,
+  .role-btn:active,
+  .requery-btn:active,
+  .suggest-btn:active,
+  .recent-btn:active,
+  .session-btn:active,
+  .toast-enter-from,
+  .toast-leave-to {
+    transform: none;
+  }
+
+  .toast-enter-active,
+  .toast-leave-active {
+    transition-duration: 120ms;
+  }
+}

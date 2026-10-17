@@ -1,0 +1,1067 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>KI-Leitstand Live-Sample</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#EEECE6}
+a{color:#2F5D8A}a:hover{color:#1E3F60}
+button,input{font-family:inherit}
+.app{height:100vh}
+.app-body{display:flex;flex:1 1 auto;min-height:0}
+.col-left{flex:0 0 290px;overflow-y:auto}
+.col-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;min-height:0}
+.col-right{flex:0 0 330px;overflow-y:auto}
+.conv{flex:1 1 auto;overflow-y:auto;min-height:0}
+@media (max-width: 960px){
+.app{height:auto;min-height:100vh}
+.app-body{flex-direction:column}
+.col-left,.col-right{flex:0 0 auto;overflow:visible}
+.conv{max-height:none;overflow:visible}
+}
+</style>
+</helmet>
+<div class="app" style="background: #EEECE6; font-family: 'IBM Plex Sans', sans-serif; color: #1B1F24; display: flex; flex-direction: column">
+
+<header style="flex: 0 0 auto; background: #1B232D; color: #F2F0EA; padding: 10px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px">
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="width: 32px; height: 32px; border-radius: 8px; background: {{accent}}; display: flex; align-items: center; justify-content: center">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="2.5"></circle><path d="M12 3v4M12 17v4M3 12h4M17 12h4"></path></svg>
+</div>
+<div>
+<div style="font-size: 16px; font-weight: 700">Schleifwerk · KI-Leitstand</div>
+<div style="font-size: 12px; color: #A9B1BC">OPC UA → MCP-Server → Claude</div>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+<div role="group" aria-label="Ansicht für" style="display: flex; gap: 4px; background: #26313D; border-radius: 999px; padding: 4px">
+<sc-for list="{{roles}}" as="r" hint-placeholder-count="3">
+<button type="button" onClick="{{r.pick}}" style="{{r.style}}">{{r.label}}</button>
+</sc-for>
+</div>
+<span style="padding: 4px 10px; border-radius: 999px; border: 1px solid #5A6572; color: #D3D8DE; font-size: 12px">Simulierte Daten</span>
+</div>
+</header>
+
+<div class="app-body">
+
+<aside class="col-left" aria-label="Anlagen" style="background: #F7F6F2; border-right: 1px solid #D6D3CB; padding: 14px 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; padding: 0 2px">
+<h2 style="margin: 0; font-size: 12px; font-weight: 700; color: #5A6068; text-transform: uppercase; letter-spacing: 0.8px">Anlagen · Halle A</h2>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #5A6068">live 09:42</span>
+</div>
+<div title="{{climate.hint}}" style="display: flex; align-items: center; gap: 10px; padding: 0 2px; font-size: 11px; color: #5A6068">
+<span style="display: inline-flex; align-items: center; gap: 3px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5A6068" stroke-width="2" aria-hidden="true"><path d="M14 14.8V4a2 2 0 10-4 0v10.8a4 4 0 104 0z"></path></svg>{{climate.temp}}</span>
+<span style="display: inline-flex; align-items: center; gap: 3px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5A6068" stroke-width="2" aria-hidden="true"><path d="M12 3s6 6.5 6 11a6 6 0 01-12 0c0-4.5 6-11 6-11z"></path></svg>{{climate.hum}}</span>
+<span>{{climate.word}}</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{summary}}" as="s" hint-placeholder-count="3">
+<div style="{{s.box}}"><span style="font-size: 15px; font-weight: 700">{{s.n}}</span><span style="font-size: 11px; font-weight: 600">{{s.label}}</span></div>
+</sc-for>
+</div>
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<button type="button" onClick="{{g.toggle}}" aria-expanded="{{g.expanded}}" style="display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 4px; border: none; background: transparent; cursor: pointer; text-align: left">
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5A6068" stroke-width="3" style="{{g.chevron}}" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+<span style="font-size: 13px; font-weight: 700; color: #1B1F24">{{g.title}}</span>
+<span style="font-size: 12px; color: #5A6068">{{g.count}}</span>
+<span style="flex: 1 1 auto"></span>
+<sc-if value="{{g.showWorst}}" hint-placeholder-val="{{true}}"><span style="{{g.worst}}">{{g.worstWord}}</span></sc-if>
+</button>
+<sc-if value="{{g.open}}" hint-placeholder-val="{{true}}">
+<div style="background: #FFFFFF; border: 1px solid #D6D3CB; border-radius: 8px; overflow: hidden">
+<sc-for list="{{g.items}}" as="m" hint-placeholder-count="2">
+<div style="{{m.row}}">
+<div style="display: flex; align-items: center; gap: 8px">
+<span style="flex: 0 0 auto; font-size: 14px; font-weight: 700; color: #1B1F24">{{m.id}}</span>
+<span style="{{m.pill}}">{{m.word}}</span>
+<span style="flex: 1 1 auto; min-width: 0; font-size: 12px; color: #5A6068; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{m.art}}</span>
+<span style="flex: 0 0 auto; font-size: 14px; font-weight: 700; color: #1B1F24; font-variant-numeric: tabular-nums" title="{{m.unit}}">{{m.pct}}</span>
+</div>
+<div style="font-size: 12px; line-height: 1.4; color: #3A4048">{{m.note}}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</aside>
+
+<section class="col-main" aria-label="Prompts und Antworten">
+<div style="flex: 0 0 auto; background: #FFFFFF; border-bottom: 1px solid #D6D3CB; padding: 8px 12px 8px 16px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; gap: 8px">
+<span title="Favoriten" style="flex: 0 0 auto; display: inline-flex; align-items: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="{{accent}}" stroke="{{accent}}" stroke-width="1.5" role="img" aria-label="Favoriten"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg></span>
+<div style="flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; gap: 6px">
+<sc-for list="{{pins}}" as="p" hint-placeholder-count="5">
+<span style="display: inline-flex; align-items: stretch">
+<button type="button" onClick="{{p.ask}}" title="{{p.label}}" style="{{p.btn}}">{{p.short}}</button>
+<sc-if value="{{p.editing}}" hint-placeholder-val="{{false}}">
+<button type="button" onClick="{{p.remove}}" aria-label="{{p.removeLabel}}" style="width: 30px; border: 1px solid #E8B4AC; border-left: none; border-radius: 0 8px 8px 0; background: #FBE4E1; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8F1C12" stroke-width="3" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</sc-if>
+</span>
+</sc-for>
+</div>
+<span style="flex: 0 0 auto; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #5A6068">{{pinCount}}</span>
+<button type="button" onClick="{{toggleEdit}}" aria-label="Favoriten bearbeiten" aria-expanded="{{editExpanded}}" style="{{editBtn}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M13 7l4 4"></path></svg></button>
+</div>
+<sc-if value="{{editing}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 10px; background: #F7F6F2; border-radius: 8px">
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<label for="newshort" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Kurztitel</label>
+<input id="newshort" type="text" maxlength="22" value="{{newShort}}" onChange="{{onNewShort}}" placeholder="Kurztitel, z. B. Gewebe RT-02" style="flex: 0 1 190px; min-height: 38px; padding: 0 10px; border: 1px solid #B9B5AB; border-radius: 6px; font-size: 14px; box-sizing: border-box">
+<label for="newpin" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Frage</label>
+<input id="newpin" type="text" value="{{newPin}}" onChange="{{onNewPin}}" placeholder="Frage, z. B. Wie lange reicht das Gewebe an RT-02?" style="flex: 1 1 260px; min-height: 38px; padding: 0 10px; border: 1px solid #B9B5AB; border-radius: 6px; font-size: 14px; box-sizing: border-box">
+<button type="button" onClick="{{addPin}}" style="{{addStyle}}">Hinzufügen</button>
+</div>
+<div style="font-size: 12px; color: #5A6068">{{limitText}}</div>
+<sc-if value="{{hasSuggest}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+<span style="font-size: 12px; color: #5A6068">Standard-Favoriten:</span>
+<sc-for list="{{suggest}}" as="v" hint-placeholder-count="2">
+<button type="button" onClick="{{v.add}}" style="min-height: 32px; padding: 0 10px; border-radius: 6px; border: 1px dashed #8E8A80; background: #FFFFFF; font-size: 13px; cursor: pointer">+ {{v.label}}</button>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-if>
+</div>
+<div class="conv" ref="{{convRef}}" style="padding: 16px; display: flex; flex-direction: column; gap: 18px">
+<sc-for list="{{messages}}" as="m" hint-placeholder-count="1">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-family: 'IBM Plex Mono', monospace; font-size: 14px; background: #E4E1D9; border-radius: 8px; padding: 10px 12px">
+<span style="color: {{accent}}; font-weight: 600">❯</span>
+<span style="flex: 1 1 auto; color: #1B1F24; line-height: 1.45">{{m.q}}</span>
+<span style="color: #5A6068; font-size: 12px; white-space: nowrap">{{m.who}}</span>
+</div>
+<article style="background: #FFFFFF; border: 1px solid #D6D3CB; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+<span style="font-size: 12px; font-weight: 600; color: #FFFFFF; background: {{accent}}; padding: 2px 9px; border-radius: 999px">Claude</span>
+<sc-if value="{{m.hasPrompt}}" hint-placeholder-val="{{false}}">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 2px 9px; border-radius: 999px; background: #F1EFE9; color: #3A4048">Prompt: {{m.prompt}}</span>
+</sc-if>
+<span style="font-size: 12px; padding: 2px 9px; border-radius: 999px; background: #F1EFE9; color: #3A4048">{{m.form}}</span>
+<span style="margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #5A6068">{{m.traceShort}}</span>
+</div>
+<p style="margin: 0; font-size: 19px; font-weight: 700; line-height: 1.35">{{m.head}}</p>
+<sc-if value="{{m.hasOption}}" hint-placeholder-val="{{true}}">
+<div style="background: #1B232D; color: #FFFFFF; border-radius: 10px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 600; color: #F0A35E; text-transform: uppercase; letter-spacing: 0.6px">Was tun?</span>
+<span style="font-size: 16px; font-weight: 600; line-height: 1.45">{{m.option}}</span>
+</div>
+</sc-if>
+<sc-if value="{{m.hasRows}}" hint-placeholder-val="{{true}}">
+<div style="overflow-x: auto; border: 1px solid #E3E0D8; border-radius: 8px">
+<table style="width: 100%; border-collapse: collapse; font-size: 14px">
+<thead><tr style="background: #F7F6F2; text-align: left">
+<th scope="col" style="padding: 8px 12px; font-weight: 600; color: #5A6068; font-size: 12px">Thema</th>
+<th scope="col" style="padding: 8px 12px; font-weight: 600; color: #5A6068; font-size: 12px">Daten</th>
+<th scope="col" style="padding: 8px 12px; font-weight: 600; color: #5A6068; font-size: 12px">Bewertung</th>
+</tr></thead>
+<tbody>
+<sc-for list="{{m.rows}}" as="r" hint-placeholder-count="4">
+<tr style="border-top: 1px solid #E3E0D8">
+<td style="padding: 9px 12px; font-weight: 600; vertical-align: top">{{r.label}}</td>
+<td style="padding: 9px 12px; color: #3A4048; vertical-align: top; line-height: 1.4">{{r.value}}</td>
+<td style="padding: 9px 12px; vertical-align: top; white-space: nowrap"><span style="{{r.badge}}">{{r.badgeText}}</span></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</sc-if>
+<sc-if value="{{m.hasBars}}" hint-placeholder-val="{{true}}">
+<figure style="margin: 0; display: flex; flex-direction: column; gap: 7px">
+<figcaption style="font-size: 13px; font-weight: 600; color: #3A4048">{{m.chartTitle}}</figcaption>
+<sc-for list="{{m.bars}}" as="b" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; gap: 10px">
+<span style="flex: 0 0 150px; font-size: 13px; color: #3A4048">{{b.label}}</span>
+<div style="flex: 1 1 auto; height: 14px; background: #EFEDE7; border-radius: 3px; overflow: hidden"><div style="{{b.fill}}"></div></div>
+<span style="flex: 0 0 68px; text-align: right; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums">{{b.display}}</span>
+</div>
+</sc-for>
+</figure>
+</sc-if>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 12px; font-weight: 600; color: #5A6068; text-transform: uppercase; letter-spacing: 0.6px">Warum</span>
+<p style="margin: 0; font-size: 15px; line-height: 1.55; color: #2A2F35">{{m.insight}}</p>
+</div>
+<div style="border-top: 1px solid #E3E0D8; padding-top: 8px; font-size: 12px; color: #5A6068">Datenstand {{m.stand}}</div>
+</article>
+</div>
+</sc-for>
+</div>
+
+<div style="position: relative; flex: 0 0 auto; padding: 12px 16px 14px; border-top: 1px solid #D6D3CB; background: #FFFFFF">
+<div style="display: flex; align-items: center; gap: 8px">
+<div style="flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 8px; border: 2px solid #1B232D; border-radius: 10px; padding: 4px 4px 4px 12px; background: #FFFFFF">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 600; color: {{accent}}">❯</span>
+<label for="draft" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Frage an Claude</label>
+<input id="draft" type="text" value="{{draft}}" onChange="{{onDraft}}" onKeyDown="{{onDraftKey}}" placeholder="Frage an Claude, z. B. Welche Wartungen sind nächste Woche geplant?" style="flex: 1 1 auto; min-width: 0; min-height: 40px; border: none; outline: none; font-family: 'IBM Plex Mono', monospace; font-size: 14px; background: transparent">
+<button type="button" onClick="{{pinDraft}}" aria-label="Als Favorit speichern" style="width: 40px; height: 40px; border: 1px solid #D6D3CB; border-radius: 8px; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3A4048" stroke-width="2" aria-hidden="true"><path d="M9 3h6l-1 6 4 4H6l4-4z"></path><path d="M12 13v8"></path></svg></button>
+<button type="button" onClick="{{sendDraft}}" style="min-height: 40px; padding: 0 16px; border: none; border-radius: 8px; background: #1B232D; color: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer">Senden</button>
+</div>
+</div>
+<div style="margin-top: 6px; font-size: 12px; color: #5A6068">Enter sendet · Stecknadel speichert die Frage als Favorit (max. 10)</div>
+</div>
+</section>
+
+<sc-if value="{{showTrace}}" hint-placeholder-val="{{true}}">
+<aside class="col-right" aria-label="MCP-Aufrufe" style="background: #1B232D; color: #E6E3DA; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+<h2 style="margin: 0; font-size: 13px; font-weight: 700; color: #F2F0EA; text-transform: uppercase; letter-spacing: 0.8px">MCP-Aufrufe</h2>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #A9B1BC">{{traceTotal}}</span>
+</div>
+<sc-for list="{{traceLog}}" as="t" hint-placeholder-count="2">
+<div style="{{t.box}}">
+<div style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #F2F0EA; line-height: 1.4">❯ {{t.q}}</div>
+<div style="font-size: 11px; color: #A9B1BC">{{t.sum}}</div>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px">
+<sc-for list="{{t.calls}}" as="c" hint-placeholder-count="3">
+<li style="background: #26313D; border-radius: 6px; padding: 8px 10px; display: flex; flex-direction: column; gap: 3px">
+<div style="display: flex; justify-content: space-between; gap: 8px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; color: #F0A35E">{{c.tool}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #A9B1BC">{{c.ms}}</span>
+</div>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #C9CFD6; word-break: break-word; line-height: 1.45">{{c.args}}</span>
+<span style="font-size: 11px; color: #A9B1BC">{{c.src}}</span>
+</li>
+</sc-for>
+</ol>
+</div>
+</sc-for>
+<div style="border-top: 1px solid #3A4654; padding-top: 10px; font-size: 12px; line-height: 1.5; color: #C9CFD6">Kennzahlen und Ampeln berechnet der MCP-Server deterministisch. Claude wählt die Tools, verknüpft und formuliert. Keine Steuerbefehle an Maschinen.</div>
+</aside>
+</sc-if>
+
+</div>
+
+<div style="position: relative; flex: 0 0 auto; z-index: 20">
+
+<sc-if value="{{isInbox}}" hint-placeholder-val="{{false}}">
+<section aria-label="Postfach" style="position: absolute; bottom: 48px; right: 12px; width: 440px; max-width: calc(100vw - 24px); max-height: 70vh; overflow-y: auto; box-sizing: border-box; background: #FFFFFF; border: 1px solid #D6D3CB; border-radius: 12px; box-shadow: 0 12px 32px rgba(27,35,45,0.22); padding: 16px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<h2 style="margin: 0; font-size: 15px; font-weight: 700">Postfach · Eingriff erforderlich</h2>
+<button type="button" onClick="{{closePanel}}" aria-label="Schließen" style="width: 36px; height: 36px; border: none; background: transparent; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3A4048" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{inbox}}" as="i" hint-placeholder-count="3">
+<li style="{{i.box}}">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px">
+<span style="{{i.badge}}">{{i.prioText}}</span>
+<span style="font-size: 13px; color: #5A6068">{{i.due}}</span>
+</div>
+<div style="font-size: 15px; font-weight: 700; line-height: 1.35">{{i.title}}</div>
+<div style="font-size: 14px; line-height: 1.5; color: #3A4048">{{i.detail}}</div>
+<sc-if value="{{i.taken}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #1F5233">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1F5233" stroke-width="2.5" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>
+<span>{{i.takenText}}</span>
+</div>
+</sc-if>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<button type="button" onClick="{{i.analyze}}" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 6px; background: #1B232D; color: #FFFFFF; font-size: 14px; font-weight: 600; border: none; cursor: pointer">Mit Claude analysieren</button>
+<sc-if value="{{i.open}}" hint-placeholder-val="{{true}}">
+<button type="button" onClick="{{i.take}}" style="min-height: 40px; padding: 0 14px; border-radius: 6px; background: #FFFFFF; color: #1B1F24; border: 1px solid #B9B5AB; font-size: 14px; font-weight: 600; cursor: pointer">Übernehmen</button>
+</sc-if>
+</div>
+</li>
+</sc-for>
+</ul>
+<div style="font-size: 12px; line-height: 1.5; color: #5A6068">Einträge entstehen aus Eskalationsregeln im MCP-Server. Claude liefert die Analyse, die Entscheidung bleibt beim Menschen.</div>
+</section>
+</sc-if>
+
+<sc-if value="{{isFeed}}" hint-placeholder-val="{{false}}">
+<section aria-label="Aktuelle Meldungen" style="position: absolute; bottom: 48px; right: 12px; width: 420px; max-width: calc(100vw - 24px); max-height: 70vh; overflow-y: auto; box-sizing: border-box; background: #FFFFFF; border: 1px solid #D6D3CB; border-radius: 12px; box-shadow: 0 12px 32px rgba(27,35,45,0.22); padding: 16px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<div>
+<h2 style="margin: 0; font-size: 15px; font-weight: 700">Aktuelle Meldungen</h2>
+<div style="font-size: 13px; color: #5A6068">{{feedFilter}}</div>
+</div>
+<button type="button" onClick="{{closePanel}}" aria-label="Schließen" style="width: 36px; height: 36px; border: none; background: transparent; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3A4048" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column">
+<sc-for list="{{feed}}" as="f" hint-placeholder-count="5">
+<li style="display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid #EFEDE7">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #5A6068; flex: 0 0 44px">{{f.time}}</span>
+<span style="{{f.dot}}"></span>
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span style="font-size: 13px; font-weight: 700">{{f.src}}</span>
+<span style="font-size: 14px; line-height: 1.45; color: #3A4048">{{f.text}}</span>
+</div>
+</li>
+</sc-for>
+</ol>
+</section>
+</sc-if>
+
+<sc-if value="{{isUser}}" hint-placeholder-val="{{false}}">
+<section aria-label="Aktueller Benutzer" style="position: absolute; bottom: 48px; right: 12px; width: 360px; max-width: calc(100vw - 24px); box-sizing: border-box; background: #FFFFFF; border: 1px solid #D6D3CB; border-radius: 12px; box-shadow: 0 12px 32px rgba(27,35,45,0.22); padding: 16px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="width: 44px; height: 44px; border-radius: 50%; background: #1B232D; color: #F2F0EA; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px">{{user.initials}}</div>
+<div>
+<div style="font-size: 16px; font-weight: 700">{{user.name}}</div>
+<div style="font-size: 14px; color: #5A6068">{{user.title}}</div>
+</div>
+</div>
+<button type="button" onClick="{{closePanel}}" aria-label="Schließen" style="width: 36px; height: 36px; border: none; background: transparent; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3A4048" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+</div>
+<dl style="margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px">
+<dt style="color: #5A6068">Sicht</dt><dd style="margin: 0; font-weight: 600">{{user.scope}}</dd>
+<dt style="color: #5A6068">Arbeitszeit</dt><dd style="margin: 0">{{user.shift}}</dd>
+<dt style="color: #5A6068">Rechte</dt><dd style="margin: 0">{{user.rights}}</dd>
+<dt style="color: #5A6068">Benachrichtigung</dt><dd style="margin: 0">{{user.notify}}</dd>
+</dl>
+<div style="font-size: 13px; line-height: 1.5; color: #5A6068; background: #F7F6F2; border-radius: 8px; padding: 10px 12px">Die Rolle bestimmt, welche Daten der MCP-Server liefert. Claude sieht nur, was diese Person sehen darf.</div>
+</section>
+</sc-if>
+
+<div aria-label="Statusleiste" style="display: flex; align-items: stretch; height: 40px; background: #1B232D; color: #E6E3DA; font-size: 13px; white-space: nowrap; overflow-x: auto; border-top: 1px solid #2F3B48">
+<span style="display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; background: {{accent}}; color: #FFFFFF; font-weight: 600">
+<span style="width: 8px; height: 8px; border-radius: 50%; background: #FFFFFF"></span>OPC UA verbunden</span>
+<span style="display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; border-right: 1px solid #2F3B48">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9CFD6" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M9 9h6v6H9z"></path></svg>MCP · 14 Tools</span>
+<span style="display: inline-flex; align-items: center; padding: 0 12px; border-right: 1px solid #2F3B48">{{barScope}}</span>
+<span style="display: inline-flex; align-items: center; padding: 0 12px; font-family: 'IBM Plex Mono', monospace">09:42</span>
+<span style="flex: 1 1 auto; min-width: 12px"></span>
+<button type="button" onClick="{{toggleFeed}}" aria-label="Aktuelle Meldungen anzeigen" style="{{feedBtn}}">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 8 3 8H3s3-1 3-8"></path><path d="M10 20a2 2 0 004 0"></path></svg>
+<span style="font-weight: 700">{{feedCount}}</span>
+<span style="{{latestDot}}"></span>
+<span style="max-width: 360px; overflow: hidden; text-overflow: ellipsis">{{latestText}}</span>
+</button>
+<button type="button" onClick="{{toggleInbox}}" aria-label="Postfach öffnen" style="{{inboxBtn}}">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 13h5l2 3h4l2-3h5"></path><path d="M5 5h14l2 8v6H3v-6z"></path></svg>
+<span>Postfach</span><span style="font-weight: 700">{{openCount}}</span>
+</button>
+<button type="button" onClick="{{toggleUser}}" aria-label="Benutzer anzeigen" style="{{userBtn}}">
+<span style="width: 24px; height: 24px; border-radius: 50%; background: #3A4654; color: #F2F0EA; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">{{user.initials}}</span>
+<span>{{user.name}} · {{roleLabel}}</span>
+</button>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#C2410C","options":["#C2410C","#2F5D8A","#2E6B45"]},"showTrace":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  componentDidUpdate(prevProps, prevState) {
+    var st = this.state || {};
+    var ps = prevState || {};
+    if (this.convEl && st.hist !== ps.hist) { this.convEl.scrollTop = this.convEl.scrollHeight; }
+  }
+  renderVals() {
+    var self = this;
+    var st = this.state || {};
+    var accent = this.props.accent ?? '#C2410C';
+    var showTrace = this.props.showTrace ?? true;
+    var role = st.role || 'sl';
+
+    var BADGE = {
+      ok:   { t: 'OK',       s: 'background:#E3F0E7;color:#1F5233' },
+      warn: { t: 'Warnung',  s: 'background:#FBEFD6;color:#6B4500' },
+      crit: { t: 'Kritisch', s: 'background:#FBE4E1;color:#8F1C12' },
+      info: { t: 'Info',     s: 'background:#E2ECF6;color:#234A70' }
+    };
+    var BAR = { ok: '#3F8A5C', warn: '#C98A12', crit: '#C8402F', info: '#4A78A8' };
+    function badge(k) { return 'display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;' + BADGE[k].s; }
+
+    var ROLES = [
+      { id: 'sl', label: 'Schichtleiter' },
+      { id: 'hl', label: 'Hallenleiter' },
+      { id: 'pl', label: 'Produktionsleiter' }
+    ];
+    var roleLabel = ROLES.filter(function (r) { return r.id === role; })[0].label;
+
+    var A = {
+      sl1: { role: 'sl', q: 'Was muss ich von der Nachtschicht wissen?', prompt: 'schichtuebergabe', form: 'Tabelle + Balken',
+        head: 'Nachtschicht mit 92 % Planerfüllung. Drei Punkte brauchen heute früh deine Aufmerksamkeit.',
+        rows: [
+          ['RT-03 · Störung Gewebegreifer', 'Seit 05:12 offen. Notiz der Nachtschicht: Greifer 2 klemmt, Instandhaltung informiert.', 'crit'],
+          ['RT-01 · Mischung A60', 'Verarbeitbar bis 07:20, danach neue Mischung nötig', 'warn'],
+          ['RT-02 · Pressform F-125-07', '94 % der Standzeit, Grenze gegen 12:40', 'warn'],
+          ['OF-02 · Ofen', 'Bis 10:15 voll belegt, gepresste Scheiben warten davor', 'info']
+        ],
+        chartTitle: 'Nachtschicht: Ist/Soll je Station', max: 110, unit: ' %',
+        bars: [['RT-01', 102, 'ok'], ['RT-02', 98, 'ok'], ['RT-03', 71, 'crit'], ['RT-04', 97, 'ok'], ['VP-01', 99, 'ok'], ['VP-02', 88, 'warn']],
+        insight: 'Der Rückstand der Nacht kommt bei den Pressen fast vollständig von RT-03. VP-02 liegt zurück, weil sie auf Chargen aus OF-02 wartet, nicht wegen eines eigenen Problems.',
+        option: 'Mischung A60 für RT-01 vor 07:00 anfordern. Den Formwechsel an RT-02 mit dem Rüsten um 11:30 bündeln.',
+        stand: '06:04 · Quellen: Schichtbericht Nacht, OPC live, Wartungs-DB',
+        trace: [
+          ['get_shift_summary', '{ scope: "Halle A", schicht: "vorherige" }', 84, 'OPC HistoryRead'],
+          ['get_active_alarms', '{ scope: "Halle A", minSeverity: "mittel" }', 22, 'OPC Alarms & Conditions'],
+          ['get_order_progress', '{ scope: "Halle A" }', 31, 'OPC live'],
+          ['get_material_reach', '{ scope: "Halle A" }', 18, 'OPC live'],
+          ['get_maintenance_due', '{ scope: "Halle A", horizont: "Schicht" }', 46, 'OPC Zähler + Wartungs-DB']
+        ] },
+      sl2: { role: 'sl', q: 'Warum hängt RT-04 hinterher?', form: 'Tabelle + Trend',
+        head: 'RT-04 liegt 11 % unter Soll. Ursache ist eine verlängerte Taktzeit, kein Stillstand.',
+        rows: [
+          ['Taktzeit', 'Soll 4,2 s · Ist 4,6 s', 'warn'],
+          ['Presskraftaufbau', 'Soll 0,8 s · Ist 1,1 s', 'warn'],
+          ['Stück seit 06:00', 'Soll 3.100 · Ist 2.760', 'warn'],
+          ['Stillstände', '0 min in dieser Schicht', 'ok']
+        ],
+        chartTitle: 'Presskraftaufbau je Stunde', max: 1.2, unit: ' s', dec: 2,
+        bars: [['06–07 Uhr', 0.80, 'ok'], ['07–08 Uhr', 0.82, 'ok'], ['08–09 Uhr', 0.95, 'warn'], ['09–09:42 Uhr', 1.10, 'warn']],
+        insight: 'Der Presskraftaufbau wird seit etwa 08:30 kontinuierlich langsamer. Das deutet auf die Hydraulik hin. Die nächste planmäßige Hydraulikwartung ist erst in 3 Wochen.',
+        option: 'Instandhaltung zur Sichtprüfung der Hydraulik anfordern. Bei gleichbleibender Drift fehlen bis Schichtende ca. 400 Stück.',
+        stand: '09:42 · Quellen: RT-04 live, Trend 06:00–09:42, Wartungsplan',
+        trace: [
+          ['get_machine_status', '{ machineId: "RT-04" }', 19, 'OPC live'],
+          ['get_process_trend', '{ machineId: "RT-04", variable: "Presskraftaufbau", zeitraum: "06:00–jetzt" }', 112, 'OPC HistoryRead'],
+          ['get_condition_warnings', '{ scope: "RT-04" }', 27, 'OPC + Grenzwerte DB'],
+          ['get_maintenance_due', '{ scope: "RT-04", baugruppe: "Hydraulik" }', 33, 'Wartungs-DB']
+        ] },
+      sl3: { role: 'sl', q: 'Wie lange reicht das Material an allen Stationen?', form: 'Tabelle + Balken',
+        head: 'RT-01 zuerst: Die Mischung A60 erreicht in 38 min ihre Verarbeitbarkeitsgrenze.',
+        rows: [
+          ['RT-01 · Mischung A60', 'Verarbeitbarkeit endet in 38 min, Füllstand reicht ca. 70 min', 'warn'],
+          ['RT-02 · Gewebemagazin', 'Reichweite 55 min', 'warn'],
+          ['VP-01 · Kartons 25er', 'Reichweite 1 h 40 min', 'ok'],
+          ['Übrige Stationen', 'Alle Materialien länger als 2 h', 'ok']
+        ],
+        chartTitle: 'Kürzeste Materialreichweite je Station', max: 180, unit: ' min',
+        bars: [['RT-01', 38, 'warn'], ['RT-02', 55, 'warn'], ['VP-01', 100, 'ok'], ['RT-04', 150, 'ok'], ['VP-02', 170, 'ok']],
+        insight: 'Bei RT-01 begrenzt nicht der Füllstand, sondern die Verarbeitbarkeit der Mischung. Ein reines Füllstandsdashboard würde das als unkritisch zeigen.',
+        option: 'Neue Mischung A60 im Mischraum anfordern, dort ist mit ca. 30 min Vorlauf zu rechnen.',
+        stand: '09:42 · Quellen: OPC live, Auftragsdaten',
+        trace: [
+          ['get_material_reach', '{ scope: "Halle A" }', 21, 'OPC live'],
+          ['get_order_progress', '{ machineId: "RT-01" }', 15, 'OPC live']
+        ] },
+      sl4: { role: 'sl', q: 'Schaffen wir das Schichtziel?', form: 'Tabelle + Balken',
+        head: 'Hochgerechnet erreichen die Pressen 90 % des Schichtziels. RT-03 und RT-04 sind die Lücke.',
+        rows: [
+          ['Pressen bis jetzt', 'Ist 11.150 · Soll 12.400 Stück', 'warn'],
+          ['Hochrechnung 14:00', '24.100 von 26.800 Stück', 'warn'],
+          ['RT-03', 'Seit 07:05 wieder in Betrieb, Rückstand ca. 1.200 Stück', 'crit'],
+          ['RT-04', 'Taktzeit +9 %, Rückstand ca. 400 Stück', 'warn']
+        ],
+        chartTitle: 'Hochrechnung Schichtende je Rundtisch', max: 110, unit: ' %',
+        bars: [['RT-01', 101, 'ok'], ['RT-02', 97, 'ok'], ['RT-03', 72, 'crit'], ['RT-04', 89, 'warn']],
+        insight: 'RT-01 und RT-02 laufen im Plan. Ohne Eingriff bleibt die Lücke von RT-03 bis Schichtende, bei RT-04 wächst sie mit weiterer Drift. Ofen und Verpackung sind für die heutige Menge nicht der Engpass.',
+        option: 'Teil des Auftrags 4711 (Ø 125, A46) ab 11:30 auf RT-01 verlagern: gleicher Formsatz, Mischungswechsel ca. 20 min.',
+        stand: '09:42 · Quellen: OPC live, Auftragsdaten, Schichtkalender',
+        trace: [
+          ['get_hall_overview', '{ hallId: "A" }', 24, 'OPC live'],
+          ['get_shift_summary', '{ scope: "Halle A", schicht: "aktuell" }', 58, 'OPC HistoryRead'],
+          ['get_order_progress', '{ scope: "Halle A" }', 29, 'OPC live']
+        ] },
+
+      sl5: { role: 'sl', q: 'Warum steht VP-02?', form: 'Tabelle + Balken',
+        head: 'VP-02 hat kein eigenes Problem. Sie wartet auf die Ø-180-Charge aus OF-02.',
+        rows: [
+          ['VP-02', 'Ist/Soll 64 %, seit 09:05 ohne Ware', 'warn'],
+          ['OF-02', 'Voll belegt, Ø-180-Charge fertig ca. 10:15', 'warn'],
+          ['OF-01', 'Belegung 78 %, freie Etage ab 09:50', 'ok'],
+          ['Ursache', 'Alle Ø-180-Platten von RT-04 werden OF-02 zugewiesen', 'info']
+        ],
+        chartTitle: 'Ist/Soll entlang des Materialflusses Ø 180', max: 110, unit: ' %',
+        bars: [['RT-04 · Pressen', 89, 'warn'], ['OF-02 · Belegung', 96, 'warn'], ['VP-02 · Verpacken', 64, 'warn']],
+        insight: 'Die Ursache liegt zwei Stationen vorher. Das Dashboard zeigt nur, dass VP-02 schwach ist. Erst die Verknüpfung von Verpackung, Ofenbelegung und Pressen erklärt, warum.',
+        option: 'Die nächsten Ø-180-Platten an OF-01 geben. VP-02 bekommt dann ab ca. 10:40 wieder laufend Ware.',
+        stand: '09:42 · Quellen: OPC live Verpackung und Öfen, Ofenplanung',
+        trace: [
+          ['get_machine_status', '{ machineId: "VP-02" }', 16, 'OPC live'],
+          ['get_hall_overview', '{ hallId: "A", stationType: "Ofen" }', 21, 'OPC live'],
+          ['get_order_progress', '{ machineId: "VP-02", stufe: "Ofen → Verpackung" }', 34, 'OPC live + Aufträge']
+        ] },
+
+      sl6: { role: 'sl', q: 'Wie ist die Lage in der Halle gerade?', form: 'Übersicht nach Stationen',
+        head: 'Die Halle läuft, aber an 5 von 8 Stationen braucht es Aufmerksamkeit. Kritisch ist nur RT-03.',
+        rows: [
+          ['Pressen', 'Ist/Soll 90 % · RT-03 Rückstand, RT-04 Taktzeit +9 %', 'warn'],
+          ['Öfen', 'OF-02 voll bis 10:15, OF-01 bei 78 %', 'warn'],
+          ['Verpackung', 'VP-01 im Plan, VP-02 wartet auf Ofencharge', 'warn'],
+          ['Offene Aufgaben', '3 im Postfach, davon 1 dringend', 'crit']
+        ],
+        chartTitle: 'Kennzahl je Station (Ist/Soll bzw. Belegung)', max: 110, unit: ' %',
+        bars: [['RT-01', 101, 'ok'], ['RT-02', 97, 'ok'], ['RT-03', 72, 'crit'], ['RT-04', 89, 'warn'], ['OF-01', 78, 'ok'], ['OF-02', 96, 'warn'], ['VP-01', 98, 'ok'], ['VP-02', 64, 'warn']],
+        insight: 'Mehrere Warnungen hängen zusammen: RT-04 liefert Ø 180 an OF-02, OF-02 ist voll, VP-02 wartet. Eigenständig ist nur der Rückstand an RT-03.',
+        option: 'Zuerst über die Umverteilung von RT-03 entscheiden, danach die Ø-180-Platten an OF-01 umleiten.',
+        stand: '09:42 · Quellen: OPC live alle Stationen, Postfach-Regeln',
+        trace: [
+          ['get_hall_overview', '{ hallId: "A" }', 24, 'OPC live'],
+          ['get_active_alarms', '{ scope: "Halle A", minSeverity: "mittel" }', 22, 'OPC Alarms & Conditions'],
+          ['get_action_items', '{ role: "Schichtleiter", hallId: "A" }', 18, 'Eskalationsregeln MCP-Server']
+        ] },
+      sl7: { role: 'sl', q: 'Welche Störungen und Alarme gab es in dieser Schicht?', form: 'Tabelle + Balken',
+        head: 'Seit 06:00 gab es 4 Ereignisse mit zusammen 68 min Stillstand. Eine Warnung ist noch offen.',
+        rows: [
+          ['06:00–07:05 · RT-03', 'Gewebegreifer 2 klemmt, aus der Nacht übernommen · 65 min · behoben', 'warn'],
+          ['08:14 · RT-02', 'Etikettenzufuhr leer · 2 min', 'ok'],
+          ['08:51 · VP-01', 'Kartonstau · 1 min', 'ok'],
+          ['seit 09:41 · RT-04', 'Zustandswarnung Presskraftaufbau · offen, noch kein Stillstand', 'warn']
+        ],
+        chartTitle: 'Stillstand in dieser Schicht je Station', max: 70, unit: ' min',
+        bars: [['RT-03', 65, 'crit'], ['RT-02', 2, 'ok'], ['VP-01', 1, 'ok'], ['übrige', 0, 'ok']],
+        insight: 'Bis auf RT-03 waren es Kurzstopps. Die offene Warnung an RT-04 verursacht noch keinen Stillstand, kostet aber bereits Taktzeit.',
+        option: 'Hydraulik an RT-04 prüfen lassen, bevor daraus ein Stillstand wird.',
+        stand: '09:42 · Quellen: Alarmhistorie, Stillstände seit 06:00',
+        trace: [
+          ['get_active_alarms', '{ scope: "Halle A", zeitraum: "seit 06:00", inklusiveQuittiert: true }', 41, 'OPC Alarms & Conditions'],
+          ['get_downtime_pareto', '{ scope: "Halle A", zeitraum: "Schicht", gruppierung: "Station" }', 63, 'OPC HistoryRead']
+        ] },
+      hl6: { role: 'hl', q: 'Wie läuft die Halle heute?', form: 'Übersicht nach Bereichen',
+        head: 'Halle A liegt heute bei 81 % OEE. Die Pressen bremsen, die Öfen sind ungleich belegt.',
+        rows: [
+          ['Pressen', 'OEE 79 % · Verluste vor allem an RT-03 und RT-04', 'warn'],
+          ['Öfen', 'Belegung Ø 87 % · OF-02 voll, OF-01 mit Luft', 'warn'],
+          ['Verpackung', 'OEE 84 % · VP-02 wartet auf Ware', 'ok'],
+          ['Qualität', 'Ausschuss 1,9 % · Charge M-2410-17 an RT-01 und RT-02', 'warn']
+        ],
+        chartTitle: 'Kennzahl heute je Bereich', max: 100, unit: ' %',
+        bars: [['Pressen · OEE', 79, 'warn'], ['Öfen · Belegung', 87, 'ok'], ['Verpackung · OEE', 84, 'ok'], ['Halle gesamt · OEE', 81, 'warn']],
+        insight: 'Die größten Hebel heute sind der Rückstand an RT-03 und die Ofenbelegung. Beides lässt sich organisatorisch lösen, ohne Eingriff in die Maschinen.',
+        option: 'Umverteilung RT-03 → RT-01 freigeben und die Ofenzuordnung für Ø 180 auf OF-01 erweitern.',
+        stand: '09:42 · Quellen: OEE heute, OPC live, Qualitätsdaten',
+        trace: [
+          ['get_oee', '{ scope: "Halle A", zeitraum: "heute", gruppierung: "Bereich" }', 102, 'OPC HistoryRead'],
+          ['get_hall_overview', '{ hallId: "A" }', 24, 'OPC live'],
+          ['compare', '{ dimension: "Bereich", kpi: "Ausschussquote", zeitraum: "heute" }', 57, 'OPC HistoryRead']
+        ] },
+      hl7: { role: 'hl', q: 'Welche Wartungen stehen heute und morgen an?', form: 'Tabelle + Vergleich',
+        head: 'Heute und morgen stehen 5 Wartungen an. Eine ist überfällig, zwei lassen sich mit Rüsten bündeln.',
+        rows: [
+          ['OF-01 · Türverriegelung', 'Sicherheitsprüfung, seit 2 Tagen überfällig', 'crit'],
+          ['RT-02 · Form F-125-07', 'Fällig ca. 12:40 · mit dem Rüsten um 11:30 bündelbar', 'warn'],
+          ['RT-04 · Hydraulik', 'Sichtprüfung empfohlen wegen Drift im Presskraftaufbau', 'warn'],
+          ['RT-01 · Waage', 'Kalibrierung morgen · beim Mischungswechsel bündelbar', 'info'],
+          ['VP-01 · Umreifer', 'Planmäßig morgen 14:00', 'ok']
+        ],
+        chartTitle: 'Zusätzlicher Stillstand durch Wartungen', max: 100, unit: ' min',
+        bars: [['Einzeln geplant', 95, 'warn'], ['Gebündelt', 40, 'ok']],
+        insight: 'Durch Bündeln mit Rüst- und Mischungswechseln sinkt der zusätzliche Stillstand von 95 auf 40 min. Die Sicherheitsprüfung an OF-01 hat Vorrang vor allem anderen.',
+        option: 'OF-01 heute prüfen lassen, Formwartung RT-02 auf 11:30 und Waage RT-01 auf den Mischungswechsel legen.',
+        stand: '09:42 · Quellen: Wartungs-DB, OPC-Zähler, Auftragsplan',
+        trace: [
+          ['get_maintenance_due', '{ scope: "Halle A", horizont: "48 h" }', 44, 'OPC Zähler + Wartungs-DB'],
+          ['check_maintenance_conflicts', '{ hallId: "A", zeitraum: "heute–morgen" }', 71, 'Wartungs-DB + Aufträge'],
+          ['get_condition_warnings', '{ scope: "Halle A" }', 29, 'OPC + Grenzwerte DB']
+        ] },
+      pl6: { role: 'pl', q: 'Was haben uns Ausschuss und Stillstände diese Woche gekostet?', form: 'Tabelle + Balken',
+        head: 'KW 42 kosten Ausschuss und ungeplante Stillstände zusammen rund 41.000 €. Größter Einzelposten ist RT-03.',
+        rows: [
+          ['Ausschuss', 'ca. 14.500 € · 1,4 % der Ausbringung', 'warn'],
+          ['Ungeplante Stillstände', 'ca. 26.500 € · entgangene Deckungsbeiträge', 'warn'],
+          ['Größter Posten', 'Gewebezuführung RT-03 · ca. 9.800 €', 'crit'],
+          ['Vorwoche', 'ca. 46.000 € · Rückgang um 11 %', 'ok']
+        ],
+        chartTitle: 'Kosten KW 42 je Halle', max: 25, unit: ' Tsd. €', dec: 1,
+        bars: [['Halle A', 19.2, 'warn'], ['Halle B', 11.9, 'ok'], ['Halle C', 9.9, 'ok']],
+        insight: 'In Halle A geht rund die Hälfte der Kosten auf zwei Ursachen zurück: die Gewebezuführung an RT-03 und die Charge M-2410-17. Beide liegen bereits im Postfach.',
+        option: 'Ein Angebot für die Teilüberholung der Gewebezuführung RT-03 den wöchentlichen Kosten von ca. 9.800 € gegenüberstellen.',
+        stand: 'KW 42 · Kostensätze aus Controlling-Stammdaten (simuliert)',
+        trace: [
+          ['get_downtime_pareto', '{ scope: "Werk", zeitraum: "KW 42", bewertung: "Kosten" }', 118, 'OPC HistoryRead + Stammdaten'],
+          ['compare', '{ dimension: "Halle", kpi: "Ausschusskosten", zeitraum: "KW 42" }', 84, 'OPC HistoryRead + Stammdaten'],
+          ['get_reliability_kpis', '{ scope: "Werk", zeitraum: "KW 42" }', 73, 'Wartungs-DB + OPC']
+        ] },
+      wk1: { role: 'hl', q: 'Welche Wartungen sind in der nächsten KW geplant?', form: 'Tabelle + Wochenplan',
+        head: 'In KW 43 sind 4 Wartungen geplant. Eine weitere sollte wegen der Drift an RT-04 vorgezogen werden.',
+        rows: [
+          ['Mo 19.10. · RT-02', 'Hydrauliköl wechseln · zeitbasiert · 45 min', 'info'],
+          ['Di 20.10. · OF-02', 'Temperaturfühler Zone 1–3 kalibrieren · Prüfmittel · 60 min', 'info'],
+          ['ca. Mi 21.10. · RT-04', 'Pressform F-180-03 · Prognose aus 4.100 Hüben/Tag · bündelbar mit Rüsten 13:00', 'warn'],
+          ['ca. Do 22.10. · VP-02', 'Umreifer Verschleißteile · Prognose aus Betriebsstunden · 30 min', 'info'],
+          ['Empfohlen · RT-04', 'Hydraulikwartung aus KW 45 vorziehen · Presskraftaufbau driftet seit heute 08:30', 'crit']
+        ],
+        chartTitle: 'Geplanter Stillstand je Tag in KW 43', max: 120, unit: ' min',
+        bars: [['Mo 19.10.', 45, 'ok'], ['Di 20.10.', 60, 'ok'], ['Mi 21.10.', 0, 'ok'], ['Do 22.10.', 30, 'ok'], ['Fr 23.10.', 0, 'ok']],
+        insight: 'Zwei Termine stehen fest im Wartungsplan, zwei sind aus Zählerständen hochgerechnet. Die Hydraulik an RT-04 steht nicht im Plan für KW 43, die Zustandsdaten aus OPC sprechen aber dafür, sie vorzuziehen.',
+        option: 'Hydraulikwartung RT-04 auf Mi 21.10. zusammen mit dem Formwechsel legen. Dann entsteht dafür kein zusätzlicher Stillstand.',
+        stand: '09:42 · Quellen: Wartungs-DB, OPC-Zähler mit Prognose, Zustandsdaten, Auftragsplan',
+        trace: [
+          ['get_maintenance_due', '{ scope: "Halle A", von: "2026-10-19", bis: "2026-10-25", prognose: true }', 52, 'Wartungs-DB + OPC-Zähler'],
+          ['get_condition_warnings', '{ scope: "Halle A" }', 29, 'OPC + Grenzwerte DB'],
+          ['check_maintenance_conflicts', '{ hallId: "A", zeitraum: "KW 43" }', 68, 'Wartungs-DB + Aufträge']
+        ] },
+      hl1: { role: 'hl', q: 'Wo verlieren wir diese Woche am meisten Zeit?', form: 'Pareto',
+        head: 'Die Gewebezuführung kostet diese Woche am meisten Zeit, vor allem an RT-03.',
+        rows: [
+          ['Störung Gewebezuführung', '6,4 h · 14 Ereignisse, davon 9 an RT-03', 'crit'],
+          ['Warten auf Mischung', '4,1 h · gehäuft in den Nachtschichten', 'warn'],
+          ['Warten auf Ofen', '3,5 h · Pressteile vor OF-02 im Puffer', 'warn'],
+          ['Rüsten über Soll', '3,2 h · im Schnitt +18 min je Rüstvorgang', 'info']
+        ],
+        chartTitle: 'Stillstand nach Grund, KW 42', max: 7, unit: ' h', dec: 1,
+        bars: [['Gewebezuführung', 6.4, 'crit'], ['Warten auf Mischung', 4.1, 'warn'], ['Warten auf Ofen', 3.5, 'warn'], ['Rüsten über Soll', 3.2, 'info'], ['Formwechsel ungeplant', 2.0, 'info']],
+        insight: '9 von 14 Ausfällen der Gewebezuführung betreffen RT-03, jedes Mal Greifer 2. Das ist kein Zufallsmuster, sondern ein Kandidat für eine gezielte Instandsetzung.',
+        option: 'Greifer 2 an RT-03 beim nächsten geplanten Stillstand tauschen statt erneut zu justieren.',
+        stand: '09:42 · Quellen: Stillstandshistorie KW 42',
+        trace: [
+          ['get_downtime_pareto', '{ scope: "Halle A", zeitraum: "KW 42" }', 96, 'OPC HistoryRead'],
+          ['compare', '{ dimension: "Station", kpi: "Stillstand Gewebezuführung", zeitraum: "KW 42" }', 74, 'OPC HistoryRead']
+        ] },
+      hl2: { role: 'hl', q: 'Wie ist die Qualitätslage in der Halle?', form: 'Tabelle + Balken',
+        head: 'Ja: RT-01 und RT-02 zeigen seit gestern 22:00 dieselbe Füllgewichtsdrift. Beide verarbeiten Mischungscharge M-2410-17.',
+        rows: [
+          ['RT-01 · Füllgewicht', 'Ø 113,4 g · Soll 112 g ± 1,5 g', 'warn'],
+          ['RT-02 · Füllgewicht', 'Ø 113,6 g · Soll 112 g ± 1,5 g', 'warn'],
+          ['RT-03 und RT-04', 'Ø 112,1 g, andere Mischung', 'ok'],
+          ['Gemeinsamer Faktor', 'Charge M-2410-17 (A60), an beiden ab 22:00', 'crit']
+        ],
+        chartTitle: 'Ausschussquote letzte 24 h', max: 4, unit: ' %', dec: 1,
+        bars: [['RT-01', 2.8, 'crit'], ['RT-02', 3.1, 'crit'], ['RT-03', 1.2, 'ok'], ['RT-04', 0.9, 'ok']],
+        insight: 'Die Waagen beider Rundtische wurden laut Wartungs-DB im Juli kalibriert und sind seither unauffällig. Eine Maschinenursache ist deshalb unwahrscheinlich, die Charge ist der gemeinsame Faktor.',
+        option: 'Mischraum informieren und die Schüttdichte der Charge M-2410-17 prüfen lassen. Bis dahin die Dosiermenge an RT-01 und RT-02 nachführen.',
+        stand: '09:42 · Quellen: Prozesshistorie 24 h, Auftragsdaten, Wartungs-DB',
+        trace: [
+          ['compare', '{ dimension: "Rundtisch", kpi: "Ausschussquote", zeitraum: "24 h" }', 81, 'OPC HistoryRead'],
+          ['get_process_trend', '{ machineId: ["RT-01","RT-02"], variable: "Füllgewicht", zeitraum: "24 h" }', 138, 'OPC HistoryRead'],
+          ['get_order_progress', '{ machineId: ["RT-01","RT-02"] }', 26, 'OPC live (Charge)'],
+          ['get_maintenance_due', '{ scope: ["RT-01","RT-02"], baugruppe: "Waage", historie: true }', 41, 'Wartungs-DB']
+        ] },
+      hl3: { role: 'hl', q: 'Können wir die Formwartung an RT-02 mit dem Rüsten bündeln?', form: 'Tabelle + Vergleich',
+        head: 'Ja. Das Rüsten an RT-02 um 11:30 ist der passende Zeitpunkt, die Form steht dann bei 97 %.',
+        rows: [
+          ['Form F-125-07', 'Jetzt 94 %, 100 % erreicht ca. 12:40', 'warn'],
+          ['Geplantes Rüsten RT-02', '11:30, Wechsel auf Ø 115 mit anderem Formsatz', 'info'],
+          ['Gebündelt', 'Form wird beim Rüsten ohnehin ausgebaut, Wartung danach in der Werkstatt', 'ok'],
+          ['Konflikte', 'Keine: Auftrag 4698 ist bis 11:20 fertig', 'ok']
+        ],
+        chartTitle: 'Zusätzlicher Maschinenstillstand', max: 30, unit: ' min',
+        bars: [['Getrennt', 25, 'warn'], ['Gebündelt', 0, 'ok']],
+        insight: 'Die Form erreicht ihre Grenze erst nach dem Rüstzeitpunkt. Beim Bündeln entfällt der separate Stillstand vollständig.',
+        option: 'Wartungsauftrag W-3381 auf 11:30 legen und mit dem Rüstauftrag verknüpfen.',
+        stand: '09:42 · Quellen: Hubzähler OPC, Wartungs-DB, Auftragsplan',
+        trace: [
+          ['check_maintenance_conflicts', '{ hallId: "A", zeitraum: "heute" }', 64, 'Wartungs-DB + Aufträge'],
+          ['get_maintenance_due', '{ scope: "RT-02" }', 28, 'OPC Zähler + Wartungs-DB'],
+          ['get_order_progress', '{ machineId: "RT-02" }', 17, 'OPC live']
+        ] },
+      hl4: { role: 'hl', q: 'Sind die Öfen heute der Engpass?', form: 'Tabelle + Balken',
+        head: 'Teilweise: OF-02 ist voll, OF-01 hat Luft. Die Belegung ist ungleich verteilt, nicht zu knapp.',
+        rows: [
+          ['OF-01', 'Belegung 78 %, nächste freie Etage ab 09:50', 'ok'],
+          ['OF-02', 'Belegung 96 %, nächste Freigabe 10:15', 'warn'],
+          ['Puffer vor den Öfen', '42 Ofenplatten, Ø Wartezeit 45 min', 'warn'],
+          ['VP-02', 'Wartet auf die Ø-180-Charge aus OF-02', 'warn']
+        ],
+        chartTitle: 'Ofenbelegung bis Schichtende', max: 100, unit: ' %',
+        bars: [['OF-01', 78, 'ok'], ['OF-02', 96, 'warn']],
+        insight: 'Alle Ø-180-Platten von RT-04 werden derzeit OF-02 zugewiesen. Das Temperaturprofil ist für beide Öfen gleich, die Zuordnung ist also eine Planungsregel, keine technische Notwendigkeit.',
+        option: 'Die nächsten Ø-180-Platten an OF-01 geben. Damit sinkt die Wartezeit vor den Öfen und VP-02 bekommt früher Ware.',
+        stand: '09:42 · Quellen: OPC live Öfen, Ofenplanung, Verpackung',
+        trace: [
+          ['get_hall_overview', '{ hallId: "A", stationType: "Ofen" }', 21, 'OPC live'],
+          ['get_process_trend', '{ machineId: ["OF-01","OF-02"], variable: "Temperaturprofil", zeitraum: "heute" }', 97, 'OPC HistoryRead'],
+          ['get_order_progress', '{ scope: "Halle A", stufe: "Ofen → Verpackung" }', 38, 'OPC live + Aufträge']
+        ] },
+      hl5: { role: 'hl', q: 'Bereite die Tagesbesprechung vor.', prompt: 'tagesbesprechung_halle', form: 'Tabelle + Balken',
+        head: 'Gestern lief Halle A mit 78 % OEE. Die Nachtschicht zieht den Schnitt nach unten.',
+        rows: [
+          ['Frühschicht', 'OEE 82 %', 'ok'],
+          ['Spätschicht', 'OEE 80 %', 'ok'],
+          ['Nachtschicht', 'OEE 72 %, Hauptgrund Warten auf Mischung (2,3 h)', 'warn'],
+          ['Heute geplant', 'Rüsten RT-02, Formwechsel F-125-07, Hydraulikprüfung RT-04 empfohlen', 'info']
+        ],
+        chartTitle: 'OEE gestern je Schicht', max: 100, unit: ' %',
+        bars: [['Früh', 82, 'ok'], ['Spät', 80, 'ok'], ['Nacht', 72, 'warn']],
+        insight: 'Leistung und Qualität sind über alle Schichten vergleichbar. Der Unterschied entsteht in der Verfügbarkeit, und dort fast ausschließlich durch Wartezeiten auf Mischung.',
+        option: 'Mischungsbedarf der Nachtschicht schon in der Spätschicht vorbereiten lassen.',
+        stand: '07:30 · Quellen: Schichtberichte, Stillstände, Wartungs-DB, Material',
+        trace: [
+          ['get_shift_summary', '{ scope: "Halle A", schicht: "gestern", alle: true }', 142, 'OPC HistoryRead'],
+          ['get_downtime_pareto', '{ scope: "Halle A", zeitraum: "gestern" }', 88, 'OPC HistoryRead'],
+          ['check_maintenance_conflicts', '{ hallId: "A", zeitraum: "heute" }', 59, 'Wartungs-DB + Aufträge'],
+          ['get_material_reach', '{ scope: "Halle A" }', 20, 'OPC live']
+        ] },
+
+      pl1: { role: 'pl', q: 'Fass mir die Woche zusammen.', prompt: 'wochenreport', form: 'Tabelle + Balken',
+        head: 'KW 42: Planerfüllung 96 %, OEE stabil bei 79 %. Größtes Risiko sind zwei Ø-230-Aufträge.',
+        rows: [
+          ['Ausbringung', '1,41 Mio. Scheiben · Plan 1,47 Mio.', 'warn'],
+          ['OEE Werk', '79 % · Vorwoche 78 %', 'ok'],
+          ['Ausschuss', '1,4 % · Spitze durch Charge M-2410-17', 'warn'],
+          ['Liefertermine', '2 Aufträge gefährdet, beide Ø 230 mm', 'crit']
+        ],
+        chartTitle: 'OEE KW 42 je Halle', max: 100, unit: ' %',
+        bars: [['Halle A', 77, 'warn'], ['Halle B', 81, 'ok'], ['Halle C', 80, 'ok']],
+        insight: 'Halle A liegt wegen der Gewebezuführung an RT-03 unter dem Werksschnitt. Die gefährdeten Aufträge hängen an der Ø-230-Kapazität, die nur in Halle B vorhanden ist.',
+        option: 'Zusatzschicht am Samstag in Halle B für die zwei Ø-230-Aufträge prüfen.',
+        stand: 'KW 42, Stand Do 09:42 · Quellen: OEE-Historie, Aufträge, Instandhaltung',
+        trace: [
+          ['get_oee', '{ scope: "Werk", zeitraum: "KW 42", gruppierung: "Halle" }', 167, 'OPC HistoryRead'],
+          ['compare', '{ dimension: "Woche", kpi: "OEE", zeitraum: "KW 41–42" }', 92, 'OPC HistoryRead'],
+          ['get_order_progress', '{ scope: "Werk", filter: "gefährdet" }', 48, 'Auftragsdaten'],
+          ['get_reliability_kpis', '{ scope: "Werk", zeitraum: "KW 42" }', 73, 'Wartungs-DB + OPC']
+        ] },
+      pl2: { role: 'pl', q: 'Welche Schicht hat diese Woche die schlechteste OEE und warum?', form: 'Tabelle + Balken',
+        head: 'Die Nachtschicht liegt mit 73 % OEE am niedrigsten. Ursache ist die Verfügbarkeit, nicht Leistung oder Qualität.',
+        rows: [
+          ['Frühschicht', 'OEE 82 % · V 90 · L 93 · Q 98', 'ok'],
+          ['Spätschicht', 'OEE 81 % · V 89 · L 93 · Q 98', 'ok'],
+          ['Nachtschicht', 'OEE 73 % · V 79 · L 93 · Q 99', 'warn'],
+          ['Größter Verlust Nacht', 'Warten auf Mischung, 5,8 h in KW 42', 'crit']
+        ],
+        chartTitle: 'Verfügbarkeit KW 42 je Schicht', max: 100, unit: ' %',
+        bars: [['Früh', 90, 'ok'], ['Spät', 89, 'ok'], ['Nacht', 79, 'warn']],
+        insight: 'Leistung und Qualität sind in allen Schichten nahezu gleich. Die Lücke entsteht durch Wartezeiten auf Mischung. Das spricht eher für einen Engpass in der Mischungsbereitstellung als für ein Problem an den Maschinen.',
+        option: 'Ablauf der Mischungsbereitstellung in der Nacht mit dem Mischraum klären.',
+        stand: 'KW 42, Stand Do 09:42 · Quellen: OEE-Historie, Stillstände',
+        trace: [
+          ['get_oee', '{ scope: "Werk", zeitraum: "KW 42", gruppierung: "Schicht" }', 151, 'OPC HistoryRead'],
+          ['get_downtime_pareto', '{ scope: "Werk", zeitraum: "KW 42", filter: "Nachtschicht" }', 97, 'OPC HistoryRead']
+        ] },
+      pl3: { role: 'pl', q: 'Lohnt sich eine Überholung von RT-03?', form: 'Tabelle + Balken',
+        head: 'Für die Gewebezuführung ja, für die ganze Maschine nicht.',
+        rows: [
+          ['MTBF RT-03', '31 h · Schnitt der anderen Rundtische 78 h', 'crit'],
+          ['MTTR RT-03', '42 min · Hallenschnitt 38 min', 'ok'],
+          ['Störungen nach Baugruppe', '78 % Gewebezuführung, Rest verteilt', 'warn'],
+          ['Presse und Hydraulik', 'Unauffällig, Wartungen planmäßig', 'ok']
+        ],
+        chartTitle: 'MTBF letzte 90 Tage', max: 100, unit: ' h',
+        bars: [['RT-01', 82, 'ok'], ['RT-02', 77, 'ok'], ['RT-03', 31, 'crit'], ['RT-04', 74, 'ok']],
+        insight: 'Die Ausfälle konzentrieren sich auf eine Baugruppe. Eine Teilüberholung der Gewebezuführung adressiert den Großteil der Stillstände, eine Gesamtüberholung bringt nach diesen Daten wenig Zusatznutzen.',
+        option: 'Angebot für eine Teilüberholung der Gewebezuführung einholen und den Stillstandskosten der letzten 3 Monate gegenüberstellen.',
+        stand: 'Stand Do 09:42 · Quellen: Störungshistorie 90 Tage, Wartungs-DB',
+        trace: [
+          ['get_reliability_kpis', '{ scope: "Halle A", zeitraum: "90 Tage" }', 121, 'Wartungs-DB + OPC'],
+          ['get_downtime_pareto', '{ scope: "RT-03", zeitraum: "90 Tage", gruppierung: "Baugruppe" }', 104, 'OPC HistoryRead'],
+          ['get_maintenance_due', '{ scope: "RT-03" }', 30, 'Wartungs-DB']
+        ] },
+      pl4: { role: 'pl', q: 'Wie entwickelt sich der Anteil ungeplanter Stillstände seit Juli?', form: 'Tabelle + Verlauf',
+        head: 'Der Anteil ungeplanter Stillstände ist seit Juli von 48 % auf 33 % gesunken.',
+        rows: [
+          ['Geplante Instandhaltung', 'Anteil 67 % im Oktober · Ziel 75 %', 'warn'],
+          ['Wartungsplantreue', '92 % der Aufträge termingerecht', 'ok'],
+          ['Gebündelte Wartungen', '18 im Oktober, mit Rüsten kombiniert', 'ok'],
+          ['Überfällig', '1 sicherheitsrelevante Prüfung: OF-01 Türverriegelung, seit 2 Tagen', 'crit']
+        ],
+        chartTitle: 'Anteil ungeplanter Stillstände je Monat', max: 60, unit: ' %',
+        bars: [['Juli', 48, 'info'], ['August', 45, 'info'], ['September', 39, 'info'], ['Oktober (bis KW 42)', 33, 'info']],
+        insight: 'Der Trend ist klar positiv, das Ziel von 75 % geplanter Instandhaltung ist aber noch nicht erreicht. Die überfällige Sicherheitsprüfung hat Vorrang vor allen Optimierungen.',
+        option: 'Prüfung der Türverriegelung an OF-01 heute einplanen.',
+        stand: 'Stand Do 09:42 · Quellen: Wartungs-DB, Stillstandshistorie',
+        trace: [
+          ['get_reliability_kpis', '{ scope: "Werk", zeitraum: "Jul–Okt", gruppierung: "Monat" }', 133, 'Wartungs-DB + OPC'],
+          ['get_maintenance_due', '{ scope: "Werk", filter: "überfällig" }', 37, 'Wartungs-DB']
+        ] },
+      pl5: { role: 'pl', q: 'Welche Aufträge sind diese Woche gefährdet?', form: 'Tabelle + Balken',
+        head: 'Zwei Aufträge sind ernsthaft gefährdet, einer ist knapp, aber aufholbar.',
+        rows: [
+          ['Auftrag 4730 · Ø 230 A36', 'Fertig 58 %, Liefertermin Dienstag', 'crit'],
+          ['Auftrag 4733 · Ø 230 A30', 'Fertig 41 %, Liefertermin Dienstag', 'crit'],
+          ['Auftrag 4711 · Ø 125 A46', 'Fertig 76 %, Rückstand RT-03, bis Freitag aufholbar', 'warn'],
+          ['Übrige 14 Aufträge', 'Im Plan', 'ok']
+        ],
+        chartTitle: 'Fertigstellung kritischer Aufträge', max: 100, unit: ' %',
+        bars: [['4730 · Ø 230', 58, 'crit'], ['4733 · Ø 230', 41, 'crit'], ['4711 · Ø 125', 76, 'warn']],
+        insight: 'Beide Ø-230-Aufträge hängen an derselben Kapazität in Halle B. Ohne Zusatzschicht reicht sie bis Dienstag nur für einen der beiden.',
+        option: 'Zusatzschicht am Samstag in Halle B freigeben oder mit dem Kunden einen Teilliefertermin vereinbaren.',
+        stand: 'KW 42, Stand Do 09:42 · Quellen: Auftragsdaten, OPC-Historie',
+        trace: [
+          ['get_order_progress', '{ scope: "Werk", filter: "gefährdet" }', 48, 'Auftragsdaten'],
+          ['get_oee', '{ scope: "Halle B", zeitraum: "KW 42" }', 88, 'OPC HistoryRead'],
+          ['compare', '{ dimension: "Auftrag", kpi: "Fertigstellung vs. Termin" }', 61, 'Auftragsdaten']
+        ] },
+    };
+
+    var ORDER = { sl: ['sl1', 'sl6', 'sl3', 'sl4', 'sl7'], hl: ['hl5', 'hl6', 'hl1', 'hl2', 'hl7'], pl: ['pl1', 'pl2', 'pl5', 'pl4', 'pl6'] };
+    var USERS = {
+      sl: { initials: 'MH', name: 'Martin Huber', title: 'Schichtleiter Halle A', scope: 'Halle A: RT-01–04, OF-01–02, VP-01–02',
+        shift: 'Frühschicht 06–14, angemeldet 05:52', rights: 'Lesen, Notizen, Stillstandsgründe', notify: 'Hallen-Tablet' },
+      hl: { initials: 'KG', name: 'Katharina Gruber', title: 'Hallenleiterin Halle A', scope: 'Halle A inkl. Wartungsplanung',
+        shift: 'Tagdienst, angemeldet 06:45', rights: 'Lesen, Notizen, Wartungsfreigabe', notify: 'Desktop + Teams' },
+      pl: { initials: 'SW', name: 'Stefan Wallner', title: 'Produktionsleiter Werk', scope: 'Werk, Hallen A bis C',
+        shift: 'Tagdienst, angemeldet 07:10', rights: 'Lesen, Freigaben', notify: 'Teams, nur Eskalationen' }
+    };
+    var user = USERS[role];
+
+    var SHORT = { sl1: 'Schichtübergabe', sl6: 'Hallenlage', sl3: 'Materialreichweite', sl4: 'Schichtziel', sl7: 'Störungen & Alarme',
+      sl2: 'RT-04 langsam?', sl5: 'VP-02 steht?',
+      hl5: 'Tagesbesprechung', hl6: 'Hallen-OEE heute', hl1: 'Zeitverluste', hl2: 'Qualitätslage', hl7: 'Wartungsplan',
+      hl3: 'Wartung bündeln', wk1: 'Wartungen KW 43', hl4: 'Öfen Engpass?',
+      pl1: 'Wochenbericht', pl2: 'OEE-Vergleich', pl5: 'Gefährdete Aufträge', pl4: 'Instandhaltung', pl6: 'Kosten der Woche',
+      pl3: 'RT-03 überholen?' };
+    function shortOf(p) { return p.short || (p.ref && SHORT[p.ref]) || (p.text.length > 20 ? p.text.slice(0, 19) + '…' : p.text); }
+    var MAXPINS = 10;
+    var seq = st.seq || 1;
+    var pinsAll = st.pins || {};
+    var pinList = pinsAll[role] || ORDER[role].map(function (id) { return { key: id, ref: id, text: A[id].q }; });
+    var firstId = ORDER[role][0];
+    var hist = st.hist || [{ ref: firstId, text: A[firstId].q, n: 0 }];
+    var editing = !!st.edit;
+
+    function ask(ref, text) {
+      self.setState({ hist: hist.concat([{ ref: ref, text: text, n: seq }]), seq: seq + 1, panel: null });
+    }
+    function setPins(list) { var p = Object.assign({}, pinsAll); p[role] = list; return p; }
+    function addPinText(text, ref, short) {
+      if (!text || pinList.length >= MAXPINS) return null;
+      return setPins(pinList.concat([{ key: 'p' + seq, ref: ref || null, text: text, short: short || null }]));
+    }
+
+    var roles = ROLES.map(function (r) {
+      var on = r.id === role;
+      return { label: r.label,
+        pick: function () {
+          var f = ORDER[r.id][0];
+          self.setState({ role: r.id, hist: [{ ref: f, text: A[f].q, n: seq }], seq: seq + 1, edit: false, panel: null });
+        },
+        style: 'min-height:34px;padding:0 14px;border:none;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;' +
+          (on ? 'background:' + accent + ';color:#FFFFFF' : 'background:transparent;color:#C9CFD6') };
+    });
+
+    var pins = pinList.map(function (p, idx) {
+      return { label: p.text, short: shortOf(p), num: String(idx + 1), custom: !p.ref, editing: editing,
+        btn: 'min-height:34px;padding:0 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;' +
+          (p.ref ? 'background:#1B232D;color:#FFFFFF;border:1px solid #1B232D;' : 'background:#FFFFFF;color:#1B1F24;border:1px solid #1B232D;') +
+          (editing ? 'border-radius:8px 0 0 8px' : 'border-radius:8px'),
+        removeLabel: 'Favorit ' + (idx + 1) + ' entfernen',
+        ask: function () { self.setState({ hist: hist.concat([{ ref: p.ref, text: p.text, n: seq }]), seq: seq + 1, pinsOpen: false, edit: false }); },
+        remove: function () { self.setState({ pins: setPins(pinList.filter(function (x) { return x.key !== p.key; })) }); } };
+    });
+    var full = pinList.length >= MAXPINS;
+    var newPin = st.newPin || '';
+    var suggest = ORDER[role].filter(function (id) {
+      return !pinList.some(function (p) { return p.ref === id; });
+    }).map(function (id) {
+      return { label: SHORT[id], add: function () { var p = addPinText(A[id].q, id); if (p) self.setState({ pins: p }); } };
+    });
+
+    function freeAnswer(text) {
+      return { q: text, form: 'wählt Claude zur Laufzeit',
+        head: 'Eigene Fragen beantwortet Claude im Sample live über den MCP-Server.',
+        rows: [], bars: [],
+        insight: 'In diesem Entwurf ist keine Live-Verbindung aktiv. Im Sample ruft Claude zuerst die Tool-Liste des MCP-Servers ab, wählt die passenden Tools, verknüpft die Ergebnisse und wählt die Darstellung nach Art der Daten.',
+        stand: '09:42 · Mockup ohne Live-Verbindung',
+        trace: [
+          ['tools/list', '{ }', 8, 'MCP-Server: 14 Tools'],
+          ['get_hall_overview', '{ hallId: "A" }', null, 'Beispiel einer möglichen Auswahl'],
+          ['get_process_trend', '{ … }', null, 'Beispiel einer möglichen Auswahl']
+        ] };
+    }
+    function matchFree(t) {
+      var x = (t || '').toLowerCase();
+      if (/wartung/.test(x) && /(n(ä|ae)chste[nr]?|kommende[nr]?)\s*(woche|kw)|kw\s*43/.test(x)) return 'wk1';
+      if (/vp-?0?2/.test(x)) return 'sl5';
+      if (/rt-?0?4/.test(x)) return 'sl2';
+      if (/rt-?0?3/.test(x)) return 'pl3';
+      if (/ofen|öfen|oefen/.test(x)) return 'hl4';
+      return null;
+    }
+    function fmt(v, d) { return (d ? v.toFixed(d) : String(v)).replace('.', ','); }
+    function build(e) {
+      var raw = e.ref ? A[e.ref] : (matchFree(e.text) ? A[matchFree(e.text)] : freeAnswer(e.text));
+      var ms = raw.trace.reduce(function (s, t) { return s + (t[2] || 0); }, 0);
+      return {
+        q: e.text, who: user.name.split(' ')[0] + ' · 09:42',
+        prompt: raw.prompt || '', hasPrompt: !!raw.prompt, form: raw.form,
+        head: raw.head, option: raw.option || '', hasOption: !!raw.option,
+        insight: raw.insight, stand: raw.stand, chartTitle: raw.chartTitle || '',
+        hasRows: raw.rows.length > 0, hasBars: raw.bars.length > 0,
+        rows: raw.rows.map(function (r) { return { label: r[0], value: r[1], badgeText: BADGE[r[2]].t, badge: badge(r[2]) }; }),
+        bars: raw.bars.map(function (b) {
+          var p = Math.max(0, Math.min(100, b[1] / raw.max * 100));
+          return { label: b[0], display: fmt(b[1], raw.dec) + raw.unit,
+            fill: 'width:' + p.toFixed(1) + '%;height:100%;border-radius:3px;background:' + BAR[b[2]] };
+        }),
+        calls: raw.trace.map(function (t) { return { tool: t[0], args: t[1], ms: t[2] == null ? '–' : t[2] + ' ms', src: t[3] }; }),
+        ms: ms,
+        traceShort: raw.trace.length + ' MCP-Aufrufe · ' + ms + ' ms'
+      };
+    }
+    var messages = hist.map(build);
+    var recent = messages.slice(-6).reverse();
+    var traceLog = recent.map(function (m, i) {
+      return { q: m.q.length > 70 ? m.q.slice(0, 68) + ' …' : m.q, sum: m.traceShort, calls: m.calls,
+        box: 'display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:8px;' +
+          (i === 0 ? 'background:#222C38;border:1px solid ' + accent : 'background:transparent;border:1px solid #2F3B48;opacity:0.75') };
+    });
+    var totalCalls = messages.reduce(function (s, m) { return s + m.calls.length; }, 0);
+
+    var W = { ok: 'Läuft', warn: 'Warnung', crit: 'Problem' };
+    var P = { ok: 'background:#E3F0E7;color:#1F5233', warn: 'background:#FBEFD6;color:#6B4500', crit: 'background:#B42318;color:#FFFFFF' };
+    var RANK = { ok: 0, warn: 1, crit: 2 };
+    var GROUPS = [
+      { title: 'Pressen', items: [
+        ['RT-01', 'Ø 125 · A60', '101 %', 'Ist/Soll', 'Mischung A60 noch 38 min', 'warn'],
+        ['RT-02', 'Ø 125 · A60', '97 %', 'Ist/Soll', 'Form 94 % · Füllgewicht ↑', 'warn'],
+        ['RT-03', 'Ø 125 · A46', '72 %', 'Ist/Soll', 'Rückstand nach Störung', 'crit'],
+        ['RT-04', 'Ø 180 · A30', '89 %', 'Ist/Soll', 'Taktzeit +9 %', 'warn']
+      ] },
+      { title: 'Öfen', items: [
+        ['OF-01', 'Charge 3/5 · 180 °C', '78 %', 'Belegung', 'Temperaturprofil im Soll', 'ok'],
+        ['OF-02', 'Charge 4/5 · 180 °C', '96 %', 'Belegung', 'Voll · Freigabe 10:15', 'warn']
+      ] },
+      { title: 'Verpackung', items: [
+        ['VP-01', 'Ø 125 · 25er-Karton', '98 %', 'Ist/Soll', '1.240 Kartons seit 06:00', 'ok'],
+        ['VP-02', 'Ø 180 · 10er-Karton', '64 %', 'Ist/Soll', 'Wartet auf Ofencharge', 'warn']
+      ] }
+    ];
+    var collapsed = st.collapsed || {};
+    var cnt = { ok: 0, warn: 0, crit: 0 };
+    var groups = GROUPS.map(function (g, gi) {
+      var worst = 'ok', c = { ok: 0, warn: 0, crit: 0 };
+      g.items.forEach(function (m) { c[m[5]]++; cnt[m[5]]++; if (RANK[m[5]] > RANK[worst]) worst = m[5]; });
+      var parts = [g.items.length + ' Stationen'];
+      if (c.crit) parts.push(c.crit + ' Problem');
+      if (c.warn) parts.push(c.warn + ' Warnung');
+      var open = !collapsed[gi];
+      return { title: g.title, sub: parts.join(' · '), count: g.items.length + (g.items.length === 1 ? ' Station' : ' Stationen'), open: open, expanded: open ? 'true' : 'false',
+        worstWord: c[worst] + ' ' + W[worst], showWorst: worst !== 'ok',
+        worst: 'flex:0 0 auto;padding:1px 7px;border-radius:4px;font-size:11px;font-weight:700;' + P[worst],
+        chevron: 'flex:0 0 12px;transition:transform 0.15s;transform:rotate(' + (open ? 90 : 0) + 'deg)',
+        toggle: function () { var n = Object.assign({}, collapsed); n[gi] = open; self.setState({ collapsed: n }); },
+        items: g.items.map(function (m) {
+          return { id: m[0], art: m[1], pct: m[2], unit: m[3], note: m[4], word: W[m[5]],
+            pill: 'flex:0 0 62px;box-sizing:border-box;text-align:center;padding:1px 0;border-radius:4px;font-size:11px;font-weight:700;' + P[m[5]],
+            row: 'display:flex;flex-direction:column;gap:4px;padding:8px 10px;' + (m[0] === g.items[0][0] ? '' : 'border-top:1px solid #EFEDE7;') + (m[5] === 'crit' ? 'background:#FDF3F1' : '') };
+        }) };
+    });
+    var summary = [['crit', 'Problem'], ['warn', 'Warnung'], ['ok', 'Läuft']].map(function (s) {
+      return { n: String(cnt[s[0]]), label: s[1],
+        box: 'display:flex;align-items:baseline;justify-content:center;gap:5px;padding:5px 4px;border-radius:6px;' + P[s[0]] };
+    });
+
+    var taken = st.taken || {};
+    var INBOX = {
+      sl: [
+        ['i-sl1', 'crit', 'Rückstand RT-03: Umverteilung entscheiden', 'Ca. 1.200 Stück Rückstand auf Auftrag 4711. RT-01 hätte ab 11:30 Kapazität mit gleichem Formsatz.', 'Entscheidung bis 11:30', 'sl4'],
+        ['i-sl2', 'warn', 'Mischung A60 für RT-01 anfordern', 'Verarbeitbarkeit endet 10:20, Vorlauf im Mischraum ca. 30 min.', 'bis 09:50', 'sl3'],
+        ['i-sl3', 'warn', 'Hydraulik RT-04 prüfen lassen', 'Presskraftaufbau seit 08:30 kontinuierlich langsamer, Taktzeit +9 %.', 'heute', 'sl2']
+      ],
+      hl: [
+        ['i-hl1', 'crit', 'Qualitätsabweichung Charge M-2410-17', 'Füllgewichtsdrift an RT-01 und RT-02, Ausschuss bei rund 3 %. Mischraum noch nicht informiert.', 'sofort', 'hl2'],
+        ['i-hl2', 'crit', 'Sicherheitsprüfung OF-01 überfällig', 'Prüfung der Türverriegelung seit 2 Tagen überfällig. Termin mit Instandhaltung festlegen.', 'heute', 'pl4'],
+        ['i-hl3', 'warn', 'Ofenbelegung ungleich verteilt', 'OF-02 bei 96 %, OF-01 bei 78 %. Ø 45 min Wartezeit vor den Öfen, VP-02 wartet.', 'bis 10:15', 'hl4'],
+        ['i-hl4', 'warn', 'Freigabe: Formwartung RT-02 mit Rüsten bündeln', 'Wartungsauftrag W-3381 auf 11:30 legen. Kein zusätzlicher Stillstand.', 'bis 11:00', 'hl3']
+      ],
+      pl: [
+        ['i-pl1', 'crit', 'Zwei Ø-230-Aufträge gefährdet', 'Liefertermin nächster Dienstag. Zusatzschicht am Samstag in Halle B wäre eine Option.', 'Entscheidung bis Freitag', 'pl1'],
+        ['i-pl2', 'crit', 'Sicherheitsprüfung OF-01 überfällig', 'Eskaliert, weil sicherheitsrelevant und länger als 24 h überfällig.', 'heute', 'pl4'],
+        ['i-pl3', 'warn', 'Investition: Teilüberholung Gewebezuführung RT-03', 'MTBF 31 h gegenüber 78 h bei den anderen Rundtischen. Angebot einholen?', 'nächste Investitionsrunde', 'pl3']
+      ]
+    };
+    var PRIO = { crit: 'Dringend', warn: 'Zeitnah', info: 'Info' };
+    var inbox = INBOX[role].map(function (x) {
+      var isTaken = !!taken[x[0]];
+      return { title: x[2], detail: x[3], due: 'Frist: ' + x[4], prioText: PRIO[x[1]], badge: badge(x[1]),
+        box: 'display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:8px;' +
+          (isTaken ? 'background:#F7F6F2;border:1px solid #E3E0D8' : 'background:#FFFFFF;border:1px solid #D6D3CB'),
+        taken: isTaken, open: !isTaken,
+        takenText: 'Übernommen von ' + user.name + ' · 09:42',
+        analyze: function () { ask(x[5], A[x[5]].q); },
+        take: function () { var t = Object.assign({}, taken); t[x[0]] = true; self.setState({ taken: t }); } };
+    });
+    var openItems = INBOX[role].filter(function (x) { return !taken[x[0]]; });
+    var openCount = openItems.length + ' offen';
+
+    var LEVEL = { info: 0, ok: 0, warn: 1, crit: 2 };
+    var MIN = { sl: 0, hl: 1, pl: 2 };
+    var FEED = [
+      ['09:41', 'RT-04 · Zustandswarnung', 'Presskraftaufbau 1,1 s, Soll 0,8 s', 'warn'],
+      ['09:38', 'RT-01 · Material', 'Mischung A60: Verarbeitbarkeit endet 10:20', 'warn'],
+      ['09:30', 'RT-02 · Qualität', 'Füllgewicht über Warngrenze (113,7 g)', 'warn'],
+      ['09:20', 'OF-02 · Belegung', 'Ofen voll, 42 Platten im Puffer davor', 'warn'],
+      ['09:12', 'VP-01 · Material', 'Kartonmagazin nachgefüllt', 'info'],
+      ['09:05', 'VP-02 · Zustand', 'Wartet auf Ø-180-Charge aus OF-02', 'info'],
+      ['07:05', 'RT-03 · Störung', 'Gewebegreifer instandgesetzt, Rundtisch läuft', 'ok'],
+      ['06:40', 'OF-01 · Wartung', 'Sicherheitsprüfung Türverriegelung seit 2 Tagen überfällig', 'crit']
+    ];
+    var FDOT = { info: '#4A78A8', ok: '#3F8A5C', warn: '#C98A12', crit: '#C8402F' };
+    var FEEDALL = FEED.filter(function (f) { return LEVEL[f[3]] >= MIN[role]; });
+    var feed = FEEDALL.map(function (f) {
+      return { time: f[0], src: f[1], text: f[2],
+        dot: 'flex:0 0 10px;width:10px;height:10px;border-radius:50%;margin-top:5px;background:' + FDOT[f[3]] };
+    });
+    var feedFilter = { sl: 'Alle Meldungen Halle A', hl: 'Ab Warnung', pl: 'Nur Eskalationen' }[role];
+    var latest = FEEDALL[0];
+
+    var panel = st.panel || null;
+    function toggle(name) { return function () { self.setState({ panel: panel === name ? null : name }); }; }
+    function barBtn(active, extra) {
+      return 'display:inline-flex;align-items:center;gap:8px;padding:0 14px;border:none;border-left:1px solid #2F3B48;font-size:13px;cursor:pointer;' +
+        (extra || ('color:#E6E3DA;background:' + (active ? '#2F3B48' : 'transparent')));
+    }
+    var hasCrit = openItems.some(function (x) { return x[1] === 'crit'; });
+    var inboxExtra = openItems.length === 0 ? null
+      : hasCrit ? 'color:#FFFFFF;background:' + (panel === 'inbox' ? '#8F1C12' : '#B42318')
+      : 'color:#1B1F24;background:' + (panel === 'inbox' ? '#B07A10' : '#D9A23A');
+    var barScope = { sl: 'Halle A · Frühschicht 06–14', hl: 'Halle A · 4 Rundtische · 2 Öfen · 2 Verpackstellen', pl: 'Werk · Hallen A–C' }[role];
+
+    var draft = st.draft || '';
+    function send() { var t = (st.draft || '').trim(); if (!t) return; self.setState({ hist: hist.concat([{ ref: null, text: t, n: seq }]), seq: seq + 1, draft: '' }); }
+
+    return {
+      accent: accent,
+      showTrace: showTrace,
+      roles: roles,
+      roleLabel: roleLabel,
+      user: user,
+      summary: summary,
+      groups: groups,
+      climate: { temp: '23,4 °C', hum: '48 % rF', word: 'Hallenklima im Sollbereich',
+        hint: 'Sollbereich für Mischungen: 18–26 °C, 40–60 % rF · seit 06:00 +1,2 °C',
+        pill: 'padding:1px 7px;border-radius:4px;font-size:11px;font-weight:700;background:#E3F0E7;color:#1F5233' },
+      pins: pins,
+      pinCount: pinList.length + ' / ' + MAXPINS,
+      editing: editing,
+      editLabel: editing ? 'Fertig' : 'Bearbeiten',
+      toggleEdit: function () { self.setState({ edit: !editing }); },
+      pinsOpen: !!st.pinsOpen,
+      pinsClosed: !st.pinsOpen,
+      freeSlots: editing ? Array.from({ length: Math.max(0, MAXPINS - pinList.length) }, function () { return {}; }) : [],
+      pinsExpanded: st.pinsOpen ? 'true' : 'false',
+      togglePins: function () { self.setState({ pinsOpen: !st.pinsOpen, edit: false }); },
+      pinsBtn: 'flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 14px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;' +
+        (st.pinsOpen ? 'background:#1B232D;color:#FFFFFF;border:2px solid #1B232D' : 'background:#FFFFFF;color:#1B1F24;border:2px solid #B9B5AB'),
+      pinsChevron: 'transition:transform 0.15s;transform:rotate(' + (st.pinsOpen ? 180 : 0) + 'deg)',
+      newPin: newPin,
+      onNewPin: function (e) { self.setState({ newPin: e && e.target ? e.target.value : '' }); },
+      addPin: function () { var p = addPinText(newPin.trim(), null, (st.newShort || '').trim()); if (p) self.setState({ pins: p, newPin: '', newShort: '', seq: seq + 1 }); },
+      newShort: st.newShort || '',
+      onNewShort: function (e) { self.setState({ newShort: e && e.target ? e.target.value : '' }); },
+      editExpanded: editing ? 'true' : 'false',
+      editBtn: 'flex:0 0 auto;width:34px;height:34px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;' +
+        (editing ? 'background:' + accent + ';color:#FFFFFF;border:1px solid ' + accent : 'background:#FFFFFF;color:#3A4048;border:1px solid #B9B5AB'),
+      addStyle: 'min-height:40px;padding:0 14px;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;' +
+        (full ? 'background:#D6D3CB;color:#5A6068' : 'background:#1B232D;color:#FFFFFF'),
+      limitText: full ? 'Alle 10 Favoritenplätze belegt. Entferne einen, um Platz zu schaffen.' : 'Noch ' + (MAXPINS - pinList.length) + ' von 10 Plätzen frei. Kurztitel erscheint als Schaltfläche, die Frage wird beim Klick gestellt.',
+      suggest: suggest,
+      hasSuggest: suggest.length > 0 && !full,
+      messages: messages,
+      convRef: function (el) { self.convEl = el; },
+      traceLog: traceLog,
+      traceTotal: totalCalls + ' Aufrufe in dieser Sitzung',
+      draft: draft,
+      onDraft: function (e) { self.setState({ draft: e && e.target ? e.target.value : '' }); },
+      onDraftKey: function (e) { if (e && e.key === 'Enter') { e.preventDefault(); send(); } },
+      sendDraft: send,
+      pinDraft: function () { var p = addPinText(draft.trim()); if (p) self.setState({ pins: p, draft: '', seq: seq + 1 }); },
+      inbox: inbox,
+      openCount: openCount,
+      feed: feed,
+      feedFilter: feedFilter,
+      isInbox: panel === 'inbox',
+      isFeed: panel === 'feed',
+      isUser: panel === 'user',
+      closePanel: function () { self.setState({ panel: null }); },
+      toggleInbox: toggle('inbox'),
+      toggleFeed: toggle('feed'),
+      toggleUser: toggle('user'),
+      inboxBtn: barBtn(panel === 'inbox', inboxExtra),
+      feedBtn: barBtn(panel === 'feed'),
+      userBtn: barBtn(panel === 'user'),
+      feedCount: String(FEEDALL.length),
+      latestText: latest ? latest[0] + '  ' + latest[1] + ': ' + latest[2] : 'Keine Meldungen',
+      latestDot: 'flex:0 0 8px;width:8px;height:8px;border-radius:50%;background:' + (latest ? FDOT[latest[3]] : '#5A6572'),
+      barScope: barScope
+    };
+  }
+}
+</script>
+</body>
+</html>

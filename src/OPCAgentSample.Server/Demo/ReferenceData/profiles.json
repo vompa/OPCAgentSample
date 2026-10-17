@@ -1,0 +1,44 @@
+{
+  "note": "Erzeugt aus docs/mockup (USERS, ROLES, barScope, feedFilter).",
+  "profiles": {
+    "shift_lead": {
+      "label": "Schichtleiter",
+      "shortLabel": "Schicht",
+      "initials": "MH",
+      "firstName": "Martin",
+      "title": "Schichtleiter Halle A",
+      "mobileTitle": "Schichtleiter Halle A · Frühschicht",
+      "scope": "Halle A: RT-01–04, OF-01–02, VP-01–02",
+      "workTime": "Frühschicht 06–14, angemeldet 05:52",
+      "notification": "Hallen-Tablet",
+      "scopeText": "Halle A · Frühschicht 06–14",
+      "feedFilterText": "Alle Meldungen Halle A"
+    },
+    "hall_lead": {
+      "label": "Hallenleiter",
+      "shortLabel": "Halle",
+      "initials": "KG",
+      "firstName": "Katharina",
+      "title": "Hallenleiterin Halle A",
+      "mobileTitle": "Hallenleiterin Halle A",
+      "scope": "Halle A inkl. Wartungsplanung",
+      "workTime": "Tagdienst, angemeldet 06:45",
+      "notification": "Desktop + Teams",
+      "scopeText": "Halle A · 4 Rundtische · 2 Öfen · 2 Verpackstellen",
+      "feedFilterText": "Ab Warnung"
+    },
+    "production_lead": {
+      "label": "Produktionsleiter",
+      "shortLabel": "Produktion",
+      "initials": "SW",
+      "firstName": "Stefan",
+      "title": "Produktionsleiter Werk",
+      "mobileTitle": "Produktionsleiter Werk",
+      "scope": "Werk, Hallen A bis C",
+      "workTime": "Tagdienst, angemeldet 07:10",
+      "notification": "Teams, nur Eskalationen",
+      "scopeText": "Werk · Hallen A–C",
+      "feedFilterText": "Nur Eskalationen"
+    }
+  }
+}
