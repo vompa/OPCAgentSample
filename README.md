@@ -11,7 +11,7 @@ beantwortet die Fragen von Schichtleiter, Hallenleiterin und Produktionsleiter.
 > **Ein Dashboard zeigt, *dass* etwas ist. Die KI erklärt, *warum* und *was zu tun ist* – auf Basis derselben
 > verlässlichen Daten.**
 
-Status: **im Aufbau.** Die vollständige Spezifikation steht in [docs/spec.md](docs/spec.md), der freigegebene
+Status: **v1.0.0**, läuft als Live-Demo auf [opc.vompa.dev](https://opc.vompa.dev). Die vollständige Spezifikation steht in [docs/spec.md](docs/spec.md), der freigegebene
 Entwurf der Oberfläche in [docs/mockup/](docs/mockup/), die Kalibrierung des Szenarios und alle Kennzahl-Definitionen in [docs/calibration.md](docs/calibration.md).
 
 ## Grundsätze
