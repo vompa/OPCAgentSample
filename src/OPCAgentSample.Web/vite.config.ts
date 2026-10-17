@@ -19,6 +19,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: 'script', // eigene Datei statt Inline-Skript (CSP)
       manifest: {
+        id: '/',
         name: 'Schleifwerk · KI-Leitstand',
         short_name: 'KI-Leitstand',
         description: 'OPC UA → MCP-Server → Claude: Fragen an die Halle',
@@ -36,6 +37,23 @@ export default defineConfig({
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
+          },
+        ],
+        // Chrome und Edge zeigen mit Screenshots den ausführlichen Installieren-Dialog (wide = Desktop, narrow = Handy).
+        screenshots: [
+          {
+            src: 'img/web-desktop.png',
+            sizes: '1200x750',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'Leitstand am Desktop: Stationen, Antwortkarte von Claude und MCP-Aufrufe',
+          },
+          {
+            src: 'img/web-mobile.png',
+            sizes: '468x1013',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'Leitstand am Handy: Antwort von Claude zur Lage in der Halle',
           },
         ],
       },
