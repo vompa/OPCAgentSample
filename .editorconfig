@@ -22,7 +22,24 @@ csharp_prefer_braces = when_multiline:suggestion
 csharp_using_directive_placement = outside_namespace:warning
 dotnet_sort_system_directives_first = true
 
-# Benennung: private Felder _camelCase, Konstanten PascalCase, Async-Suffix
+# Benennung: private Felder _camelCase, statische s_camelCase, Konstanten PascalCase, Async-Suffix
+# Reihenfolge zählt: Konstanten gelten als statisch und stehen deshalb vor der s_-Regel.
+dotnet_naming_rule.constants_pascal.symbols = constants
+dotnet_naming_rule.constants_pascal.style = pascal
+dotnet_naming_rule.constants_pascal.severity = warning
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.required_modifiers = const
+dotnet_naming_style.pascal.capitalization = pascal_case
+
+dotnet_naming_rule.private_static_fields_s.symbols = private_static_fields
+dotnet_naming_rule.private_static_fields_s.style = s_camel
+dotnet_naming_rule.private_static_fields_s.severity = warning
+dotnet_naming_symbols.private_static_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_fields.required_modifiers = static
+dotnet_naming_style.s_camel.capitalization = camel_case
+dotnet_naming_style.s_camel.required_prefix = s_
+
 dotnet_naming_rule.private_fields_underscore.symbols = private_fields
 dotnet_naming_rule.private_fields_underscore.style = underscore_camel
 dotnet_naming_rule.private_fields_underscore.severity = warning
@@ -30,13 +47,6 @@ dotnet_naming_symbols.private_fields.applicable_kinds = field
 dotnet_naming_symbols.private_fields.applicable_accessibilities = private
 dotnet_naming_style.underscore_camel.capitalization = camel_case
 dotnet_naming_style.underscore_camel.required_prefix = _
-
-dotnet_naming_rule.constants_pascal.symbols = constants
-dotnet_naming_rule.constants_pascal.style = pascal
-dotnet_naming_rule.constants_pascal.severity = warning
-dotnet_naming_symbols.constants.applicable_kinds = field
-dotnet_naming_symbols.constants.required_modifiers = const
-dotnet_naming_style.pascal.capitalization = pascal_case
 
 dotnet_naming_rule.async_suffix.symbols = async_methods
 dotnet_naming_rule.async_suffix.style = async_suffix

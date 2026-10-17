@@ -4,8 +4,8 @@ using OPCAgentSample.Domain.Opc;
 using OPCAgentSample.Simulation.Generation;
 using OPCAgentSample.Simulator.History;
 using OPCAgentSample.Simulator.Model;
-using V = OPCAgentSample.Domain.Opc.StationVariables;
 using G = OPCAgentSample.Domain.Opc.StationGroups;
+using V = OPCAgentSample.Domain.Opc.StationVariables;
 
 namespace OPCAgentSample.Simulator.Live;
 
@@ -25,8 +25,15 @@ internal sealed class LiveFeed
 
     private static readonly Dictionary<string, int> s_yearOfConstruction = new Dictionary<string, int>
     {
-        ["RT-01"] = 2016, ["RT-02"] = 2016, ["RT-03"] = 2014, ["RT-04"] = 2019, ["PU-OFEN"] = 2012,
-        ["OF-01"] = 2012, ["OF-02"] = 2015, ["VP-01"] = 2018, ["VP-02"] = 2021,
+        ["RT-01"] = 2016,
+        ["RT-02"] = 2016,
+        ["RT-03"] = 2014,
+        ["RT-04"] = 2019,
+        ["PU-OFEN"] = 2012,
+        ["OF-01"] = 2012,
+        ["OF-02"] = 2015,
+        ["VP-01"] = 2018,
+        ["VP-02"] = 2021,
     };
 
     private readonly HistoryGenerator _generator;

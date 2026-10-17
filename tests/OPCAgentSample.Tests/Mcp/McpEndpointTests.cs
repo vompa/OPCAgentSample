@@ -3,9 +3,9 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using ModelContextProtocol.Protocol;
-using StackExchange.Redis;
 using OPCAgentSample.Server.Security;
 using OPCAgentSample.Tests.Server;
+using StackExchange.Redis;
 
 namespace OPCAgentSample.Tests.Mcp;
 

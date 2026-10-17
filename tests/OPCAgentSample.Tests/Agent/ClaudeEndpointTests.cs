@@ -7,10 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAgentSample.Server.Agent;
 using OPCAgentSample.Server.Demo;
-using StackExchange.Redis;
 using OPCAgentSample.Server.Security;
 using OPCAgentSample.Tests.Mcp;
 using OPCAgentSample.Tests.Server;
+using StackExchange.Redis;
 
 namespace OPCAgentSample.Tests.Agent;
 

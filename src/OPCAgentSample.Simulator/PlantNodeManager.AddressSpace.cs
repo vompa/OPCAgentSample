@@ -3,8 +3,8 @@ using OPCAgentSample.Domain;
 using OPCAgentSample.Domain.Opc;
 using OPCAgentSample.Simulation.Scenario;
 using OPCAgentSample.Simulator.Model;
-using V = OPCAgentSample.Domain.Opc.StationVariables;
 using G = OPCAgentSample.Domain.Opc.StationGroups;
+using V = OPCAgentSample.Domain.Opc.StationVariables;
 
 namespace OPCAgentSample.Simulator;
 

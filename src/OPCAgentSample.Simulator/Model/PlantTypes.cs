@@ -1,8 +1,8 @@
 using OPCAgentSample.Domain;
 using OPCAgentSample.Domain.History;
 using OPCAgentSample.Domain.Opc;
-using V = OPCAgentSample.Domain.Opc.StationVariables;
 using G = OPCAgentSample.Domain.Opc.StationGroups;
+using V = OPCAgentSample.Domain.Opc.StationVariables;
 
 namespace OPCAgentSample.Simulator.Model;
 
@@ -30,14 +30,14 @@ internal static class PlantTypes
         ("Ausstoss", Assemblies.Ejector),
     ];
 
-    public static IReadOnlyList<TypeSpec> All => [Station, RotaryTable, Oven, Buffer, Packaging];
+    public static IReadOnlyList<TypeSpec> All => [s_station, s_rotaryTable, s_oven, s_buffer, s_packaging];
 
     public static TypeSpec For(Domain.StationType type) => type switch
     {
-        Domain.StationType.RotaryTable => RotaryTable,
-        Domain.StationType.Oven => Oven,
-        Domain.StationType.Buffer => Buffer,
-        Domain.StationType.Packaging => Packaging,
+        Domain.StationType.RotaryTable => s_rotaryTable,
+        Domain.StationType.Oven => s_oven,
+        Domain.StationType.Buffer => s_buffer,
+        Domain.StationType.Packaging => s_packaging,
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
     };
 
@@ -64,7 +64,7 @@ internal static class PlantTypes
         return groups;
     }
 
-    private static readonly TypeSpec Station = new(StationTypeName, null,
+    private static readonly TypeSpec s_station = new(StationTypeName, null,
         "Basis aller Stationen: Identität, Zustand, Aufträge, Zähler, Energie, Ereignisse und Alarme.",
         [
             Group(G.Identity, false,
@@ -87,7 +87,7 @@ internal static class PlantTypes
             Group(G.Alarms, false, Number(V.ActiveAlarms, ValueKind.Int32), Number(V.ActiveMessages, ValueKind.Int32)),
         ]);
 
-    private static readonly TypeSpec RotaryTable = new(RotaryTableTypeName, StationTypeName,
+    private static readonly TypeSpec s_rotaryTable = new(RotaryTableTypeName, StationTypeName,
         "Rundtisch-Presse für Trennscheiben mit Prozess-, Material-, Werkzeug- und Hydraulikwerten.",
         [
             Group(G.Process, false,
@@ -131,7 +131,7 @@ internal static class PlantTypes
             Group(G.Events, false, EventVariableSpecs(HistoryNodeMap.ExtraEventNodes(Domain.StationType.RotaryTable))),
         ]);
 
-    private static readonly TypeSpec Oven = new(OvenTypeName, StationTypeName,
+    private static readonly TypeSpec s_oven = new(OvenTypeName, StationTypeName,
         "Aushärteofen mit Chargenplätzen, Temperaturzonen, Zuordnungsregel und Sicherheitsdaten.",
         [
             Group(G.Capacity, false,
@@ -154,7 +154,7 @@ internal static class PlantTypes
             Group(G.Events, false, EventVariableSpecs(HistoryNodeMap.ExtraEventNodes(Domain.StationType.Oven))),
         ]);
 
-    private static readonly TypeSpec Buffer = new(BufferTypeName, StationTypeName,
+    private static readonly TypeSpec s_buffer = new(BufferTypeName, StationTypeName,
         "Ofenplatten-Puffer zwischen Pressen und Öfen.",
         [
             Group(G.Inventory, false,
@@ -164,7 +164,7 @@ internal static class PlantTypes
                 Minute(V.OldestWait, ValueKind.Double, Units.Minute)),
         ]);
 
-    private static readonly TypeSpec Packaging = new(PackagingTypeName, StationTypeName,
+    private static readonly TypeSpec s_packaging = new(PackagingTypeName, StationTypeName,
         "Verpackstation mit Kartontyp, Magazinen, Kontrollwaage und Umreifer.",
         [
             Group(G.Packaging, false,

@@ -4,8 +4,8 @@ using OPCAgentSample.Domain;
 using OPCAgentSample.Server.Api;
 using OPCAgentSample.Server.Demo;
 using OPCAgentSample.Server.DemoAccess;
-using OPCAgentSample.Server.MasterData;
 using OPCAgentSample.Server.Ingestion;
+using OPCAgentSample.Server.MasterData;
 using OPCAgentSample.Server.Security;
 using OPCAgentSample.Tests.Server;
 

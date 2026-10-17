@@ -1,7 +1,7 @@
 using OPCAgentSample.Domain.History;
+using E = OPCAgentSample.Domain.Opc.EventVariables;
 using G = OPCAgentSample.Domain.Opc.StationGroups;
 using V = OPCAgentSample.Domain.Opc.StationVariables;
-using E = OPCAgentSample.Domain.Opc.EventVariables;
 
 namespace OPCAgentSample.Domain.Opc;
 

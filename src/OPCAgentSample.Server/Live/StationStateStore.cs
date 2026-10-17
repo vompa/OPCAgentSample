@@ -57,14 +57,14 @@ public sealed class StationStateStore(IConnectionMultiplexer redis, StationState
 
     private async Task WriteAsync(StationSnapshot snapshot)
     {
-            var transaction = redis.GetDatabase().CreateTransaction();
-            foreach (var station in snapshot.Stations)
-            {
-                var key = RedisKeys.Station(station.StationId);
-                _ = transaction.KeyDeleteAsync(key);
-                _ = transaction.HashSetAsync(key,
-                [
-                    new HashEntry(DataField, JsonSerializer.Serialize(station, s_json)),
+        var transaction = redis.GetDatabase().CreateTransaction();
+        foreach (var station in snapshot.Stations)
+        {
+            var key = RedisKeys.Station(station.StationId);
+            _ = transaction.KeyDeleteAsync(key);
+            _ = transaction.HashSetAsync(key,
+            [
+                new HashEntry(DataField, JsonSerializer.Serialize(station, s_json)),
                     new HashEntry("state", station.State.ToString()),
                     new HashEntry("since", station.SinceUtc.ToString("O", CultureInfo.InvariantCulture)),
                     new HashEntry("order", station.OrderId ?? string.Empty),
@@ -74,23 +74,23 @@ public sealed class StationStateStore(IConnectionMultiplexer redis, StationState
                     new HashEntry("reach_min", station.ReachMinutes?.ToString("R", CultureInfo.InvariantCulture) ?? string.Empty),
                     new HashEntry("source_until", station.SourceUntilUtc.ToString("O", CultureInfo.InvariantCulture)),
                 ]);
-                _ = transaction.KeyExpireAsync(key, s_ttl);
-            }
+            _ = transaction.KeyExpireAsync(key, s_ttl);
+        }
 
-            if (snapshot.Climate is { } climate)
-            {
-                var key = RedisKeys.Station(MinuteVariables.HallAClimateSource);
-                _ = transaction.KeyDeleteAsync(key);
-                _ = transaction.HashSetAsync(key,
-                [
-                    new HashEntry(DataField, JsonSerializer.Serialize(climate, s_json)),
+        if (snapshot.Climate is { } climate)
+        {
+            var key = RedisKeys.Station(MinuteVariables.HallAClimateSource);
+            _ = transaction.KeyDeleteAsync(key);
+            _ = transaction.HashSetAsync(key,
+            [
+                new HashEntry(DataField, JsonSerializer.Serialize(climate, s_json)),
                     new HashEntry("celsius", climate.Celsius.ToString("R", CultureInfo.InvariantCulture)),
                     new HashEntry("humidity", climate.Humidity.ToString("R", CultureInfo.InvariantCulture)),
                     new HashEntry("source_until", climate.SourceUntilUtc.ToString("O", CultureInfo.InvariantCulture)),
                 ]);
-                _ = transaction.KeyExpireAsync(key, s_ttl);
-            }
+            _ = transaction.KeyExpireAsync(key, s_ttl);
+        }
 
-            await transaction.ExecuteAsync();
+        await transaction.ExecuteAsync();
     }
 }

@@ -46,7 +46,9 @@ public sealed class SimulatorAddressSpaceTests(SimulatorFixture fixture)
 
         var expected = new Dictionary<string, string>
         {
-            ["HalleA.Pressen"] = "RundtischType", ["HalleA.Puffer"] = "PufferType", ["HalleA.Oefen"] = "OfenType",
+            ["HalleA.Pressen"] = "RundtischType",
+            ["HalleA.Puffer"] = "PufferType",
+            ["HalleA.Oefen"] = "OfenType",
             ["HalleA.Verpackung"] = "VerpackungType",
         };
         foreach (var (area, typeName) in expected)

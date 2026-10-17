@@ -1,10 +1,10 @@
+using Microsoft.Extensions.DependencyInjection;
 using OPCAgentSample.Domain;
 using OPCAgentSample.Domain.History;
 using OPCAgentSample.Kpi;
 using OPCAgentSample.Rollup;
 using OPCAgentSample.Server.Ingestion;
 using OPCAgentSample.Tests.Rollup;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 
 namespace OPCAgentSample.Tests.Server.Ingestion;

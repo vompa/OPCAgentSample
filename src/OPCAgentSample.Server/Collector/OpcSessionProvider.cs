@@ -2,8 +2,8 @@ using Microsoft.Extensions.Options;
 using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.Configuration;
-using ISession = Opc.Ua.Client.ISession;
 using OPCAgentSample.Domain.Opc;
+using ISession = Opc.Ua.Client.ISession;
 
 namespace OPCAgentSample.Server.Collector;
 
