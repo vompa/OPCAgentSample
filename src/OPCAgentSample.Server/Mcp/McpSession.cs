@@ -141,7 +141,7 @@ public static class McpJson
 }
 
 /// <summary>
-/// Ergebnis eines Tools als geordnete Felder. <see cref="Build"/> ergänzt Datenstand (<c>source_until</c>), Quelle und
+/// Ergebnis eines Tools als geordnete Felder. <see cref="BuildAsync"/> ergänzt Datenstand (<c>source_until</c>), Quelle und
 /// Hinweise, die jedes Ergebnis trägt (das MCP-Band der Oberfläche zeigt sie an).
 /// </summary>
 public sealed class Reply(string tool)

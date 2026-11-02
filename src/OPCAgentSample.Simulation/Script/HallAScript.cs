@@ -20,8 +20,8 @@ public static class HallAScript
     private const string Vp02 = "VP-02";
     private const string Of01 = "OF-01";
 
-    private static readonly TimeSpan PressSetup = TimeSpan.FromMinutes(30);
-    private static readonly TimeSpan PackagingSetup = TimeSpan.FromMinutes(20);
+    private static readonly TimeSpan PressSetupDuration = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan PackagingSetupDuration = TimeSpan.FromMinutes(20);
     private static readonly TimeSpan PotLife = TimeSpan.FromHours(3);
 
     public static IReadOnlyList<ScriptedLoss> Losses(LocalClock at)
@@ -462,8 +462,8 @@ public static class HallAScript
         new(id, station, LossCategory.MinorStop, LossReasons.LabelsEmpty, Assemblies.LabelFeed, "Etikettenzufuhr leer", start, Minutes(minutes));
 
     private static ScriptedSetup PressSetup(string id, string station, DateTimeOffset start, int overrunMinutes) =>
-        new(id, station, start, PressSetup, Minutes(overrunMinutes));
+        new(id, station, start, PressSetupDuration, Minutes(overrunMinutes));
 
     private static ScriptedSetup PackagingSetup(string id, string station, DateTimeOffset start, int overrunMinutes) =>
-        new(id, station, start, PackagingSetup, Minutes(overrunMinutes));
+        new(id, station, start, PackagingSetupDuration, Minutes(overrunMinutes));
 }

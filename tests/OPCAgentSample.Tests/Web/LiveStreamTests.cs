@@ -303,9 +303,9 @@ public sealed class LiveStreamTests(InfrastructureFixture infrastructure)
     public async Task A_change_through_instance_A_reaches_the_client_of_instance_B()
     {
         var instanceA = await CreateFactoryAsync();
-        using var _a = instanceA;
+        using var ownedA = instanceA;
         var instanceB = await CreateFactoryAsync(shareRedis: true);
-        using var _b = instanceB;
+        using var ownedB = instanceB;
         using var httpA = instanceA.CreateClient();
         using var httpB = instanceB.CreateClient();
         Assert.NotSame(instanceA.Services.GetRequiredService<LiveHub>(), instanceB.Services.GetRequiredService<LiveHub>());

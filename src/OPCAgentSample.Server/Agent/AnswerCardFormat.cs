@@ -24,9 +24,9 @@ public static class AnswerCardFormat
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     /// <summary>JSON-Schema der Karte. Alle Objekte mit <c>additionalProperties: false</c>, wie Structured Outputs es verlangen.</summary>
-    public static IReadOnlyDictionary<string, JsonElement> Schema() => Schema.Value;
+    public static IReadOnlyDictionary<string, JsonElement> Schema() => LazySchema.Value;
 
-    private static readonly Lazy<IReadOnlyDictionary<string, JsonElement>> Schema = new(BuildSchema);
+    private static readonly Lazy<IReadOnlyDictionary<string, JsonElement>> LazySchema = new(BuildSchema);
 
     private static Dictionary<string, JsonElement> BuildSchema()
     {

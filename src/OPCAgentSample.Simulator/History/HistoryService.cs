@@ -19,7 +19,7 @@ internal sealed class HistoryService
 {
     private const int MaxCachedSlices = 80;
     private static readonly TimeSpan Lookahead = TimeSpan.FromMinutes(1);
-    private static readonly TimeSpan Slice = TimeSpan.FromHours(6);
+    private static readonly TimeSpan SliceLength = TimeSpan.FromHours(6);
 
     private readonly HistoryGenerator _generator;
     private readonly ISimulationClock _clock;
@@ -64,8 +64,8 @@ internal sealed class HistoryService
 
     private IEnumerable<HistoryRecord> Slices(DateTimeOffset from, DateTimeOffset until, string stationId, string key)
     {
-        var first = (long)Math.Floor((from - _origin) / Slice);
-        var last = (long)Math.Floor((until - _origin - TimeSpan.FromTicks(1)) / Slice);
+        var first = (long)Math.Floor((from - _origin) / SliceLength);
+        var last = (long)Math.Floor((until - _origin - TimeSpan.FromTicks(1)) / SliceLength);
         for (var index = first; index <= last; index++)
         {
             if (!Slice(index).TryGetValue((stationId, key), out var records)) continue;
@@ -79,8 +79,8 @@ internal sealed class HistoryService
 
     private SliceData Slice(long index)
     {
-        var start = _origin + (Slice * index);
-        var end = start + Slice;
+        var start = _origin + (SliceLength * index);
+        var end = start + SliceLength;
 
         lock (_lock)
         {

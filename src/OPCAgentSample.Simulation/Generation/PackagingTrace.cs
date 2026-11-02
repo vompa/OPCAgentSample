@@ -15,7 +15,7 @@ internal static class PackagingTrace
     private const int LargeDiscDiameterMm = 180;
     private static readonly TimeSpan OvenLookback = TimeSpan.FromMinutes(90);
     private static readonly TimeOnly PackingCutoff = new(12, 0);
-    private static readonly TimeOnly ShippingTime = new(14, 0);
+    private static readonly TimeOnly ShippingTimeOfDay = new(14, 0);
 
     public static IEnumerable<PalletRecord> Pallets(
         ScenarioDefinition scenario, ProductionStationModel station, ShiftRun run, OvenLookup ovens, TimeWindow window)
@@ -71,7 +71,7 @@ internal static class PackagingTrace
         var day = DateOnly.FromDateTime(local.DateTime);
         if (TimeOnly.FromDateTime(local.DateTime) >= PackingCutoff) day = day.AddDays(1);
         while (!calendar.IsProductionDay(day)) day = day.AddDays(1);
-        return calendar.ToUtc(day.ToDateTime(ShippingTime));
+        return calendar.ToUtc(day.ToDateTime(ShippingTimeOfDay));
     }
 }
 

@@ -65,13 +65,13 @@ public static class AppTelemetry
     private static readonly Histogram<double> QuestionDuration =
         Meter.CreateHistogram<double>(ClaudeQuestionDuration, unit: "s", description: "Dauer einer Frage von Anfang bis Antwort");
 
-    private static readonly Counter<long> Tokens =
+    private static readonly Counter<long> TokensCounter =
         Meter.CreateCounter<long>(ClaudeTokens, description: "Verbrauchte Tokens nach Art (input/output/cache_read/cache_write)");
 
     private static readonly Counter<long> QuotaDenials =
         Meter.CreateCounter<long>(ClaudeQuotaDenials, description: "Fragen, die das Tageskontingent abgelehnt hat");
 
-    private static readonly Counter<long> IngestRecords =
+    private static readonly Counter<long> IngestRecordsCounter =
         Meter.CreateCounter<long>(IngestRecords, description: "In Redis aufgenommene Datensätze");
 
     private static Func<DateTimeOffset>? Clock;
@@ -110,7 +110,7 @@ public static class AppTelemetry
     {
         void Add(string kind, long value)
         {
-            if (value > 0) Tokens.Add(value, new("kind", kind), new("model", model));
+            if (value > 0) TokensCounter.Add(value, new("kind", kind), new("model", model));
         }
 
         Add(TokenKinds.Input, input);
@@ -122,7 +122,7 @@ public static class AppTelemetry
     public static void Ingested(string source, long records)
     {
         Interlocked.Add(ref IngestedTotal, records);
-        IngestRecords.Add(records, new KeyValuePair<string, object?>("source", source));
+        IngestRecordsCounter.Add(records, new KeyValuePair<string, object?>("source", source));
     }
 
 
