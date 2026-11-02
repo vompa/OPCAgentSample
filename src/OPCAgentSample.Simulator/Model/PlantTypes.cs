@@ -1,4 +1,3 @@
-using OPCAgentSample.Domain;
 using OPCAgentSample.Domain.History;
 using OPCAgentSample.Domain.Opc;
 using G = OPCAgentSample.Domain.Opc.StationGroups;

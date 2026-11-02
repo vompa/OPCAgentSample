@@ -1,5 +1,4 @@
 using OPCAgentSample.Domain;
-using OPCAgentSample.Domain.History;
 using OPCAgentSample.Rollup;
 
 namespace OPCAgentSample.Server.Api;

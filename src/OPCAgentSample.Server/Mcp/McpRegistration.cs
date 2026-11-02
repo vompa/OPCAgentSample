@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using OPCAgentSample.Domain;
-using OPCAgentSample.Server.Demo;
 using OPCAgentSample.Server.Observability;
 using OPCAgentSample.Server.Security;
 

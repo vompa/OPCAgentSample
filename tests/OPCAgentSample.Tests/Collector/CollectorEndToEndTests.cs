@@ -3,7 +3,6 @@ using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAgentSample.Domain;
-using OPCAgentSample.Domain.History;
 using OPCAgentSample.Kpi;
 using OPCAgentSample.Rollup;
 using OPCAgentSample.Server.Collector;

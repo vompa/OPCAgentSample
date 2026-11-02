@@ -2,7 +2,6 @@ using OPCAgentSample.Domain;
 using OPCAgentSample.Domain.History;
 using OPCAgentSample.Domain.Opc;
 using OPCAgentSample.Simulation.Generation;
-using OPCAgentSample.Simulator.History;
 using OPCAgentSample.Simulator.Model;
 using G = OPCAgentSample.Domain.Opc.StationGroups;
 using V = OPCAgentSample.Domain.Opc.StationVariables;

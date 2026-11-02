@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using OPCAgentSample.Domain;
 using OPCAgentSample.Domain.History;
 using OPCAgentSample.Kpi;
 using OPCAgentSample.Rollup;

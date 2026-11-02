@@ -2,7 +2,6 @@ using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.Configuration;
 using OPCAgentSample.Domain.Opc;
-using OPCAgentSample.Simulator;
 
 namespace OPCAgentSample.Tests.Simulator;
 

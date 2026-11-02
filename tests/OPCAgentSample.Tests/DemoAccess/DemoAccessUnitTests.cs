@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using OPCAgentSample.Domain;
-using OPCAgentSample.Server.Api;
 using OPCAgentSample.Server.Demo;
 using OPCAgentSample.Server.DemoAccess;
 using OPCAgentSample.Server.Ingestion;

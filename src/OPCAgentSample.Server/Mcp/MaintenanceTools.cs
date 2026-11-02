@@ -5,8 +5,6 @@ using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using OPCAgentSample.Domain;
-using OPCAgentSample.Domain.History;
-using OPCAgentSample.Kpi;
 using OPCAgentSample.Server.Demo;
 using OPCAgentSample.Server.MasterData;
 

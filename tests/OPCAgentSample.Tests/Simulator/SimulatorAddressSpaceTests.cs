@@ -1,6 +1,5 @@
 using Opc.Ua;
 using OPCAgentSample.Domain;
-using OPCAgentSample.Simulator;
 
 namespace OPCAgentSample.Tests.Simulator;
 

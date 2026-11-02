@@ -1,7 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using OPCAgentSample.Domain;
 using OPCAgentSample.Rollup;
 using OPCAgentSample.Server.Demo;
 using OPCAgentSample.Server.Ingestion;

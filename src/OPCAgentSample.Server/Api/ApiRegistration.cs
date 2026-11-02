@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OPCAgentSample.Server.DemoAccess;
-using OPCAgentSample.Server.Features.ChatHistory;
 
 namespace OPCAgentSample.Server.Api;
 

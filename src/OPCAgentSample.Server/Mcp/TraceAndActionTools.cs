@@ -2,7 +2,6 @@ using System.ComponentModel;
 using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using OPCAgentSample.Domain;
 using OPCAgentSample.Rollup;
 using OPCAgentSample.Server.Demo;
 

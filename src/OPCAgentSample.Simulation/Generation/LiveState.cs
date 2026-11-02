@@ -1,7 +1,6 @@
 using OPCAgentSample.Domain;
 using OPCAgentSample.Domain.History;
 using OPCAgentSample.Kpi;
-using OPCAgentSample.Simulation.Scenario;
 
 namespace OPCAgentSample.Simulation.Generation;
 
