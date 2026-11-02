@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Anthropic" Version="12.57.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.8.3" />
     <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
     <!-- Gleiche Version wie der Simulator (OPCFoundation.NetStandard.Opc.Ua.Server); nicht auf 2.x wechseln -->
     <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua.Client" Version="1.5.378.182" />

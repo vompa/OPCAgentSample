@@ -39,12 +39,21 @@ Ruling: `AllowMultipleToolCalls = true` wird gesetzt, damit kein `null`-Feld ges
 Build decision (slice 01): `ScriptedModelClient` baut jede `AgentModelRequest` mit `AnthropicModelClient.Build` zum API-JSON und legt es in `Requests` ab; die Anfrage-, Engine- und Endpoint-Tests bleiben dadurch inhaltlich unverändert – Claude, 2026-11-02
 Build decision (slice 01): `ModelReply(Stop, RawStopReason, Blocks, Usage)`; `pause_turn`, `model_context_window_exceeded` und ein fehlender Grund werden `ModelStop.Other` (Karte `UnexpectedStop`, Log mit Rohwert oder „(keiner)“) – Claude, 2026-11-02
 Build decision (slice 01): AC-01 ist als Scan-Test `Engine_source_names_no_Anthropic_namespace` festgehalten; er war im Gerüst-Commit schon grün (Basis hatte 3 Treffer), rot waren Stopp-Zuordnung und Auswertung des Enums – Claude, 2026-11-02
+Build decision (slice 02): Der Dialekt hat statt `MarkCacheBreakpoint` die Methoden `CachedSystemText` und `ToolResult(item, cacheBreakpoint)` plus `IsRedactedThinking`; der Marker steckt im fertigen Block (`RawRepresentation`), ein nachträgliches Markieren entfällt, und `is_error` bleibt erhalten – Claude, 2026-11-02
+Build decision (slice 02): Die Antwort wird im Client aus den Updates selbst zu Blöcken zusammengesetzt statt mit `ToChatResponse()`; nur so bleibt Redacted Thinking (leerer Text plus Signatur) von einem Thinking-Block unterscheidbar – Claude, 2026-11-02
+Build decision (slice 02): `ToStop` ist im Dialekt eine Kopie der Zuordnung aus `AnthropicModelClient`; die Altkopie fällt in Slice 03 mit dem Löschen von `AnthropicModelClient` weg – Claude, 2026-11-02
 
 ## Surprises
 - Slice 01: Im Worktree fehlt `src/OPCAgentSample.Server/wwwroot` (gebaute Weboberfläche, nicht eingecheckt): drei Tests (`WebApiTests` ×2, `DemoAccessEndpointTests`) waren dort rot, nach dem Kopieren des Ordners aus dem Hauptordner grün – Umgebung, kein Fehler der Slice (nicht in Git).
 - Slice 01: `SnapshotTests.Checked_in_snapshot_matches_the_current_code` ist rot, auch einzeln und auf der unveränderten Basis `cf57031` im Hauptordner („machines_hall_lead.json … veraltet“) – vorbestehend, nicht Teil der Slice; die übrigen Tests der Gesamtsuite waren grün (626 von 630 im ersten Lauf, die drei Web-Fälle danach grün).
+- Slice 02: Das SDK liefert `GetCacheControl` nur intern; der Cache-Marker ist deshalb am `RawRepresentation`-Block (`TextBlockParam`/`ToolResultBlockParam`) prüfbar, nicht über die Erweiterungsmethode.
+- Slice 02: Alle 36 neuen Tests waren gegen das Gerüst (`NotImplementedException`) rot und nach der Umsetzung ohne Nacharbeit am Test grün. Volle Gesamtsuite lief in dieser Slice nicht (nur neue Dateien und ein Paket, keine gemeinsame Änderung); sie folgt mit der Registrierung in Slice 03.
 
 ## Deferred minors
+- Slice 02 (Review): Fehlerabbildung ohne Testzeile für den `Other`-Zweig (`AnthropicException`-Basis) und ohne Prüfung der Meldungstexte – in Slice 03 nachziehen, wenn `AnthropicModelClient` entfällt.
+- Slice 02 (Review): Über den echten Adapter sind `tools` und `tool_choice` (`disable_parallel_tool_use:false` durch `AllowMultipleToolCalls = true`, Schema-Transformation) nicht getestet; für AC-02 in Slice 03 beim JSON-Vergleich zuerst ansehen.
+- Slice 02 (Review): Abbruch mitten im Stream und Weiterreichen des Tokens sind nicht getestet; zwei aufeinanderfolgende Denkblöcke ohne Zwischenblock würden zu einem (unwahrscheinlich, API sendet dazwischen Text oder Tool-Aufruf).
+- Slice 02 (Review): Die Usage-Rechnung (Schlüssel `CacheCreationInputTokens`) liegt im neutralen Client; bei einem zweiten Anbieter gehört sie in den Dialekt.
 
 ## Open decisions
 
@@ -54,4 +63,11 @@ Start: `docker compose up -d`, `dotnet run --project src/OPCAgentSample.Simulato
 1. In der Weboberfläche eine Frage stellen (z. B. „Wie ist die Lage?“).
 Expected: Die Antwortkarte erscheint wie vor der Runde, die Überschrift streamt vorab, im Log steht „Claude-Frage: … Modellaufrufe …“ mit plausiblen Token-Werten.
 Closes: AC-01, AC-03
+Result: ☐
+
+### Slice 02 – ChatClient-Adapter
+Start: `dotnet test tests/OPCAgentSample.Tests -c Release --filter "FullyQualifiedName~ChatClientModelClientTests"`
+1. Die Tests der Klasse laufen lassen (die Registrierung nutzt den neuen Client noch nicht, die Oberfläche ändert sich nicht).
+Expected: alle 36 Tests sind grün.
+Closes: AC-03, AC-04, AC-05
 Result: ☐
