@@ -69,7 +69,7 @@ public sealed class ClaudeEndpointTests(InfrastructureFixture infrastructure)
             builder.ConfigureTestServices(services =>
             {
                 services.AddLogging(logging => logging.AddProvider(logs));
-                services.AddSingleton<IClaudeModelClient>(model);
+                services.AddSingleton<IAgentModelClient>(model);
                 services.AddSingleton<IMcpLoopback>(loopback);
             });
         });

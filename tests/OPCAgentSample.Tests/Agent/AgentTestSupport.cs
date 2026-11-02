@@ -7,9 +7,14 @@ using OPCAgentSample.Tests.Server;
 
 namespace OPCAgentSample.Tests.Agent;
 
-/// <summary>Nachgebauter Anthropic-Client: liefert skriptierte Antworten und merkt sich jede Anfrage. Es gibt keinen echten Aufruf.</summary>
-internal sealed class ScriptedModelClient : IClaudeModelClient
+/// <summary>
+/// Nachgebauter Modell-Client: liefert skriptierte Antworten und merkt sich jede Anfrage in der Form, in der sie an die API ginge
+/// (<see cref="AnthropicModelClient.Build"/>). Es gibt keinen echten Aufruf.
+/// </summary>
+internal sealed class ScriptedModelClient(ClaudeOptions? options = null) : IAgentModelClient
 {
+    private readonly ClaudeOptions _options = options ?? new ClaudeOptions();
+
     private readonly Queue<Func<MessageCreateParams, ModelReply>> _script = new();
 
     public List<MessageCreateParams> Requests { get; } = [];
@@ -35,12 +40,13 @@ internal sealed class ScriptedModelClient : IClaudeModelClient
         return this;
     }
 
-    public Task<ModelReply> CreateAsync(MessageCreateParams request, Action<string>? onTextDelta, CancellationToken cancellationToken)
+    public Task<ModelReply> CreateAsync(AgentModelRequest request, Action<string>? onTextDelta, CancellationToken cancellationToken)
     {
-        Requests.Add(request);
+        var apiRequest = AnthropicModelClient.Build(_options, request);
+        Requests.Add(apiRequest);
         if (_script.Count == 0) throw new InvalidOperationException("Das Skript des nachgebauten Clients ist zu Ende: unerwarteter Modellaufruf.");
 
-        var reply = _script.Dequeue()(request);
+        var reply = _script.Dequeue()(apiRequest);
         if (onTextDelta is not null && DeltaSize is { } size)
         {
             foreach (var text in reply.Blocks.OfType<ModelText>().Select(b => b.Text))
@@ -120,16 +126,16 @@ internal static class Replies
     public static ModelUsage Usage(long input = 1000, long output = 200, long cacheRead = 0, long cacheWrite = 0) => new(input, output, cacheRead, cacheWrite);
 
     public static ModelReply Tools(params (string Id, string Name, string Args)[] calls) =>
-        new("tool_use", [.. calls.Select(c => (ModelBlock)new ModelToolUse(c.Id, c.Name, JsonDocument.Parse(c.Args).RootElement.Clone()))], Usage());
+        new(ModelStop.ToolCalls, "tool_use", [.. calls.Select(c => (ModelBlock)new ModelToolUse(c.Id, c.Name, JsonDocument.Parse(c.Args).RootElement.Clone()))], Usage());
 
     public static ModelReply ToolsWithThinking(params (string Id, string Name, string Args)[] calls) =>
-        new("tool_use",
+        new(ModelStop.ToolCalls, "tool_use",
             [new ModelThinking("", "sig-1"), .. calls.Select(c => (ModelBlock)new ModelToolUse(c.Id, c.Name, JsonDocument.Parse(c.Args).RootElement.Clone()))],
             Usage());
 
-    public static ModelReply Card(string json = ValidCard, ModelUsage? usage = null) => new("end_turn", [new ModelText(json)], usage ?? Usage());
+    public static ModelReply Card(string json = ValidCard, ModelUsage? usage = null) => new(ModelStop.Done, "end_turn", [new ModelText(json)], usage ?? Usage());
 
-    public static ModelReply Stop(string reason, params ModelBlock[] blocks) => new(reason, blocks, Usage());
+    public static ModelReply Stop(ModelStop stop, string? rawReason, params ModelBlock[] blocks) => new(stop, rawReason, blocks, Usage());
 }
 
 /// <summary>Baut die Engine mit nachgebauten Abhängigkeiten (kein Docker, kein Netz).</summary>
@@ -139,6 +145,7 @@ internal sealed class EngineHarness
     {
         Options = new ClaudeOptions { ApiKey = "sk-ant-test-geheimer-schluessel" };
         configure?.Invoke(Options);
+        Model = new ScriptedModelClient(Options);
         Counters = new MemoryQuotaCounters();
         Quota = new ClaudeQuota(Counters, Microsoft.Extensions.Options.Options.Create(Options), Time);
         Engine = new ClaudeAnswerEngine(Model, Toolbox, Quota, Microsoft.Extensions.Options.Options.Create(Options), Clock, logger ?? NullLogger<ClaudeAnswerEngine>.Instance);
@@ -146,7 +153,7 @@ internal sealed class EngineHarness
 
     public ClaudeOptions Options { get; }
 
-    public ScriptedModelClient Model { get; } = new();
+    public ScriptedModelClient Model { get; }
 
     public FakeToolbox Toolbox { get; } = new();
 

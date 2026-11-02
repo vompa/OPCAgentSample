@@ -18,7 +18,7 @@ public static class ClaudeRegistration
         services.AddSingleton<IValidateOptions<ClaudeOptions>, ClaudeOptionsValidator>();
         services.TryAddSingletonTimeProvider();
 
-        services.TryAddSingleton<IClaudeModelClient, AnthropicModelClient>();
+        services.TryAddSingleton<IAgentModelClient, AnthropicModelClient>();
         services.TryAddSingleton<IMcpLoopback, HttpMcpLoopback>();
         services.TryAddSingleton<InternalAgentKeys>();
         services.TryAddSingleton<IAgentToolbox, McpAgentToolbox>();

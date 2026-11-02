@@ -55,7 +55,7 @@ public sealed class ClaudeAnswerEngineTests
         var harness = new EngineHarness();
         harness.Model.DeltaSize = 9;
         harness.Model
-            .Then(new ModelReply("tool_use", [new ModelText("Ich schaue nach."), new ModelToolUse("t1", "get_hall_overview", JsonDocument.Parse("{}").RootElement.Clone())], Replies.Usage()))
+            .Then(new ModelReply(ModelStop.ToolCalls, "tool_use", [new ModelText("Ich schaue nach."), new ModelToolUse("t1", "get_hall_overview", JsonDocument.Parse("{}").RootElement.Clone())], Replies.Usage()))
             .Then(Replies.Card());
 
         var steps = await harness.AskAsync();
@@ -224,7 +224,7 @@ public sealed class ClaudeAnswerEngineTests
     public async Task Refusal_yields_a_refusal_card_without_reading_the_content()
     {
         var harness = new EngineHarness();
-        harness.Model.Then(Replies.Stop("refusal", new ModelText(Replies.ValidCard)));
+        harness.Model.Then(Replies.Stop(ModelStop.Refused, "refusal", new ModelText(Replies.ValidCard)));
 
         var card = ((AnswerReadyStep)(await harness.AskAsync()).Single()).Card;
 
@@ -236,7 +236,7 @@ public sealed class ClaudeAnswerEngineTests
     public async Task Max_tokens_never_runs_truncated_tool_calls()
     {
         var harness = new EngineHarness();
-        harness.Model.Then(Replies.Stop("max_tokens", new ModelToolUse("t1", "get_shift_summary", JsonDocument.Parse("""{"scope":"Hal"}""").RootElement)));
+        harness.Model.Then(Replies.Stop(ModelStop.MaxTokens, "max_tokens", new ModelToolUse("t1", "get_shift_summary", JsonDocument.Parse("""{"scope":"Hal"}""").RootElement)));
 
         var steps = await harness.AskAsync();
 
@@ -401,6 +401,47 @@ public sealed class ClaudeAnswerEngineTests
         Assert.DoesNotContain(logger.Messages, m => m.Contains(harness.Options.ApiKey, StringComparison.Ordinal));
         Assert.DoesNotContain(harness.Options.ApiKey, shown, StringComparison.Ordinal);
         Assert.DoesNotContain(harness.Model.Requests.Select(r => r.Metadata?.UserID ?? ""), id => id.Contains("aaa", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("pause_turn")]
+    [InlineData("model_context_window_exceeded")]
+    [InlineData(null)]
+    public async Task Other_stop_reasons_yield_the_unexpected_stop_card_and_the_log_names_the_raw_value(string? raw)
+    {
+        var logger = new CapturingLogger();
+        var harness = new EngineHarness(logger: logger);
+        harness.Model.Then(Replies.Stop(ModelStop.Other, raw, new ModelText(Replies.ValidCard)));
+
+        var card = ((AnswerReadyStep)(await harness.AskAsync()).Single()).Card;
+
+        Assert.Equal("Claude hat die Antwort nicht abgeschlossen.", card.Headline);
+        Assert.Contains(logger.Messages, m => m.Contains($"stop_reason {raw ?? "(keiner)"}", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(ModelStop.Done, "end_turn")]
+    [InlineData(ModelStop.Done, "stop_sequence")]
+    [InlineData(ModelStop.ToolCalls, "tool_use")]
+    public async Task A_reply_without_tool_calls_reads_the_card_for_done_and_for_tool_calls(ModelStop stop, string raw)
+    {
+        var harness = new EngineHarness();
+        harness.Model.Then(Replies.Stop(stop, raw, new ModelText(Replies.ValidCard)));
+
+        var card = ((AnswerReadyStep)(await harness.AskAsync()).Single()).Card;
+
+        Assert.StartsWith("RT-03", card.Headline, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Refused_is_decided_by_the_stop_enum_not_by_the_raw_text()
+    {
+        var harness = new EngineHarness();
+        harness.Model.Then(Replies.Stop(ModelStop.Refused, null, new ModelText(Replies.ValidCard)));
+
+        var card = ((AnswerReadyStep)(await harness.AskAsync()).Single()).Card;
+
+        Assert.Equal("Claude beantwortet diese Frage nicht.", card.Headline);
     }
 
     private sealed class CapturingLogger : ILogger<ClaudeAnswerEngine>

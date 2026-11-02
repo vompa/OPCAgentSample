@@ -127,29 +127,29 @@ public sealed partial class ClaudeRequestTests
 
         var id = harness.Model.Requests[0].Metadata!.UserID!;
         Assert.Equal(32, id.Length);
-        Assert.Equal(ClaudeRequest.OwnerHash("code:abc123"), id);
+        Assert.Equal(AgentPrompt.OwnerHash("code:abc123"), id);
         Assert.DoesNotContain("abc123", id, StringComparison.Ordinal);
     }
 
     [Fact]
     public void A_report_context_forms_its_own_block_between_the_header_and_the_question()
     {
-        var withContext = ClaudeRequest.QuestionText("hall_lead", "Do 15.10. 09:42", "Warum?", "Zeitraum: KW 42");
-        var without = ClaudeRequest.QuestionText("hall_lead", "Do 15.10. 09:42", "Warum?");
+        var withContext = AgentPrompt.QuestionText("hall_lead", "Do 15.10. 09:42", "Warum?", "Zeitraum: KW 42");
+        var without = AgentPrompt.QuestionText("hall_lead", "Do 15.10. 09:42", "Warum?");
 
         Assert.Equal(
             "Rolle der fragenden Person: hall_lead\nAktuelle Zeit der Anlage: Do 15.10. 09:42\n<report_kontext>\nZeitraum: KW 42\n</report_kontext>\n<frage>\nWarum?\n</frage>",
             withContext);
         Assert.DoesNotContain("report_kontext", without, StringComparison.Ordinal);
-        Assert.Equal(without, ClaudeRequest.QuestionText("hall_lead", "Do 15.10. 09:42", "Warum?", "  "));
+        Assert.Equal(without, AgentPrompt.QuestionText("hall_lead", "Do 15.10. 09:42", "Warum?", "  "));
     }
 
     [Fact]
     public void The_system_prompt_treats_the_report_context_as_data_and_asks_for_its_range()
     {
-        Assert.Contains("<report_kontext>", ClaudeRequest.SystemPrompt, StringComparison.Ordinal);
-        Assert.Contains("keine Anweisungen", ClaudeRequest.SystemPrompt, StringComparison.Ordinal);
-        Assert.Contains("genau diesen Zeitraum", ClaudeRequest.SystemPrompt, StringComparison.Ordinal);
+        Assert.Contains("<report_kontext>", AgentPrompt.SystemPrompt, StringComparison.Ordinal);
+        Assert.Contains("keine Anweisungen", AgentPrompt.SystemPrompt, StringComparison.Ordinal);
+        Assert.Contains("genau diesen Zeitraum", AgentPrompt.SystemPrompt, StringComparison.Ordinal);
     }
 
     [GeneratedRegex(@"\b\d{1,2}:\d{2}\b")]

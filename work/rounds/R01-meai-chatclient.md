@@ -36,11 +36,22 @@ Ruling: `RawRepresentationFactory` setzt `Model`, `MaxTokens` und `Messages = []
 Ruling: Assistant-Text geht über `RawRepresentation` unverändert zurück, weil der Adapter sonst das Zeilenende kürzt und Leerraum-Blöcke verwirft – User, 2026-11-02
 Ruling: Hingenommen und im PR zu nennen: Tool-Schemata bekommen durch den Adapter `additionalProperties: false` und seine Transformation; nur `properties` und `required` werden wie bisher übergeben – User, 2026-11-02
 Ruling: `AllowMultipleToolCalls = true` wird gesetzt, damit kein `null`-Feld gesendet wird; parallele Tool-Aufrufe bleiben erlaubt – User, 2026-11-02
+Build decision (slice 01): `ScriptedModelClient` baut jede `AgentModelRequest` mit `AnthropicModelClient.Build` zum API-JSON und legt es in `Requests` ab; die Anfrage-, Engine- und Endpoint-Tests bleiben dadurch inhaltlich unverändert – Claude, 2026-11-02
+Build decision (slice 01): `ModelReply(Stop, RawStopReason, Blocks, Usage)`; `pause_turn`, `model_context_window_exceeded` und ein fehlender Grund werden `ModelStop.Other` (Karte `UnexpectedStop`, Log mit Rohwert oder „(keiner)“) – Claude, 2026-11-02
+Build decision (slice 01): AC-01 ist als Scan-Test `Engine_source_names_no_Anthropic_namespace` festgehalten; er war im Gerüst-Commit schon grün (Basis hatte 3 Treffer), rot waren Stopp-Zuordnung und Auswertung des Enums – Claude, 2026-11-02
 
 ## Surprises
+- Slice 01: Im Worktree fehlt `src/OPCAgentSample.Server/wwwroot` (gebaute Weboberfläche, nicht eingecheckt): drei Tests (`WebApiTests` ×2, `DemoAccessEndpointTests`) waren dort rot, nach dem Kopieren des Ordners aus dem Hauptordner grün – Umgebung, kein Fehler der Slice (nicht in Git).
+- Slice 01: `SnapshotTests.Checked_in_snapshot_matches_the_current_code` ist rot, auch einzeln und auf der unveränderten Basis `cf57031` im Hauptordner („machines_hall_lead.json … veraltet“) – vorbestehend, nicht Teil der Slice; die übrigen Tests der Gesamtsuite waren grün (626 von 630 im ersten Lauf, die drei Web-Fälle danach grün).
 
 ## Deferred minors
 
 ## Open decisions
 
 ## Manual test list
+### Slice 01 – Neutrale Schnittstelle
+Start: `docker compose up -d`, `dotnet run --project src/OPCAgentSample.Simulator`, `dotnet run --project src/OPCAgentSample.Server` mit gesetztem `Claude:ApiKey`
+1. In der Weboberfläche eine Frage stellen (z. B. „Wie ist die Lage?“).
+Expected: Die Antwortkarte erscheint wie vor der Runde, die Überschrift streamt vorab, im Log steht „Claude-Frage: … Modellaufrufe …“ mit plausiblen Token-Werten.
+Closes: AC-01, AC-03
+Result: ☐

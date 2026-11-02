@@ -45,7 +45,8 @@ public sealed class ModelStreamingTests
         var message = await AnthropicModelClient.AggregateAsync(Stream(Events), null, CancellationToken.None);
         var reply = AnthropicModelClient.ToReply(message);
 
-        Assert.Equal("tool_use", reply.StopReason); // ohne JSON-Anführungszeichen
+        Assert.Equal("tool_use", reply.RawStopReason); // ohne JSON-Anführungszeichen
+        Assert.Equal(ModelStop.ToolCalls, reply.Stop);
         var thinking = Assert.IsType<ModelThinking>(reply.Blocks[0]);
         Assert.Equal("Erst prüfen", thinking.Thinking);
         Assert.Equal("sig-abc==", thinking.Signature);
@@ -85,7 +86,8 @@ public sealed class ModelStreamingTests
 
         var reply = AnthropicModelClient.ToReply(await AnthropicModelClient.AggregateAsync(Stream(events), null, CancellationToken.None));
 
-        Assert.Equal("end_turn", reply.StopReason);
+        Assert.Equal("end_turn", reply.RawStopReason);
+        Assert.Equal(ModelStop.Done, reply.Stop);
         Assert.Single(reply.Blocks);
     }
 }
