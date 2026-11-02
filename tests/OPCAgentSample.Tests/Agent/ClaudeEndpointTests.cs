@@ -169,7 +169,7 @@ public sealed class ClaudeEndpointTests(InfrastructureFixture infrastructure)
     }
 
     private static string FirstUserMessage(ScriptedModelClient model, int request = 0) =>
-        RequestJson.Messages(model.Requests[request])[0].GetProperty("content").GetString()!;
+        RequestJson.Messages(model.Requests[request])[0].GetProperty("content")[0].GetProperty("text").GetString()!;
 
     [Fact]
     public async Task A_question_from_a_report_carries_range_and_values_computed_by_the_server()

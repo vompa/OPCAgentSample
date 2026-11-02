@@ -3,4 +3,4 @@
 |---|---|---|---|---|---|
 | 01 Neutrale Schnittstelle | ☑ | ☑ | ☑ | ☑ | ☑ |
 | 02 ChatClient-Adapter | ☑ | ☑ | ☑ | ☑ | ☑ |
-| 03 Umschalten und Alt-Code entfernen | ☐ | ☐ | ☐ | ☐ | ☐ |
+| 03 Umschalten und Alt-Code entfernen | ☑ | ☑ | ☑ | ☑ | ☑ |

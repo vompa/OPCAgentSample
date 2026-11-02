@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Anthropic.Models.Messages;
 using Microsoft.Extensions.Logging.Abstractions;
 using OPCAgentSample.Server.Agent;
 using OPCAgentSample.Server.Demo;
@@ -8,45 +7,38 @@ using OPCAgentSample.Tests.Server;
 namespace OPCAgentSample.Tests.Agent;
 
 /// <summary>
-/// Nachgebauter Modell-Client: liefert skriptierte Antworten und merkt sich jede Anfrage in der Form, in der sie an die API ginge
-/// (<see cref="AnthropicModelClient.Build"/>). Es gibt keinen echten Aufruf.
+/// Nachgebauter Modell-Client: liefert skriptierte Antworten und merkt sich jede Anfrage als den Body, den der echte Adapter an die API
+/// sendet (<see cref="ApiRequestRecorder"/>). Es gibt keinen echten Aufruf.
 /// </summary>
 internal sealed class ScriptedModelClient(ClaudeOptions? options = null) : IAgentModelClient
 {
     private readonly ClaudeOptions _options = options ?? new ClaudeOptions();
 
-    private readonly Queue<Func<MessageCreateParams, ModelReply>> _script = new();
+    private readonly Queue<Func<ModelReply>> _script = new();
 
-    public List<MessageCreateParams> Requests { get; } = [];
+    public List<JsonElement> Requests { get; } = [];
 
     /// <summary>Wenn gesetzt, meldet der Client die Textblöcke der Antwort in Stücken dieser Länge als Text-Deltas (wie ein Stream).</summary>
     public int? DeltaSize { get; set; }
 
     public ScriptedModelClient Then(ModelReply reply)
     {
-        _script.Enqueue(_ => reply);
-        return this;
-    }
-
-    public ScriptedModelClient Then(Func<MessageCreateParams, ModelReply> reply)
-    {
-        _script.Enqueue(reply);
+        _script.Enqueue(() => reply);
         return this;
     }
 
     public ScriptedModelClient ThenFail(ModelFailureKind kind)
     {
-        _script.Enqueue(_ => throw new ModelCallException(kind, "skriptierter Fehler"));
+        _script.Enqueue(() => throw new ModelCallException(kind, "skriptierter Fehler"));
         return this;
     }
 
-    public Task<ModelReply> CreateAsync(AgentModelRequest request, Action<string>? onTextDelta, CancellationToken cancellationToken)
+    public async Task<ModelReply> CreateAsync(AgentModelRequest request, Action<string>? onTextDelta, CancellationToken cancellationToken)
     {
-        var apiRequest = AnthropicModelClient.Build(_options, request);
-        Requests.Add(apiRequest);
+        Requests.Add(await ApiRequestRecorder.RecordAsync(request, _options));
         if (_script.Count == 0) throw new InvalidOperationException("Das Skript des nachgebauten Clients ist zu Ende: unerwarteter Modellaufruf.");
 
-        var reply = _script.Dequeue()(apiRequest);
+        var reply = _script.Dequeue()();
         if (onTextDelta is not null && DeltaSize is { } size)
         {
             foreach (var text in reply.Blocks.OfType<ModelText>().Select(b => b.Text))
@@ -55,7 +47,7 @@ internal sealed class ScriptedModelClient(ClaudeOptions? options = null) : IAgen
             }
         }
 
-        return Task.FromResult(reply);
+        return reply;
     }
 }
 
@@ -177,12 +169,10 @@ internal sealed class EngineHarness
 
 internal static class RequestJson
 {
-    /// <summary>Die Anfrage an die API als JSON, wie das SDK sie sendet (Nachrichten, System, Tools).</summary>
-    public static JsonElement Messages(MessageCreateParams request) =>
-        JsonDocument.Parse("[" + string.Join(",", request.Messages.Select(m => m.ToString())) + "]").RootElement.Clone();
+    /// <summary>Teile der Anfrage an die API (Body des echten Adapters): Nachrichten, System, Tools.</summary>
+    public static JsonElement Messages(JsonElement request) => request.GetProperty("messages");
 
-    public static JsonElement Tools(MessageCreateParams request) =>
-        JsonDocument.Parse("[" + string.Join(",", (request.Tools ?? []).Select(t => t.ToString())) + "]").RootElement.Clone();
+    public static JsonElement Tools(JsonElement request) => request.GetProperty("tools");
 
-    public static JsonElement System(MessageCreateParams request) => JsonDocument.Parse(request.System!.ToString()!).RootElement.Clone();
+    public static JsonElement System(JsonElement request) => request.GetProperty("system");
 }

@@ -1,12 +1,12 @@
-using System.Text.Json;
-using Anthropic.Models.Messages;
+using Microsoft.Extensions.Options;
 using OPCAgentSample.Server.Agent;
 
 namespace OPCAgentSample.Tests.Agent;
 
 /// <summary>
-/// Zusammenbau der Antwort aus echten SDK-Streaming-Ereignissen (aus JSON gelesen, wie sie die API sendet). Ein nachgebauter Client
-/// würde SDK-Eigenheiten verdecken (z. B. den Stopp-Grund mit JSON-Anführungszeichen); hier läuft derselbe Weg wie im Betrieb.
+/// Zusammenbau der Antwort aus echten SDK-Streaming-Ereignissen (aus JSON gelesen, wie sie die API sendet), über den echten Adapter und
+/// den <see cref="ChatClientModelClient"/>. Ein nachgebauter Client würde SDK-Eigenheiten verdecken (z. B. den Stopp-Grund mit
+/// JSON-Anführungszeichen); hier läuft derselbe Weg wie im Betrieb.
 /// </summary>
 public sealed class ModelStreamingTests
 {
@@ -30,20 +30,21 @@ public sealed class ModelStreamingTests
         """{"type":"message_stop"}""",
     ];
 
-    private static async IAsyncEnumerable<RawMessageStreamEvent> Stream(IEnumerable<string> events)
+    private static async Task<ModelReply> ReplyAsync(string[] events, Action<string>? onTextDelta = null)
     {
-        foreach (var json in events)
-        {
-            yield return JsonSerializer.Deserialize<RawMessageStreamEvent>(json)!;
-            await Task.Yield();
-        }
+        var options = new ClaudeOptions();
+        var client = new ChatClientModelClient(
+            ApiRequestRecorder.RealAdapter(new ApiRequestRecorder.RecordingHandler(events), options),
+            new AnthropicRequestDialect(Options.Create(options)),
+            new AnthropicErrorMapper());
+        var request = new AgentModelRequest([], [new UserQuestionTurn("Frage")], "owner-hash", true);
+        return await client.CreateAsync(request, onTextDelta, CancellationToken.None);
     }
 
     [Fact]
     public async Task Streamed_events_are_assembled_to_the_same_reply_as_a_whole_message()
     {
-        var message = await AnthropicModelClient.AggregateAsync(Stream(Events), null, CancellationToken.None);
-        var reply = AnthropicModelClient.ToReply(message);
+        var reply = await ReplyAsync(Events);
 
         Assert.Equal("tool_use", reply.RawStopReason); // ohne JSON-Anführungszeichen
         Assert.Equal(ModelStop.ToolCalls, reply.Stop);
@@ -66,7 +67,7 @@ public sealed class ModelStreamingTests
     {
         var deltas = new List<string>();
 
-        await AnthropicModelClient.AggregateAsync(Stream(Events), deltas.Add, CancellationToken.None);
+        await ReplyAsync(Events, deltas.Add);
 
         Assert.Equal(["{\"headline\":\"RT-03 ", "steht.\",\"todo\":[]}"], deltas);
     }
@@ -84,7 +85,7 @@ public sealed class ModelStreamingTests
             Events[15],
         ];
 
-        var reply = AnthropicModelClient.ToReply(await AnthropicModelClient.AggregateAsync(Stream(events), null, CancellationToken.None));
+        var reply = await ReplyAsync(events);
 
         Assert.Equal("end_turn", reply.RawStopReason);
         Assert.Equal(ModelStop.Done, reply.Stop);

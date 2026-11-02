@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Anthropic.Models.Messages;
 using Microsoft.Extensions.Logging;
 using OPCAgentSample.Server.Agent;
 using OPCAgentSample.Server.Demo;
@@ -181,8 +180,8 @@ public sealed class ClaudeAnswerEngineTests
         var steps = await harness.AskAsync();
 
         Assert.Equal(3, harness.Model.Requests.Count);
-        Assert.IsType<ToolChoiceAuto>(harness.Model.Requests[0].ToolChoice?.Value);
-        Assert.IsType<ToolChoiceNone>(harness.Model.Requests[2].ToolChoice?.Value);
+        Assert.Equal("auto", harness.Model.Requests[0].GetProperty("tool_choice").GetProperty("type").GetString());
+        Assert.Equal("none", harness.Model.Requests[2].GetProperty("tool_choice").GetProperty("type").GetString());
         Assert.Equal(2, steps.OfType<ToolCallStep>().Count());
         Assert.IsType<AnswerReadyStep>(steps[^1]);
     }
@@ -400,7 +399,7 @@ public sealed class ClaudeAnswerEngineTests
         Assert.NotEmpty(logger.Messages);
         Assert.DoesNotContain(logger.Messages, m => m.Contains(harness.Options.ApiKey, StringComparison.Ordinal));
         Assert.DoesNotContain(harness.Options.ApiKey, shown, StringComparison.Ordinal);
-        Assert.DoesNotContain(harness.Model.Requests.Select(r => r.Metadata?.UserID ?? ""), id => id.Contains("aaa", StringComparison.Ordinal));
+        Assert.DoesNotContain(harness.Model.Requests.Select(r => r.GetProperty("metadata").GetProperty("user_id").GetString() ?? ""), id => id.Contains("aaa", StringComparison.Ordinal));
     }
 
     [Theory]

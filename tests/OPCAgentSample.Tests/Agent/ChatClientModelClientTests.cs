@@ -1,7 +1,5 @@
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
-using Anthropic;
 using Anthropic.Exceptions;
 using Anthropic.Models.Messages;
 using Microsoft.Extensions.AI;
@@ -184,6 +182,7 @@ public sealed class ChatClientModelClientTests
     [InlineData(typeof(AnthropicUnprocessableEntityException), ModelFailureKind.Misconfigured)]
     [InlineData(typeof(AnthropicIOException), ModelFailureKind.Connection)]
     [InlineData(typeof(HttpRequestException), ModelFailureKind.Connection)]
+    [InlineData(typeof(AnthropicException), ModelFailureKind.Other)]
     public async Task Every_SDK_failure_maps_to_the_same_kind_as_before(System.Type failure, ModelFailureKind expected)
     {
         var chat = new FakeChatClient(_ => throw (Exception)RuntimeHelpers.GetUninitializedObject(failure));
@@ -191,6 +190,22 @@ public sealed class ChatClientModelClientTests
         var thrown = await Assert.ThrowsAsync<ModelCallException>(() => ReplyAsync(chat));
 
         Assert.Equal(expected, thrown.Kind);
+    }
+
+    [Theory]
+    [InlineData(typeof(AnthropicRateLimitException), "Ratenlimit von Anthropic erreicht.")]
+    [InlineData(typeof(Anthropic5xxException), "Anthropic meldet einen Serverfehler oder ist überlastet.")]
+    [InlineData(typeof(AnthropicUnauthorizedException), "Anthropic lehnt die Anfrage ab (AnthropicUnauthorizedException).")]
+    [InlineData(typeof(AnthropicIOException), "Keine Verbindung zu Anthropic.")]
+    [InlineData(typeof(HttpRequestException), "Keine Verbindung zu Anthropic.")]
+    [InlineData(typeof(AnthropicException), "Unerwarteter Fehler beim Aufruf von Anthropic (AnthropicException).")]
+    public async Task Failure_messages_keep_the_text_of_the_former_client(System.Type failure, string expected)
+    {
+        var chat = new FakeChatClient(_ => throw (Exception)RuntimeHelpers.GetUninitializedObject(failure));
+
+        var thrown = await Assert.ThrowsAsync<ModelCallException>(() => ReplyAsync(chat));
+
+        Assert.Equal(expected, thrown.Message);
     }
 
     [Fact]
@@ -365,67 +380,25 @@ public sealed class ChatClientModelClientTests
     private static JsonElement Json(string json) => JsonDocument.Parse(json).RootElement.Clone();
 
     private static ChatResponseUpdate Text(string text) => new(ChatRole.Assistant, text);
-
-    private static string[] TextStream(string stopReasonJson) =>
-    [
-        """{"type":"message_start","message":{"id":"msg_1","type":"message","role":"assistant","model":"claude-haiku-5-5","content":[],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":10,"output_tokens":1}}}""",
-        """{"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}""",
-        """{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"{}"}}""",
-        """{"type":"content_block_stop","index":0}""",
-        """{"type":"message_delta","delta":{"stop_reason":STOP,"stop_sequence":null},"usage":{"output_tokens":2}}""".Replace("STOP", stopReasonJson, StringComparison.Ordinal),
-        """{"type":"message_stop"}""",
-    ];
+    private static string[] TextStream(string stopReasonJson) => ApiRequestRecorder.TextStream(stopReasonJson);
 
     private static async Task<ModelReply> ReplyFromStreamAsync(string[] events, Action<string>? onDelta = null)
     {
-        var handler = new RecordingHandler(events);
+        var handler = new ApiRequestRecorder.RecordingHandler(events);
         var client = ClientOver(RealAdapter(handler));
         return await client.CreateAsync(Request(Question()), onDelta, CancellationToken.None);
     }
 
     private static async Task<JsonElement> SendThroughRealAdapterAsync(AgentModelRequest request, ClaudeOptions? options = null)
     {
-        var handler = new RecordingHandler(TextStream("\"end_turn\""));
+        var handler = new ApiRequestRecorder.RecordingHandler(TextStream("\"end_turn\""));
         var client = ClientOver(RealAdapter(handler, options), options);
         await client.CreateAsync(request, null, CancellationToken.None);
         return JsonDocument.Parse(handler.Body!).RootElement.Clone();
     }
 
-    private static IChatClient RealAdapter(RecordingHandler handler, ClaudeOptions? options = null)
-    {
-        var settings = options ?? Options();
-        var anthropic = new AnthropicClient
-        {
-            ApiKey = "test-key",
-            BaseUrl = "http://localhost",
-            MaxRetries = 0,
-            HttpClient = new HttpClient(handler),
-        };
-        return anthropic.AsIChatClient(settings.Model, settings.MaxTokens);
-    }
-
-    /// <summary>Zeichnet den Body der Anfrage auf und antwortet mit einem festen SSE-Stream; es gibt kein Netz.</summary>
-    private sealed class RecordingHandler(string[] events) : HttpMessageHandler
-    {
-        public string? Body { get; private set; }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            Body = await request.Content!.ReadAsStringAsync(cancellationToken);
-            var sse = new StringBuilder();
-            foreach (var json in events)
-            {
-                using var document = JsonDocument.Parse(json);
-                sse.Append("event: ").Append(document.RootElement.GetProperty("type").GetString()).Append('\n');
-                sse.Append("data: ").Append(json).Append("\n\n");
-            }
-
-            return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
-            {
-                Content = new StringContent(sse.ToString(), Encoding.UTF8, "text/event-stream"),
-            };
-        }
-    }
+    private static IChatClient RealAdapter(ApiRequestRecorder.RecordingHandler handler, ClaudeOptions? options = null) =>
+        ApiRequestRecorder.RealAdapter(handler, options ?? Options());
 
     /// <summary>Nachgebauter <see cref="IChatClient"/>: merkt sich Nachrichten und Optionen und liefert skriptierte Updates.</summary>
     private sealed class FakeChatClient(Func<IEnumerable<ChatMessage>, IEnumerable<ChatResponseUpdate>> script) : IChatClient

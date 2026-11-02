@@ -28,9 +28,9 @@ public sealed partial class ClaudeRequestTests
         var harness = await TwoRoundRunAsync();
 
         var request = harness.Model.Requests[0];
-        Assert.Equal("claude-haiku-5-5", request.Model.ToString().Trim('"'));
-        Assert.Equal(6000, request.MaxTokens);
-        var body = JsonDocument.Parse(request.OutputConfig!.ToString()!).RootElement;
+        Assert.Equal("claude-haiku-5-5", request.GetProperty("model").GetString());
+        Assert.Equal(6000, request.GetProperty("max_tokens").GetInt32());
+        var body = request.GetProperty("output_config");
         Assert.Equal("medium", body.GetProperty("effort").GetString());
         Assert.Equal("json_schema", body.GetProperty("format").GetProperty("type").GetString());
         Assert.Equal(["headline", "todo", "table", "chart", "why"], body.GetProperty("format").GetProperty("schema").GetProperty("required").EnumerateArray().Select(e => e.GetString()));
@@ -84,7 +84,7 @@ public sealed partial class ClaudeRequestTests
         var harness = await TwoRoundRunAsync("hall_lead", "code:abc123", "Wie ist die Lage?");
 
         var messages = RequestJson.Messages(harness.Model.Requests[0]);
-        var first = messages[0].GetProperty("content").GetString()!;
+        var first = messages[0].GetProperty("content")[0].GetProperty("text").GetString()!;
         Assert.Contains("Rolle der fragenden Person: hall_lead", first, StringComparison.Ordinal);
         Assert.Contains("Do 15.10. 09:42", first, StringComparison.Ordinal);
         Assert.Contains("<frage>\nWie ist die Lage?\n</frage>", first, StringComparison.Ordinal);
@@ -125,7 +125,7 @@ public sealed partial class ClaudeRequestTests
     {
         var harness = await TwoRoundRunAsync(owner: "code:abc123");
 
-        var id = harness.Model.Requests[0].Metadata!.UserID!;
+        var id = harness.Model.Requests[0].GetProperty("metadata").GetProperty("user_id").GetString()!;
         Assert.Equal(32, id.Length);
         Assert.Equal(AgentPrompt.OwnerHash("code:abc123"), id);
         Assert.DoesNotContain("abc123", id, StringComparison.Ordinal);

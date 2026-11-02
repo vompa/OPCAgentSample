@@ -42,18 +42,27 @@ Build decision (slice 01): AC-01 ist als Scan-Test `Engine_source_names_no_Anthr
 Build decision (slice 02): Der Dialekt hat statt `MarkCacheBreakpoint` die Methoden `CachedSystemText` und `ToolResult(item, cacheBreakpoint)` plus `IsRedactedThinking`; der Marker steckt im fertigen Block (`RawRepresentation`), ein nachträgliches Markieren entfällt, und `is_error` bleibt erhalten – Claude, 2026-11-02
 Build decision (slice 02): Die Antwort wird im Client aus den Updates selbst zu Blöcken zusammengesetzt statt mit `ToChatResponse()`; nur so bleibt Redacted Thinking (leerer Text plus Signatur) von einem Thinking-Block unterscheidbar – Claude, 2026-11-02
 Build decision (slice 02): `ToStop` ist im Dialekt eine Kopie der Zuordnung aus `AnthropicModelClient`; die Altkopie fällt in Slice 03 mit dem Löschen von `AnthropicModelClient` weg – Claude, 2026-11-02
+Build decision (slice 03): Die erste User-Nachricht geht über den Adapter als Liste mit einem Textblock statt als Zeichenkette hinaus (`CreateMessageParams` macht aus User-Text immer Blöcke); das ist der einzige Unterschied im Vergleichstest ohne Ruling. Für die API gleichwertig (Kurzform desselben Blocks), ohne Wirkung auf Cache oder Antwort; der Vergleichstest nimmt ihn als vierten erlaubten Punkt auf. Im PR zu nennen – Claude, 2026-11-02
+Build decision (slice 03): Der `AnthropicClient` ist als `IAnthropicClient` eigener Singleton und `IChatClient` wird darauf gebaut, weil der Adapter den Client nicht entsorgt; so entsorgt der Container ihn wie bisher `AnthropicModelClient.Dispose` – Claude, 2026-11-02
+Build decision (slice 03): `ScriptedModelClient` schickt jede Anfrage durch den echten Adapter (`ApiRequestRecorder`) und merkt sich den HTTP-Body als JSON; `Requests` ist damit `List<JsonElement>`, die Engine-Tests lesen `tool_choice.type`, `metadata.user_id` und die Nachrichten daraus, inhaltlich unverändert – Claude, 2026-11-02
+Build decision (slice 03): Alle fünf Spalten der Checkliste gelten (Tests rot: Registrierungs- und Scan-Test gegen die alte Registrierung, Exit 1 im Prüfnachweis); der Vergleichstest war gegen den Altcode nie rot, weil der Adapter seit Slice 02 fertig ist – er ist die Gegenprobe, nicht die Ursache der Änderung – Claude, 2026-11-02
 
 ## Surprises
 - Slice 01: Im Worktree fehlt `src/OPCAgentSample.Server/wwwroot` (gebaute Weboberfläche, nicht eingecheckt): drei Tests (`WebApiTests` ×2, `DemoAccessEndpointTests`) waren dort rot, nach dem Kopieren des Ordners aus dem Hauptordner grün – Umgebung, kein Fehler der Slice (nicht in Git).
 - Slice 01: `SnapshotTests.Checked_in_snapshot_matches_the_current_code` ist rot, auch einzeln und auf der unveränderten Basis `cf57031` im Hauptordner („machines_hall_lead.json … veraltet“) – vorbestehend, nicht Teil der Slice; die übrigen Tests der Gesamtsuite waren grün (626 von 630 im ersten Lauf, die drei Web-Fälle danach grün).
 - Slice 02: Das SDK liefert `GetCacheControl` nur intern; der Cache-Marker ist deshalb am `RawRepresentation`-Block (`TextBlockParam`/`ToolResultBlockParam`) prüfbar, nicht über die Erweiterungsmethode.
 - Slice 02: Alle 36 neuen Tests waren gegen das Gerüst (`NotImplementedException`) rot und nach der Umsetzung ohne Nacharbeit am Test grün. Volle Gesamtsuite lief in dieser Slice nicht (nur neue Dateien und ein Paket, keine gemeinsame Änderung); sie folgt mit der Registrierung in Slice 03.
+- Slice 03: Der Vergleich mit dem eingefrorenen Altbody (`Reference/legacy-request.json`, erzeugt aus `Build` vor dem Löschen) fand genau einen Unterschied ohne Ruling: die erste User-Nachricht als Textblock-Liste statt Zeichenkette (siehe Build decision). Tool-Schemata (`additionalProperties:false`) und `tool_choice` (`disable_parallel_tool_use:false`) sind wie in den Rulings; `thinking`, `output_config` und `metadata` stimmen überein.
+- Slice 03: Gegenüberstellung der Testfälle. `ClaudeRequestTests` (10) bleiben mit gleichen Namen und Erwartungen, lesen jetzt den Body des echten Adapters. `ModelStreamingTests` (3) bleiben mit denselben Stream-Ereignissen und Erwartungen (150/42/11798/20), laufen über `ChatClientModelClient`. `ModelReplyMappingTests` entfällt (Eingabe ist die ganze `Message` des Altcodes): `Stop_reason_is_the_plain_api_value_and_tool_use_blocks_are_mapped` → `Thinking_redacted_thinking_text_and_tool_use_from_a_real_stream_become_model_blocks` und `Raw_stop_reasons_map_to_the_stop_enum_and_stay_readable`; `Raw_stop_reason_maps_to_the_stop_enum_and_arrives_without_quotes` (7 Werte) → `Raw_stop_reasons_map_to_the_stop_enum_and_stay_readable` (dieselben 7 Werte); `A_missing_stop_reason_maps_to_other_with_a_null_raw_value` → gleichnamiger Test in `ChatClientModelClientTests`.
+- Slice 03: Im Worktree fehlt `src/OPCAgentSample.Server/wwwroot` (gebaute Weboberfläche, nicht eingecheckt); es wurde aus dem Hauptordner kopiert (nicht in Git), sonst wären die Web-Tests rot.
 
 ## Deferred minors
 - Slice 02 (Review): Fehlerabbildung ohne Testzeile für den `Other`-Zweig (`AnthropicException`-Basis) und ohne Prüfung der Meldungstexte – in Slice 03 nachziehen, wenn `AnthropicModelClient` entfällt.
 - Slice 02 (Review): Über den echten Adapter sind `tools` und `tool_choice` (`disable_parallel_tool_use:false` durch `AllowMultipleToolCalls = true`, Schema-Transformation) nicht getestet; für AC-02 in Slice 03 beim JSON-Vergleich zuerst ansehen.
 - Slice 02 (Review): Abbruch mitten im Stream und Weiterreichen des Tokens sind nicht getestet; zwei aufeinanderfolgende Denkblöcke ohne Zwischenblock würden zu einem (unwahrscheinlich, API sendet dazwischen Text oder Tool-Aufruf).
 - Slice 02 (Review): Die Usage-Rechnung (Schlüssel `CacheCreationInputTokens`) liegt im neutralen Client; bei einem zweiten Anbieter gehört sie in den Dialekt.
+- Slice 03: Aus Slice 02 erledigt: Test für den `Other`-Zweig der Fehlerabbildung und Prüfung der Meldungstexte je Art (`Failure_messages_keep_the_text_of_the_former_client`), Tools und `tool_choice` über den echten Adapter (Vergleichstest). Weiter offen: Abbruch mitten im Stream und Weiterreichen des Tokens, zwei aufeinanderfolgende Denkblöcke, Usage-Rechnung im Dialekt bei einem zweiten Anbieter.
+- Slice 03: Der eingefrorene Sollwert gilt für SDK 12.57.0; ein SDK-Update kann ihn berechtigt ändern, dann bewusst neu einfrieren (der Test zeigt die Stelle).
 
 ## Open decisions
 
@@ -68,6 +77,15 @@ Result: ☐
 ### Slice 02 – ChatClient-Adapter
 Start: `dotnet test tests/OPCAgentSample.Tests -c Release --filter "FullyQualifiedName~ChatClientModelClientTests"`
 1. Die Tests der Klasse laufen lassen (die Registrierung nutzt den neuen Client noch nicht, die Oberfläche ändert sich nicht).
-Expected: alle 36 Tests sind grün.
+Expected: alle 36 Tests sind grün. (superseded by slice 03: die Klasse hat jetzt 43 Fälle, die Registrierung nutzt den neuen Client)
 Closes: AC-03, AC-04, AC-05
+Result: ☐
+
+### Slice 03 – Umschalten und Alt-Code entfernen
+Start: `docker compose up -d`, `dotnet run --project src/OPCAgentSample.Simulator`, `dotnet run --project src/OPCAgentSample.Server` mit gesetztem `Claude:ApiKey`
+1. In der Weboberfläche eine Frage stellen (z. B. „Wie ist die Lage?“).
+Expected: Die Antwortkarte erscheint, die Überschrift streamt vorab, im Log steht „Claude-Frage: … Modellaufrufe …“ mit plausiblen Token-Werten (Input, Output, Cache-Lesen und -Schreiben; Vergleich mit einem Lauf auf `main` möglich).
+2. Den Server ohne `Claude:ApiKey` starten und eine vorbereitete Frage stellen.
+Expected: Das Start-Log nennt die Referenz-Engine, die Karte ist als „Vorbereitete Antwort – Claude ist nicht angebunden“ gekennzeichnet.
+Closes: AC-01, AC-02
 Result: ☐

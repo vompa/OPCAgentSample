@@ -2,7 +2,7 @@ using Anthropic.Exceptions;
 
 namespace OPCAgentSample.Server.Agent;
 
-/// <summary>Fehlerabbildung für Anthropic: dieselben Arten und Texte wie bisher in <see cref="AnthropicModelClient"/>.</summary>
+/// <summary>Fehlerabbildung für Anthropic: dieselben Arten und Texte wie im früheren Direktaufruf des SDK.</summary>
 public sealed class AnthropicErrorMapper : IModelErrorMapper
 {
     public ModelCallException? Map(Exception exception) => exception switch
