@@ -5,10 +5,10 @@ namespace OPCAgentSample.Server.Demo;
 /// <summary>Ortszeit der Demo (Wien) für Anzeigetexte; gespeichert wird immer UTC.</summary>
 public static class DemoTime
 {
-    private static readonly string[] s_weekdays = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
-    private static readonly TimeZoneInfo s_zone = FindZone();
+    private static readonly string[] Weekdays = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+    private static readonly TimeZoneInfo Zone = FindZone();
 
-    public static DateTimeOffset ToLocal(DateTimeOffset utc) => TimeZoneInfo.ConvertTime(utc, s_zone);
+    public static DateTimeOffset ToLocal(DateTimeOffset utc) => TimeZoneInfo.ConvertTime(utc, Zone);
 
     /// <summary>Uhrzeit als <c>09:42</c>.</summary>
     public static string TimeText(DateTimeOffset utc) => ToLocal(utc).ToString("HH:mm", CultureInfo.InvariantCulture);
@@ -17,7 +17,7 @@ public static class DemoTime
     public static string DateTimeText(DateTimeOffset utc)
     {
         var local = ToLocal(utc);
-        return $"{s_weekdays[(int)local.DayOfWeek]} {local.ToString("dd.MM.yyyy, HH:mm", CultureInfo.InvariantCulture)}";
+        return $"{Weekdays[(int)local.DayOfWeek]} {local.ToString("dd.MM.yyyy, HH:mm", CultureInfo.InvariantCulture)}";
     }
 
     public static string Greeting(DateTimeOffset utc) => ToLocal(utc).Hour switch

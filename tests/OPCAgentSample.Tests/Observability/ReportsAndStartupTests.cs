@@ -12,7 +12,7 @@ namespace OPCAgentSample.Tests.Observability;
 [Collection(InfrastructureFixture.Name)]
 public sealed class ReportsAndStartupTests(InfrastructureFixture infrastructure)
 {
-    private static readonly string[] s_outcomes = ["ok", "denied", "error"];
+    private static readonly string[] Outcomes = ["ok", "denied", "error"];
 
     private const string FirstQuestion = "Was muss ich von der Nachtschicht wissen?";
 
@@ -88,7 +88,7 @@ public sealed class ReportsAndStartupTests(InfrastructureFixture infrastructure)
         {
             Assert.Equal("shift_lead", row.GetProperty("role").GetString());
             Assert.False(string.IsNullOrWhiteSpace(row.GetProperty("tool").GetString()));
-            Assert.Contains(row.GetProperty("outcome").GetString(), s_outcomes);
+            Assert.Contains(row.GetProperty("outcome").GetString(), Outcomes);
             Assert.Equal(0, row.GetProperty("calls").GetInt32() % 2);
         });
     }

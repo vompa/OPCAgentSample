@@ -15,7 +15,7 @@ internal sealed record HistoryResult(List<DataValue> Values, int Pages);
 /// </summary>
 internal sealed class OpcTestClient : IAsyncDisposable
 {
-    private static readonly ITelemetryContext s_telemetry = DefaultTelemetry.Create(_ => { });
+    private static readonly ITelemetryContext Telemetry = DefaultTelemetry.Create(_ => { });
 
     private OpcTestClient(ISession session)
     {
@@ -30,19 +30,19 @@ internal sealed class OpcTestClient : IAsyncDisposable
 
     public static async Task<OpcTestClient> ConnectAsync(string endpointUrl, string pkiRoot, bool useSecurity = false, CancellationToken ct = default)
     {
-        const string applicationName = "SimulatorTestClient";
+        const string ApplicationName = "SimulatorTestClient";
         var configuration = new ApplicationConfiguration
         {
-            ApplicationName = applicationName,
+            ApplicationName = ApplicationName,
             ApplicationType = ApplicationType.Client,
-            ApplicationUri = $"urn:localhost:{applicationName}",
+            ApplicationUri = $"urn:localhost:{ApplicationName}",
             SecurityConfiguration = new SecurityConfiguration
             {
                 ApplicationCertificate = new CertificateIdentifier
                 {
                     StoreType = "Directory",
                     StorePath = Path.Combine(pkiRoot, "own"),
-                    SubjectName = $"CN={applicationName}",
+                    SubjectName = $"CN={ApplicationName}",
                 },
                 TrustedPeerCertificates = new CertificateTrustList { StoreType = "Directory", StorePath = Path.Combine(pkiRoot, "trusted") },
                 TrustedIssuerCertificates = new CertificateTrustList { StoreType = "Directory", StorePath = Path.Combine(pkiRoot, "issuer") },
@@ -61,13 +61,13 @@ internal sealed class OpcTestClient : IAsyncDisposable
             if (e.Error.StatusCode == StatusCodes.BadCertificateUntrusted) e.Accept = true;
         };
 
-        var application = new ApplicationInstance(configuration, s_telemetry);
+        var application = new ApplicationInstance(configuration, Telemetry);
         await application.CheckApplicationInstanceCertificatesAsync(false, null, ct);
 
-        var endpoint = await CoreClientUtils.SelectEndpointAsync(configuration, endpointUrl, useSecurity, s_telemetry, ct);
+        var endpoint = await CoreClientUtils.SelectEndpointAsync(configuration, endpointUrl, useSecurity, Telemetry, ct);
         var configured = new ConfiguredEndpoint(null, endpoint, EndpointConfiguration.Create(configuration));
-        var session = await new DefaultSessionFactory(s_telemetry).CreateAsync(
-            configuration, configured, false, applicationName, 60000, new UserIdentity(), null, ct);
+        var session = await new DefaultSessionFactory(Telemetry).CreateAsync(
+            configuration, configured, false, ApplicationName, 60000, new UserIdentity(), null, ct);
         return new OpcTestClient(session);
     }
 
@@ -152,8 +152,8 @@ internal sealed class OpcTestClient : IAsyncDisposable
     public async Task<AlarmSubscription> SubscribeAlarmsAsync(CancellationToken ct = default)
     {
         var alarmEvents = new AlarmSubscription();
-        var subscription = new Subscription(s_telemetry, new SubscriptionOptions { PublishingInterval = 200, PublishingEnabled = true });
-        var item = new MonitoredItem(s_telemetry, new MonitoredItemOptions
+        var subscription = new Subscription(Telemetry, new SubscriptionOptions { PublishingInterval = 200, PublishingEnabled = true });
+        var item = new MonitoredItem(Telemetry, new MonitoredItemOptions
         {
             StartNodeId = ObjectIds.Server,
             AttributeId = Attributes.EventNotifier,

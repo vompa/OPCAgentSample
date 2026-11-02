@@ -13,21 +13,21 @@ public sealed class FavoritesService(IConnectionMultiplexer redis)
 {
     public const int MaxQuestionLength = 500;
 
-    private static readonly Lazy<FavoritesFile> s_defaults = new(() => SeedFiles.Read<FavoritesFile>("favorites.json"));
+    private static readonly Lazy<FavoritesFile> Defaults = new(() => SeedFiles.Read<FavoritesFile>("favorites.json"));
 
     public static IReadOnlyList<FavoriteDefault> DefaultsOf(string roleId) =>
-        s_defaults.Value.ByRole.TryGetValue(roleId, out var list)
+        Defaults.Value.ByRole.TryGetValue(roleId, out var list)
             ? [.. list.Select(f => new FavoriteDefault(f.ShortTitle, f.Question))]
             : [];
 
-    private static readonly JsonSerializerOptions s_json = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     public async Task<FavoritesResponse> GetAsync(RoleContext context, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var stored = await redis.GetDatabase().StringGetAsync(RedisKeys.Favorites(context.User.Id));
         var rows = stored.HasValue
-            ? JsonSerializer.Deserialize<List<Favorite>>(stored.ToString(), s_json)!
+            ? JsonSerializer.Deserialize<List<Favorite>>(stored.ToString(), Json)!
             : [.. DefaultsOf(context.Role.Id).Select(d => new Favorite { ShortTitle = d.ShortTitle, Question = d.Question, IsDefault = true })];
         return Build(context.Role.Id, rows.Select(f => new FavoriteView(f.ShortTitle, f.Question, f.IsDefault)));
     }
@@ -59,7 +59,7 @@ public sealed class FavoritesService(IConnectionMultiplexer redis)
         cancellationToken.ThrowIfCancellationRequested();
         var defaults = DefaultsOf(context.Role.Id);
         var rows = items.Select(item => new Favorite { ShortTitle = item.ShortTitle, Question = item.Question, IsDefault = defaults.Contains(item) }).ToList();
-        await redis.GetDatabase().StringSetAsync(RedisKeys.Favorites(context.User.Id), JsonSerializer.Serialize(rows, s_json));
+        await redis.GetDatabase().StringSetAsync(RedisKeys.Favorites(context.User.Id), JsonSerializer.Serialize(rows, Json));
         return Build(context.Role.Id, rows.Select(f => new FavoriteView(f.ShortTitle, f.Question, f.IsDefault)));
     }
 

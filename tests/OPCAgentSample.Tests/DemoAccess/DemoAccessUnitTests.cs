@@ -15,48 +15,48 @@ namespace OPCAgentSample.Tests.DemoAccess;
 public sealed class DemoAccessUnitTests
 {
     private const string CookieKey = "0123456789abcdef0123456789abcdef-key";
-    private static readonly DateTimeOffset s_now = new(2026, 10, 15, 8, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset Now = new(2026, 10, 15, 8, 0, 0, TimeSpan.Zero);
 
     // --- Sitzung ---
 
     [Fact]
     public void Session_token_is_valid_until_it_expires()
     {
-        var token = DemoSession.Create(CookieKey, s_now.AddHours(8), out var id);
+        var token = DemoSession.Create(CookieKey, Now.AddHours(8), out var id);
 
-        var session = DemoSession.Validate(CookieKey, token, s_now.AddHours(7));
+        var session = DemoSession.Validate(CookieKey, token, Now.AddHours(7));
 
         Assert.NotNull(session);
         Assert.Equal(id, session.Id);
-        Assert.Equal(s_now.AddHours(8), session.ExpiresAtUtc);
-        Assert.Null(DemoSession.Validate(CookieKey, token, s_now.AddHours(8)));
-        Assert.Null(DemoSession.Validate(CookieKey, token, s_now.AddHours(9)));
+        Assert.Equal(Now.AddHours(8), session.ExpiresAtUtc);
+        Assert.Null(DemoSession.Validate(CookieKey, token, Now.AddHours(8)));
+        Assert.Null(DemoSession.Validate(CookieKey, token, Now.AddHours(9)));
     }
 
     [Fact]
     public void Session_token_with_wrong_key_changed_payload_or_garbage_is_rejected()
     {
-        var token = DemoSession.Create(CookieKey, s_now.AddHours(8), out _);
+        var token = DemoSession.Create(CookieKey, Now.AddHours(8), out _);
         var parts = token.Split('.');
         var forgedExpiry = $"{parts[0]}.{long.Parse(parts[1], System.Globalization.CultureInfo.InvariantCulture) + 3600}.{parts[2]}";
         var otherSession = $"andere.{parts[1]}.{parts[2]}";
 
-        Assert.Null(DemoSession.Validate(CookieKey + "x", token, s_now));
-        Assert.Null(DemoSession.Validate(CookieKey, forgedExpiry, s_now));
-        Assert.Null(DemoSession.Validate(CookieKey, otherSession, s_now));
-        Assert.Null(DemoSession.Validate(CookieKey, null, s_now));
-        Assert.Null(DemoSession.Validate(CookieKey, string.Empty, s_now));
-        Assert.Null(DemoSession.Validate(CookieKey, "a.b", s_now));
-        Assert.Null(DemoSession.Validate(CookieKey, "a.-1.c", s_now));
-        Assert.Null(DemoSession.Validate(CookieKey, new string('x', 500), s_now));
-        Assert.Null(DemoSession.Validate(string.Empty, token, s_now));
+        Assert.Null(DemoSession.Validate(CookieKey + "x", token, Now));
+        Assert.Null(DemoSession.Validate(CookieKey, forgedExpiry, Now));
+        Assert.Null(DemoSession.Validate(CookieKey, otherSession, Now));
+        Assert.Null(DemoSession.Validate(CookieKey, null, Now));
+        Assert.Null(DemoSession.Validate(CookieKey, string.Empty, Now));
+        Assert.Null(DemoSession.Validate(CookieKey, "a.b", Now));
+        Assert.Null(DemoSession.Validate(CookieKey, "a.-1.c", Now));
+        Assert.Null(DemoSession.Validate(CookieKey, new string('x', 500), Now));
+        Assert.Null(DemoSession.Validate(string.Empty, token, Now));
     }
 
     [Fact]
     public void Every_login_gets_a_new_session_id()
     {
-        _ = DemoSession.Create(CookieKey, s_now.AddHours(1), out var first);
-        _ = DemoSession.Create(CookieKey, s_now.AddHours(1), out var second);
+        _ = DemoSession.Create(CookieKey, Now.AddHours(1), out var first);
+        _ = DemoSession.Create(CookieKey, Now.AddHours(1), out var second);
 
         Assert.NotEqual(first, second);
     }
@@ -66,7 +66,7 @@ public sealed class DemoAccessUnitTests
     [Fact]
     public void Throttle_blocks_a_client_after_five_failures_for_ten_minutes()
     {
-        var time = new ManualTimeProvider(s_now);
+        var time = new ManualTimeProvider(Now);
         var throttle = new DemoLoginThrottle(time);
         for (var i = 0; i < DemoLoginThrottle.MaxFailuresPerClient - 1; i++) throttle.RecordFailure("1.1.1.1");
         Assert.False(throttle.IsBlocked("1.1.1.1", out _));
@@ -85,7 +85,7 @@ public sealed class DemoAccessUnitTests
     [Fact]
     public void Throttle_blocks_everyone_after_forty_failures_in_total()
     {
-        var time = new ManualTimeProvider(s_now);
+        var time = new ManualTimeProvider(Now);
         var throttle = new DemoLoginThrottle(time);
         for (var i = 0; i < DemoLoginThrottle.MaxFailuresTotal; i++) throttle.RecordFailure($"10.0.0.{i}");
 
@@ -155,15 +155,15 @@ public sealed class DemoAccessUnitTests
 
     // --- Einladungs-Keys ---
 
-    private static readonly string s_hashA = ApiKeyHasher.Hash("key-a");
-    private static readonly string s_hashB = ApiKeyHasher.Hash("key-b");
+    private static readonly string HashA = ApiKeyHasher.Hash("key-a");
+    private static readonly string HashB = ApiKeyHasher.Hash("key-b");
 
     [Fact]
     public void Invite_codes_are_parsed_from_name_hash_pairs()
     {
         Assert.True(DemoInviteCodes.TryParse(null, out var none, out _));
         Assert.True(DemoInviteCodes.TryParse("  ", out var blank, out _));
-        Assert.True(DemoInviteCodes.TryParse($" anna-1 = {s_hashA} ; ben={s_hashB};", out var codes, out var error));
+        Assert.True(DemoInviteCodes.TryParse($" anna-1 = {HashA} ; ben={HashB};", out var codes, out var error));
 
         Assert.Empty(none);
         Assert.Empty(blank);
@@ -185,7 +185,7 @@ public sealed class DemoAccessUnitTests
     [InlineData("anna=")]
     public void Malformed_invite_codes_are_rejected_with_the_setting_name(string setting)
     {
-        var text = setting.Replace("HASH", s_hashA, StringComparison.Ordinal);
+        var text = setting.Replace("HASH", HashA, StringComparison.Ordinal);
 
         Assert.False(DemoInviteCodes.TryParse(text, out var codes, out var error));
         Assert.Empty(codes);
@@ -195,8 +195,8 @@ public sealed class DemoAccessUnitTests
     [Fact]
     public void The_name_may_have_at_most_40_characters()
     {
-        Assert.True(DemoInviteCodes.TryParse($"{new string('a', 40)}={s_hashA}", out _, out _));
-        Assert.False(DemoInviteCodes.TryParse($"{new string('a', 41)}={s_hashA}", out _, out _));
+        Assert.True(DemoInviteCodes.TryParse($"{new string('a', 40)}={HashA}", out _, out _));
+        Assert.False(DemoInviteCodes.TryParse($"{new string('a', 41)}={HashA}", out _, out _));
     }
 
     [Fact]
@@ -207,7 +207,7 @@ public sealed class DemoAccessUnitTests
             Enabled = true,
             AccessCodeSha256 = ApiKeyHasher.Hash("haupt"),
             CookieKey = CookieKey,
-            InviteCodes = $"anna={s_hashA}",
+            InviteCodes = $"anna={HashA}",
         };
 
         Assert.Null(valid.Validate());
@@ -224,8 +224,8 @@ public sealed class DemoAccessUnitTests
     private static (DemoSessionChatOwnerResolver Resolver, string Token) ResolverWithSession(out DemoSessionReader reader)
     {
         var options = Options.Create(new DemoOptions { Enabled = true, AccessCodeSha256 = ApiKeyHasher.Hash("c"), CookieKey = CookieKey });
-        reader = new DemoSessionReader(options, new ManualTimeProvider(s_now));
-        var token = DemoSession.Create(CookieKey, s_now.AddHours(8), out _);
+        reader = new DemoSessionReader(options, new ManualTimeProvider(Now));
+        var token = DemoSession.Create(CookieKey, Now.AddHours(8), out _);
         return (new DemoSessionChatOwnerResolver(reader, options), token);
     }
 
@@ -242,7 +242,7 @@ public sealed class DemoAccessUnitTests
     public void Owner_is_a_browser_token_per_session_and_user()
     {
         var (resolver, token) = ResolverWithSession(out _);
-        var otherToken = DemoSession.Create(CookieKey, s_now.AddHours(8), out _);
+        var otherToken = DemoSession.Create(CookieKey, Now.AddHours(8), out _);
 
         var owner = resolver.Resolve(BearerRequest(token), User("martin.huber"));
         var sameAgain = resolver.Resolve(BearerRequest(token), User("martin.huber"));
@@ -260,7 +260,7 @@ public sealed class DemoAccessUnitTests
     public void Without_the_demo_the_owner_stays_the_local_user()
     {
         var options = Options.Create(new DemoOptions { Enabled = false });
-        var resolver = new DemoSessionChatOwnerResolver(new DemoSessionReader(options, new ManualTimeProvider(s_now)), options);
+        var resolver = new DemoSessionChatOwnerResolver(new DemoSessionReader(options, new ManualTimeProvider(Now)), options);
 
         var owner = resolver.Resolve(new DefaultHttpContext(), User("martin.huber"));
 

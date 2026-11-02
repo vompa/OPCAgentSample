@@ -19,7 +19,7 @@ public sealed class McpEndpointTests(InfrastructureFixture infrastructure)
     private const string InitializeRequest =
         """{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"1"}}}""";
 
-    private static readonly string[] s_toolNames =
+    private static readonly string[] ToolNames =
     [
         "get_hall_overview", "get_machine_status", "get_active_alarms", "get_material_reach", "get_order_progress", "get_process_trend",
         "get_shift_summary", "get_oee", "get_downtime_pareto", "compare", "get_maintenance_due", "get_condition_warnings",
@@ -49,7 +49,7 @@ public sealed class McpEndpointTests(InfrastructureFixture infrastructure)
 
         var tools = await client.ListToolsAsync();
 
-        Assert.Equal(s_toolNames.Order(StringComparer.Ordinal), tools.Select(t => t.Name).Order(StringComparer.Ordinal));
+        Assert.Equal(ToolNames.Order(StringComparer.Ordinal), tools.Select(t => t.Name).Order(StringComparer.Ordinal));
         foreach (var tool in tools)
         {
             Assert.True(tool.ProtocolTool.Annotations?.ReadOnlyHint, $"{tool.Name}: ReadOnly");

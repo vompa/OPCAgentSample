@@ -23,14 +23,14 @@ public sealed class PlantResources(
     MasterDataStore masterData,
     IOptions<PlantOptions> plant)
 {
-    private static readonly object[] s_shifts =
+    private static readonly object[] Shifts =
     [
         new { Name = "Früh", Code = "F", Von = "06:00", Bis = "14:00" },
         new { Name = "Spät", Code = "S", Von = "14:00", Bis = "22:00" },
         new { Name = "Nacht", Code = "N", Von = "22:00", Bis = "06:00" },
     ];
 
-    private static readonly string[] s_rules =
+    private static readonly string[] Rules =
     [
         "Produktion Montag 06:00 bis Samstag 06:00, Wochenende und Feiertage frei.",
         "Die Nachtschicht gehört zum Produktionstag ihres Beginns (22:00); ein Produktionstag läuft von 06:00 bis 06:00.",
@@ -100,8 +100,8 @@ public sealed class PlantResources(
         return Json(new
         {
             Zeitzone = calendar.TimeZone.Id,
-            Schichten = s_shifts,
-            Regeln = s_rules,
+            Schichten = Shifts,
+            Regeln = Rules,
             Datenstand = Fmt.Stamp(now),
             Aktuell = new
             {

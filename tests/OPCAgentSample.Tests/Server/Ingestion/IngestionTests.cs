@@ -13,16 +13,16 @@ namespace OPCAgentSample.Tests.Server.Ingestion;
 [Collection(InfrastructureFixture.Name)]
 public sealed class IngestionTests(InfrastructureFixture infrastructure, ITestOutputHelper output)
 {
-    private static readonly SharedHistory s_history = SharedHistory.Instance;
+    private static readonly SharedHistory History = SharedHistory.Instance;
 
-    private static readonly string[] s_stations = [.. PlantLayout.HallAStations.Select(s => s.Id)];
+    private static readonly string[] Stations = [.. PlantLayout.HallAStations.Select(s => s.Id)];
 
-    private static DateTimeOffset At(int day, int hour, int minute = 0) => s_history.Calendar.ToUtc(new DateTime(2026, 10, day, hour, minute, 0));
+    private static DateTimeOffset At(int day, int hour, int minute = 0) => History.Calendar.ToUtc(new DateTime(2026, 10, day, hour, minute, 0));
 
     /// <summary>Dienste mit leerem Redis und einer Quelle, die erst ab <paramref name="startUtc"/> liefert (kurze Aufnahme für schnelle Tests).</summary>
     private Task<TestServices> CreateShortAsync(DateTimeOffset startUtc, out GeneratorHistorySource source)
     {
-        var created = new GeneratorHistorySource(s_history, startUtc);
+        var created = new GeneratorHistorySource(History, startUtc);
         source = created;
         return infrastructure.CreateServicesAsync(configure: s => s.AddSingleton<IHistorySource>(created));
     }
@@ -30,9 +30,9 @@ public sealed class IngestionTests(InfrastructureFixture infrastructure, ITestOu
     private static async Task<Dictionary<string, KpiBlock>> ReadBlocksAsync(RollupReader reader) =>
         new()
         {
-            ["shift"] = (await reader.ReadBlockAsync(s_stations, RollupLevel.Shift, s_history.Calendar.ShiftPeriodOf(At(15, 9, 0)).Key)).Block,
-            ["day"] = (await reader.ReadBlockAsync(s_stations, RollupLevel.Day, "2026-10-15")).Block,
-            ["week"] = (await reader.ReadBlockAsync(s_stations, RollupLevel.Week, "2026-W42")).Block,
+            ["shift"] = (await reader.ReadBlockAsync(Stations, RollupLevel.Shift, History.Calendar.ShiftPeriodOf(At(15, 9, 0)).Key)).Block,
+            ["day"] = (await reader.ReadBlockAsync(Stations, RollupLevel.Day, "2026-10-15")).Block,
+            ["week"] = (await reader.ReadBlockAsync(Stations, RollupLevel.Week, "2026-W42")).Block,
         };
 
     [Fact]
@@ -42,31 +42,31 @@ public sealed class IngestionTests(InfrastructureFixture infrastructure, ITestOu
         output.WriteLine($"Erzeugung der Datensätze: {ingested.GenerationTime.TotalSeconds:F1} s (nicht Teil der Aufnahme)");
         output.WriteLine($"Aufnahme: {ingested.Result.Records:N0} Datensätze in {ingested.Result.Windows} Fenstern: {ingested.IngestTime.TotalSeconds:F1} s");
         // Die Laufzeit wird nur ausgegeben, nicht geprüft: sie hängt von der Last ab.
-        Assert.Equal(s_history.All.Count, ingested.Result.Records);
+        Assert.Equal(History.All.Count, ingested.Result.Records);
 
         await using var services = await infrastructure.CreateIngestedServicesAsync();
         var reader = services.Get<RollupReader>();
-        var records = s_history.Records;
-        var start = s_history.Scenario.HistoryStartUtc;
+        var records = History.Records;
+        var start = History.Scenario.HistoryStartUtc;
 
         // Jede Schicht stimmt mit der Rechnung der Kennzahlen-Bibliothek über die Rohdatensätze überein.
-        var shifts = s_history.Calendar.ProductionShiftsBetween(start, s_history.Now).ToList();
+        var shifts = History.Calendar.ProductionShiftsBetween(start, History.Now).ToList();
         Assert.NotEmpty(shifts);
         foreach (var shift in shifts)
         {
-            var stored = await reader.ReadBlockAsync(s_stations, RollupLevel.Shift, shift.Key);
-            RollupAssert.Equivalent(s_history.Block(shift), stored.Block, shift.Key);
+            var stored = await reader.ReadBlockAsync(Stations, RollupLevel.Shift, shift.Key);
+            RollupAssert.Equivalent(History.Block(shift), stored.Block, shift.Key);
         }
 
-        var week = await reader.ReadBlockAsync(s_stations, RollupLevel.Week, "2026-W42");
-        RollupAssert.Equivalent(s_history.Week42(), week.Block, "2026-W42");
+        var week = await reader.ReadBlockAsync(Stations, RollupLevel.Week, "2026-W42");
+        RollupAssert.Equivalent(History.Week42(), week.Block, "2026-W42");
 
         // Die Ereignisse stehen vollständig in den Streams.
-        var losses = await reader.ReadLossesAsync(start, s_history.Now);
+        var losses = await reader.ReadLossesAsync(start, History.Now);
         Assert.Equal(records.OfType<LossEvent>().Select(r => r.Id).Distinct().Count(), losses.Select(l => l.Id).Distinct().Count());
-        var alarms = await reader.ReadAlarmsAsync(start, s_history.Now);
+        var alarms = await reader.ReadAlarmsAsync(start, History.Now);
         Assert.Equal(records.OfType<AlarmRecord>().Select(r => r.Id).Distinct().Count(), alarms.Select(a => a.Id).Distinct().Count());
-        var orders = await reader.ReadOrderEventsAsync(start, s_history.Now.AddMinutes(1));
+        var orders = await reader.ReadOrderEventsAsync(start, History.Now.AddMinutes(1));
         Assert.Equal(records.OfType<OrderEvent>().Select(r => (r.StationId, r.TimestampUtc, r.OrderId, r.Kind)).Distinct().Count(), orders.Count);
 
         // Die Tageswerte der Hallen B und C (Historie B) liegen als Tage vor.
@@ -82,10 +82,10 @@ public sealed class IngestionTests(InfrastructureFixture infrastructure, ITestOu
         var before = await ReadBlocksAsync(reader);
 
         var watermark = await reader.ReadWatermarkAsync(source.SourceId);
-        var again = await services.Get<HistoryIngestor>().IngestAsync(source, s_history.Now);
+        var again = await services.Get<HistoryIngestor>().IngestAsync(source, History.Now);
 
-        Assert.Equal(s_history.Now, watermark);
-        Assert.Equal(s_history.Now, await reader.ReadOverallWatermarkAsync());
+        Assert.Equal(History.Now, watermark);
+        Assert.Equal(History.Now, await reader.ReadOverallWatermarkAsync());
         Assert.Equal(0, again.Records);
         Assert.Equal(0, again.Windows);
         var after = await ReadBlocksAsync(reader);
@@ -116,9 +116,9 @@ public sealed class IngestionTests(InfrastructureFixture infrastructure, ITestOu
         static async Task<Dictionary<string, KpiBlock>> ReadAllShiftsAsync(RollupReader reader)
         {
             var result = new Dictionary<string, KpiBlock>();
-            foreach (var shift in s_history.Calendar.ProductionShiftsBetween(At(13, 6), At(14, 13, 30)))
+            foreach (var shift in History.Calendar.ProductionShiftsBetween(At(13, 6), At(14, 13, 30)))
             {
-                result[shift.Key] = (await reader.ReadBlockAsync(s_stations, RollupLevel.Shift, shift.Key)).Block;
+                result[shift.Key] = (await reader.ReadBlockAsync(Stations, RollupLevel.Shift, shift.Key)).Block;
             }
 
             return result;
@@ -141,7 +141,7 @@ public sealed class IngestionTests(InfrastructureFixture infrastructure, ITestOu
 
         Assert.Equal(cut, second.FromUtc);
         Assert.Equal(end, await reader.ReadWatermarkAsync(source.SourceId));
-        Assert.Equal(s_history.All.Count(r => r.TimestampUtc >= At(13, 6) && r.TimestampUtc < end), first.Records + second.Records);
+        Assert.Equal(History.All.Count(r => r.TimestampUtc >= At(13, 6) && r.TimestampUtc < end), first.Records + second.Records);
 
         // Das Ergebnis ist dasselbe wie bei einer Aufnahme in einem Zug (dazu wird Redis neu befüllt).
         var actual = await ReadBlocksAsync(reader);
@@ -154,8 +154,8 @@ public sealed class IngestionTests(InfrastructureFixture infrastructure, ITestOu
     [Fact]
     public async Task A_later_reported_event_with_an_earlier_start_recomputes_the_earlier_shift()
     {
-        var shift = s_history.Shift(14, Shift.Night);
-        var loss = s_history.Records.OfType<LossEvent>()
+        var shift = History.Shift(14, Shift.Night);
+        var loss = History.Records.OfType<LossEvent>()
             .Where(l => l.EndUtc is not null && l.Category == LossCategory.Breakdown && shift.Contains(l.StartUtc) && l.StationId == "RT-03")
             .OrderByDescending(l => l.EndUtc - l.StartUtc)
             .First();

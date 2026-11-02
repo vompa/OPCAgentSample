@@ -18,7 +18,7 @@ namespace OPCAgentSample.Server.Live;
 public sealed class StationStateBuilder(
     RollupReader reader, PlantQueries queries, MasterDataStore masterData, ShiftCalendar calendar, IOptions<PlantOptions> plant)
 {
-    private static readonly TimeSpan s_consumptionWindow = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan ConsumptionWindow = TimeSpan.FromMinutes(30);
     private const int MinConsumptionSamples = 10;
 
     public async Task<StationSnapshot> BuildAsync(DateTimeOffset untilUtc, KpiBlock shiftBlock, CancellationToken cancellationToken = default)
@@ -135,7 +135,7 @@ public sealed class StationStateBuilder(
     /// <summary>Verbrauch je Minute: Summe der Rückgänge in den letzten Minutenwerten (Nachfüllen zählt nicht).</summary>
     private static double ConsumptionPerMinute(IReadOnlyList<(DateTimeOffset At, double Value)> series)
     {
-        var window = series.Skip(Math.Max(0, series.Count - (int)s_consumptionWindow.TotalMinutes)).ToList();
+        var window = series.Skip(Math.Max(0, series.Count - (int)ConsumptionWindow.TotalMinutes)).ToList();
         if (window.Count < MinConsumptionSamples) return 0;
 
         var used = 0.0;

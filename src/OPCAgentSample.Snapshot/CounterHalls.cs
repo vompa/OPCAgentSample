@@ -12,13 +12,13 @@ namespace OPCAgentSample.Snapshot;
 /// </summary>
 public static class CounterHalls
 {
-    private static readonly (string Week, int FirstDay, int Days)[] s_weeks = [(PlantComparison.Week41, 5, 5), (PlantComparison.Week42, 12, 3)];
+    private static readonly (string Week, int FirstDay, int Days)[] Weeks = [(PlantComparison.Week41, 5, 5), (PlantComparison.Week42, 12, 3)];
 
     public static IEnumerable<DailyStationKpi> Days(ShiftCalendar calendar)
     {
         foreach (var station in new[] { PlantComparison.HallBStation, PlantComparison.HallCStation })
         {
-            foreach (var (week, firstDay, days) in s_weeks)
+            foreach (var (week, firstDay, days) in Weeks)
             {
                 var total = PlantComparison.Block(week).Stations[station];
                 for (var i = 0; i < days; i++)

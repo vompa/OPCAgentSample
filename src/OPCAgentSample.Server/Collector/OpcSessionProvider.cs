@@ -34,7 +34,7 @@ public sealed partial class OpcSessionProvider(
     /// <summary>Telemetrie-Kontext des OPC-Stacks (ohne Ausgabe); auch für Subscriptions.</summary>
     internal static ITelemetryContext Telemetry { get; } = DefaultTelemetry.Create(_ => { });
 
-    private readonly object _sync = new();
+    private readonly Lock _sync = new();
     private TaskCompletionSource<OpcConnection> _connected = NewSignal();
     private OpcConnection? _current;
     private DateTimeOffset? _historyStartUtc;

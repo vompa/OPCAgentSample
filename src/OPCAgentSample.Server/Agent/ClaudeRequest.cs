@@ -52,7 +52,7 @@ public static class ClaudeRequest
         Stil: Deutsch, Du-Form, knapp und sachlich, wie unter Kollegen in der Halle. Stationen mit ihrer Kennung (RT-01, OF-02, VP-02). Zahlen in deutscher Schreibweise (Komma als Dezimaltrenner, Punkt als Tausendertrenner) mit Einheit. Keine Emojis.
         """;
 
-    private static readonly CacheControlEphemeral s_ephemeral = new();
+    private static readonly CacheControlEphemeral Ephemeral = new();
 
     public static MessageCreateParams Build(
         ClaudeOptions options, IReadOnlyList<AgentTool> tools, IReadOnlyList<AgentTurn> turns, string ownerHash, bool allowTools)
@@ -66,7 +66,7 @@ public static class ClaudeRequest
             Model = options.Model,
             MaxTokens = options.MaxTokens,
             Tools = tools.OrderBy(t => t.Name, StringComparer.Ordinal).Select(t => new ToolUnion(ToTool(t))).ToList(),
-            System = new List<TextBlockParam> { new() { Text = SystemPrompt, CacheControl = s_ephemeral } },
+            System = new List<TextBlockParam> { new() { Text = SystemPrompt, CacheControl = Ephemeral } },
             Messages = ToMessages(turns),
             ToolChoice = allowTools ? new ToolChoiceAuto() : new ToolChoiceNone(),
             OutputConfig = new OutputConfig
@@ -154,7 +154,7 @@ public static class ClaudeRequest
             var item = turn.Results[i];
             var mark = markLast && i == turn.Results.Count - 1;
             ToolResultBlockParam block = mark
-                ? new() { ToolUseID = item.ToolUseId, Content = item.Text, IsError = item.IsError, CacheControl = s_ephemeral }
+                ? new() { ToolUseID = item.ToolUseId, Content = item.Text, IsError = item.IsError, CacheControl = Ephemeral }
                 : new() { ToolUseID = item.ToolUseId, Content = item.Text, IsError = item.IsError };
             blocks.Add(block);
         }

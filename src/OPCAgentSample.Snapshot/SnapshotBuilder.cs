@@ -22,8 +22,8 @@ public static class SnapshotBuilder
     public const string FormatVersion = "1";
 
     private const string FixedSessionId = "00000000-0000-0000-0000-000000000001";
-    private static readonly JsonSerializerOptions s_write = new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
-    private static readonly JsonSerializerOptions s_web = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions Write = new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+    private static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web);
 
     /// <summary>Dateiname der Rolle, z. B. <c>shift_lead.json</c>.</summary>
     public static string FileOf(string roleId) => $"{roleId}.json";
@@ -44,7 +44,7 @@ public static class SnapshotBuilder
             files[MachinesFileOf(role)] = Serialize(await GetAsync(client, $"/api/reports/machines?role={Uri.EscapeDataString(role)}", cancellationToken));
         }
 
-        files[ReportsFile] = Serialize(JsonSerializer.SerializeToNode(SampleReports(DateTimeOffset.Parse(clock, System.Globalization.CultureInfo.InvariantCulture)), s_web)!);
+        files[ReportsFile] = Serialize(JsonSerializer.SerializeToNode(SampleReports(DateTimeOffset.Parse(clock, System.Globalization.CultureInfo.InvariantCulture)), Web)!);
         return files;
     }
 
@@ -113,7 +113,7 @@ public static class SnapshotBuilder
         return history;
     }
 
-    private static string Serialize(JsonNode node) => node.ToJsonString(s_write) + "\n";
+    private static string Serialize(JsonNode node) => node.ToJsonString(Write) + "\n";
 
     /// <summary>Beispielwerte für die Report-Seite in der Vorschau (fest, aber im Format der echten Antwort).</summary>
     private static ReportsSummary SampleReports(DateTimeOffset now)

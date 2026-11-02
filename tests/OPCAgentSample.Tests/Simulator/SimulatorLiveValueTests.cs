@@ -7,7 +7,7 @@ namespace OPCAgentSample.Tests.Simulator;
 [Collection(SimulatorFixtureGroup.Name)]
 public sealed class SimulatorLiveValueTests(SimulatorFixture fixture)
 {
-    private static readonly string[] s_productionStations = ["RT-01", "RT-02", "RT-03", "RT-04", "VP-01", "VP-02"];
+    private static readonly string[] ProductionStations = ["RT-01", "RT-02", "RT-03", "RT-04", "VP-01", "VP-02"];
 
     [Fact]
     public async Task Rt04_press_force_build_up_is_about_1_1_seconds_and_taktzeit_about_4_6()
@@ -119,5 +119,5 @@ public sealed class SimulatorLiveValueTests(SimulatorFixture fixture)
         Assert.Equal(0.0, await client.ReadValueAsync<double>("Werk.Simulation.Geschwindigkeit"));
     }
 
-    public static TheoryData<string> ProductionStations() => [.. s_productionStations];
+    public static TheoryData<string> ProductionStations() => [.. ProductionStations];
 }

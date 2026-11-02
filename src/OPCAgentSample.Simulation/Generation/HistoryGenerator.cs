@@ -11,7 +11,7 @@ namespace OPCAgentSample.Simulation.Generation;
 /// </summary>
 public sealed class HistoryGenerator
 {
-    private static readonly TimeSpan s_slice = TimeSpan.FromHours(6);
+    private static readonly TimeSpan Slice = TimeSpan.FromHours(6);
 
     private readonly ProductionShiftIndex _shifts;
     private readonly List<ProductionStationModel> _stations;
@@ -42,9 +42,9 @@ public sealed class HistoryGenerator
     /// <summary>Alle Datensätze mit Zeitstempel in [<paramref name="fromUtc"/>, <paramref name="untilUtc"/>), sortiert.</summary>
     public IEnumerable<HistoryRecord> Generate(DateTimeOffset fromUtc, DateTimeOffset untilUtc)
     {
-        for (var sliceStart = fromUtc; sliceStart < untilUtc; sliceStart += s_slice)
+        for (var sliceStart = fromUtc; sliceStart < untilUtc; sliceStart += Slice)
         {
-            var sliceEnd = sliceStart + s_slice < untilUtc ? sliceStart + s_slice : untilUtc;
+            var sliceEnd = sliceStart + Slice < untilUtc ? sliceStart + Slice : untilUtc;
             foreach (var record in Slice(sliceStart, sliceEnd))
             {
                 yield return record;

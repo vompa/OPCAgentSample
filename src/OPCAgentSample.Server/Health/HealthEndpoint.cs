@@ -10,7 +10,7 @@ namespace OPCAgentSample.Server.Health;
 public static class HealthEndpoint
 {
     public const string Route = "/api/health";
-    private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(3);
+    private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(3);
 
     public static IEndpointRouteBuilder MapHealthEndpoint(this IEndpointRouteBuilder endpoints)
     {
@@ -21,7 +21,7 @@ public static class HealthEndpoint
     private static async Task<IResult> CheckAsync(RedisAccess redis, MasterDataStore masterData, CancellationToken cancellationToken)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeout.CancelAfter(s_timeout);
+        timeout.CancelAfter(Timeout);
 
         var up = await redis.IsAvailableAsync() && await redis.TryAsync(_ => masterData.IsSeededAsync(), false, "health seed");
         return up

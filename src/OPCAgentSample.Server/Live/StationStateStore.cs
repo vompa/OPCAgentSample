@@ -19,8 +19,8 @@ public sealed record StationSnapshotResult(StationSnapshot Snapshot, string Sour
 public sealed class StationStateStore(IConnectionMultiplexer redis, StationStateBuilder builder)
 {
     private const string DataField = "data";
-    private static readonly TimeSpan s_ttl = TimeSpan.FromDays(1);
-    private static readonly JsonSerializerOptions s_json = new(JsonSerializerDefaults.Web) { Converters = { new JsonStringEnumConverter() } };
+    private static readonly TimeSpan Ttl = TimeSpan.FromDays(1);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { Converters = { new JsonStringEnumConverter() } };
 
     /// <summary>Rechnet alle Zustände zum Datenstand und schreibt sie nach Redis.</summary>
     public async Task<StationSnapshot> RefreshAsync(DateTimeOffset untilUtc, KpiBlock shiftBlock, CancellationToken cancellationToken)
@@ -45,8 +45,8 @@ public sealed class StationStateStore(IConnectionMultiplexer redis, StationState
 
         try
         {
-            var stations = values[..ids.Count].Select(v => JsonSerializer.Deserialize<StationState>(v.ToString(), s_json)!).ToList();
-            var climate = values[ids.Count].IsNullOrEmpty ? null : JsonSerializer.Deserialize<ClimateState>(values[ids.Count].ToString(), s_json);
+            var stations = values[..ids.Count].Select(v => JsonSerializer.Deserialize<StationState>(v.ToString(), Json)!).ToList();
+            var climate = values[ids.Count].IsNullOrEmpty ? null : JsonSerializer.Deserialize<ClimateState>(values[ids.Count].ToString(), Json);
             return new StationSnapshot(stations, climate, stations.Max(s => s.SourceUntilUtc));
         }
         catch (JsonException)
@@ -64,7 +64,7 @@ public sealed class StationStateStore(IConnectionMultiplexer redis, StationState
             _ = transaction.KeyDeleteAsync(key);
             _ = transaction.HashSetAsync(key,
             [
-                new HashEntry(DataField, JsonSerializer.Serialize(station, s_json)),
+                new HashEntry(DataField, JsonSerializer.Serialize(station, Json)),
                     new HashEntry("state", station.State.ToString()),
                     new HashEntry("since", station.SinceUtc.ToString("O", CultureInfo.InvariantCulture)),
                     new HashEntry("order", station.OrderId ?? string.Empty),
@@ -74,7 +74,7 @@ public sealed class StationStateStore(IConnectionMultiplexer redis, StationState
                     new HashEntry("reach_min", station.ReachMinutes?.ToString("R", CultureInfo.InvariantCulture) ?? string.Empty),
                     new HashEntry("source_until", station.SourceUntilUtc.ToString("O", CultureInfo.InvariantCulture)),
                 ]);
-            _ = transaction.KeyExpireAsync(key, s_ttl);
+            _ = transaction.KeyExpireAsync(key, Ttl);
         }
 
         if (snapshot.Climate is { } climate)
@@ -83,12 +83,12 @@ public sealed class StationStateStore(IConnectionMultiplexer redis, StationState
             _ = transaction.KeyDeleteAsync(key);
             _ = transaction.HashSetAsync(key,
             [
-                new HashEntry(DataField, JsonSerializer.Serialize(climate, s_json)),
+                new HashEntry(DataField, JsonSerializer.Serialize(climate, Json)),
                     new HashEntry("celsius", climate.Celsius.ToString("R", CultureInfo.InvariantCulture)),
                     new HashEntry("humidity", climate.Humidity.ToString("R", CultureInfo.InvariantCulture)),
                     new HashEntry("source_until", climate.SourceUntilUtc.ToString("O", CultureInfo.InvariantCulture)),
                 ]);
-            _ = transaction.KeyExpireAsync(key, s_ttl);
+            _ = transaction.KeyExpireAsync(key, Ttl);
         }
 
         await transaction.ExecuteAsync();

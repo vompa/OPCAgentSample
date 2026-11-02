@@ -50,7 +50,7 @@ public static class MachineAskContext
     private const int MaxParetoRows = 4;
     private const int MaxScrapRows = 3;
 
-    private static readonly CultureInfo s_de = CultureInfo.GetCultureInfo("de-AT");
+    private static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-AT");
 
     public static string Describe(MachineReportResponse report, string findingId)
     {
@@ -176,5 +176,5 @@ public static class MachineAskContext
         }
     }
 
-    private static string Number(double value, int decimals) => value.ToString($"N{decimals}", s_de);
+    private static string Number(double value, int decimals) => value.ToString($"N{decimals}", De);
 }

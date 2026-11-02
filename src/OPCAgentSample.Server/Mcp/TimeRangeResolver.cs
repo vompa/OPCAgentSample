@@ -36,7 +36,7 @@ public sealed record ResolvedRange(
 /// </summary>
 public sealed partial class TimeRangeResolver(ShiftCalendar calendar)
 {
-    private static readonly string[] s_months =
+    private static readonly string[] Months =
         ["jan", "feb", "mae", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "dez"];
 
     public const string AcceptedFormats =
@@ -387,7 +387,7 @@ public sealed partial class TimeRangeResolver(ShiftCalendar calendar)
     private static int MonthIndex(string name)
     {
         var prefix = name.Length >= 3 ? name[..3] : name;
-        return Array.IndexOf(s_months, prefix);
+        return Array.IndexOf(Months, prefix);
     }
 
     private static string MonthName(int index) => CultureInfo.GetCultureInfo("de-AT").DateTimeFormat.GetMonthName(index + 1);

@@ -14,17 +14,17 @@ public static class SimulatorTelemetry
 
     public static readonly ActivitySource Source = new(Name);
 
-    private static readonly Meter s_meter = new(Name, "1.0.0");
+    private static readonly Meter Meter = new(Name, "1.0.0");
 
-    private static readonly Counter<long> s_reads =
-        s_meter.CreateCounter<long>(HistoryReads, description: "OPC-UA-HistoryRead-Aufrufe (je Knoten)");
+    private static readonly Counter<long> Reads =
+        Meter.CreateCounter<long>(HistoryReads, description: "OPC-UA-HistoryRead-Aufrufe (je Knoten)");
 
-    private static readonly Counter<long> s_values =
-        s_meter.CreateCounter<long>(HistoryValues, description: "Über HistoryRead gelieferte Werte");
+    private static readonly Counter<long> Values =
+        Meter.CreateCounter<long>(HistoryValues, description: "Über HistoryRead gelieferte Werte");
 
     public static void HistoryRead(long values)
     {
-        s_reads.Add(1);
-        s_values.Add(values);
+        Reads.Add(1);
+        Values.Add(values);
     }
 }

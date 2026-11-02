@@ -23,7 +23,7 @@ public sealed class UsageStore(IConnectionMultiplexer redis)
     /// <summary>Untergrenzen der Behälter des Histogramms der Antwortzeiten in Millisekunden; der letzte Behälter ist offen.</summary>
     public static readonly int[] LatencyEdgesMs = [250, 500, 1000, 2000, 3000, 5000, 8000, 12000, 20000, 30000];
 
-    private static readonly TimeSpan s_retention = TimeSpan.FromDays(35);
+    private static readonly TimeSpan Retention = TimeSpan.FromDays(35);
 
     public static int Bins => LatencyEdgesMs.Length + 1;
 
@@ -67,7 +67,7 @@ public sealed class UsageStore(IConnectionMultiplexer redis)
         _ = tx.HashIncrementAsync(hour, "q");
         _ = tx.HashIncrementAsync(hour, "in", turn.InputTokens);
         _ = tx.HashIncrementAsync(hour, "out", turn.OutputTokens);
-        foreach (var key in new[] { total, day, hour }) _ = tx.KeyExpireAsync(key, s_retention);
+        foreach (var key in new[] { total, day, hour }) _ = tx.KeyExpireAsync(key, Retention);
 
         foreach (var call in turn.ToolCalls.EnumerateArray())
         {
@@ -81,8 +81,8 @@ public sealed class UsageStore(IConnectionMultiplexer redis)
             _ = tx.HashIncrementAsync(key, prefix + "n");
             _ = tx.HashIncrementAsync(key, prefix + "ms", (long)Math.Round(duration));
             _ = tx.HashIncrementAsync(key, prefix + "b" + BinOf(duration).ToString(CultureInfo.InvariantCulture));
-            _ = tx.KeyExpireAsync(key, s_retention);
-            _ = tx.KeyExpireAsync(RedisKeys.UsageTools, s_retention);
+            _ = tx.KeyExpireAsync(key, Retention);
+            _ = tx.KeyExpireAsync(RedisKeys.UsageTools, Retention);
         }
     }
 

@@ -42,9 +42,9 @@ public static class DataWatermarkCheck
 public sealed partial class DataStateMonitor(
     RollupReader reader, IDemoClock clock, TimeProvider timeProvider, ILogger<DataStateMonitor> logger)
 {
-    private static readonly TimeSpan s_cacheDuration = TimeSpan.FromSeconds(15);
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(15);
 
-    private readonly object _gate = new();
+    private readonly Lock _gate = new();
     private volatile bool _loading;
     private bool _warned;
     private DateTimeOffset _checkedAt = DateTimeOffset.MinValue;
@@ -64,7 +64,7 @@ public sealed partial class DataStateMonitor(
         bool due;
         lock (_gate)
         {
-            due = now - _checkedAt >= s_cacheDuration;
+            due = now - _checkedAt >= CacheDuration;
             if (due) _checkedAt = now;
         }
 

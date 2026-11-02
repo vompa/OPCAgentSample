@@ -11,11 +11,11 @@ namespace OPCAgentSample.Tests.Server;
 [Collection(InfrastructureFixture.Name)]
 public sealed class DataStateMonitorTests(InfrastructureFixture infrastructure)
 {
-    private static readonly DateTimeOffset s_realNow = new(2026, 10, 15, 7, 42, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset RealNow = new(2026, 10, 15, 7, 42, 0, TimeSpan.Zero);
 
     private async Task<(TestServices Services, DataStateMonitor Monitor, ManualDemoClock Clock, ManualTimeProvider Time)> CreateAsync()
     {
-        var time = new ManualTimeProvider(s_realNow);
+        var time = new ManualTimeProvider(RealNow);
         var clock = new ManualDemoClock(SimulationClock.DemoStart);
         var services = await infrastructure.CreateServicesAsync(time, configure: s => s.AddSingleton<IDemoClock>(clock));
         return (services, services.Get<DataStateMonitor>(), clock, time);

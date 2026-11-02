@@ -13,9 +13,9 @@ internal static class PackagingTrace
     private const int SmallDiscCartonsPerPallet = 120;
     private const int LargeDiscCartonsPerPallet = 48;
     private const int LargeDiscDiameterMm = 180;
-    private static readonly TimeSpan s_ovenLookback = TimeSpan.FromMinutes(90);
-    private static readonly TimeOnly s_packingCutoff = new(12, 0);
-    private static readonly TimeOnly s_shippingTime = new(14, 0);
+    private static readonly TimeSpan OvenLookback = TimeSpan.FromMinutes(90);
+    private static readonly TimeOnly PackingCutoff = new(12, 0);
+    private static readonly TimeOnly ShippingTime = new(14, 0);
 
     public static IEnumerable<PalletRecord> Pallets(
         ScenarioDefinition scenario, ProductionStationModel station, ShiftRun run, OvenLookup ovens, TimeWindow window)
@@ -27,7 +27,7 @@ internal static class PackagingTrace
             if (!packedInWindow && !shippedInWindow) continue;
 
             var article = scenario.PackagingArticle(pallet.ArticleId);
-            var charges = ovens(article.DiameterMm, pallet.PackedUtc - s_ovenLookback, pallet.PackedUtc);
+            var charges = ovens(article.DiameterMm, pallet.PackedUtc - OvenLookback, pallet.PackedUtc);
             if (packedInWindow)
             {
                 yield return new PalletRecord(station.StationId, pallet.PackedUtc, pallet.PalletId, article.Id, pallet.Cartons,
@@ -69,9 +69,9 @@ internal static class PackagingTrace
         var calendar = scenario.Calendar;
         var local = calendar.ToLocal(packedUtc);
         var day = DateOnly.FromDateTime(local.DateTime);
-        if (TimeOnly.FromDateTime(local.DateTime) >= s_packingCutoff) day = day.AddDays(1);
+        if (TimeOnly.FromDateTime(local.DateTime) >= PackingCutoff) day = day.AddDays(1);
         while (!calendar.IsProductionDay(day)) day = day.AddDays(1);
-        return calendar.ToUtc(day.ToDateTime(s_shippingTime));
+        return calendar.ToUtc(day.ToDateTime(ShippingTime));
     }
 }
 

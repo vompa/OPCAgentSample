@@ -41,14 +41,14 @@ public static class HistoryNodeMap
         new(E.StateChanges, typeof(StateChange)), new(E.ShiftPlans, typeof(ShiftPlanRecord)),
     ];
 
-    private static readonly MinuteNode[] s_counters =
+    private static readonly MinuteNode[] Counters =
     [
         new(G.Counters, V.GoodPieces, MinuteVariables.GoodCount),
         new(G.Counters, V.ScrapPieces, MinuteVariables.ScrapCount),
         new(G.Energy, V.EnergyKwh, MinuteVariables.EnergyKwh),
     ];
 
-    private static readonly MinuteNode[] s_rotaryTable =
+    private static readonly MinuteNode[] RotaryTable =
     [
         new(G.Process, V.MouldTemperature, MinuteVariables.MouldTemperature),
         new(G.Material, V.MixtureLevelKg, MinuteVariables.MixtureLevelKg),
@@ -58,7 +58,7 @@ public static class HistoryNodeMap
         new(G.Hydraulics, V.SystemPressure, MinuteVariables.SystemPressure),
     ];
 
-    private static readonly MinuteNode[] s_oven =
+    private static readonly MinuteNode[] Oven =
     [
         new(G.Capacity, V.OccupiedPlaces, MinuteVariables.OccupiedPlaces),
         new(G.Temperature, V.Zone1Actual, MinuteVariables.Zone1Temperature),
@@ -66,28 +66,28 @@ public static class HistoryNodeMap
         new(G.Temperature, V.Zone3Actual, MinuteVariables.Zone3Temperature),
     ];
 
-    private static readonly MinuteNode[] s_buffer =
+    private static readonly MinuteNode[] Buffer =
     [
         new(G.Inventory, V.PlateCount, MinuteVariables.PlateCount),
         new(G.Inventory, V.MeanWait, MinuteVariables.MeanWaitMinutes),
         new(G.Inventory, V.OldestWait, MinuteVariables.OldestWaitMinutes),
     ];
 
-    private static readonly MinuteNode[] s_packaging =
+    private static readonly MinuteNode[] Packaging =
     [
         new(G.Packaging, V.CheckweigherRejects, MinuteVariables.CheckweigherRejects),
         new(G.Packaging, V.CartonMagazine, MinuteVariables.CartonMagazine),
         new(G.Packaging, V.LabelMagazine, MinuteVariables.LabelMagazine),
     ];
 
-    private static readonly EventNode[] s_orderEvents = [new(E.OrderEvents, typeof(OrderEvent))];
+    private static readonly EventNode[] OrderEvents = [new(E.OrderEvents, typeof(OrderEvent))];
 
-    private static readonly EventNode[] s_rotaryTableEvents = [.. s_orderEvents, new(E.PressLots, typeof(PressLot))];
+    private static readonly EventNode[] RotaryTableEvents = [.. OrderEvents, new(E.PressLots, typeof(PressLot))];
 
-    private static readonly EventNode[] s_ovenEvents = [new(E.OvenCharges, typeof(OvenCharge))];
+    private static readonly EventNode[] OvenEvents = [new(E.OvenCharges, typeof(OvenCharge))];
 
-    private static readonly EventNode[] s_packagingEvents =
-        [.. s_orderEvents, new(E.Pallets, typeof(PalletRecord)), new(E.UnitCounts, typeof(UnitCountRecord))];
+    private static readonly EventNode[] PackagingEvents =
+        [.. OrderEvents, new(E.Pallets, typeof(PalletRecord)), new(E.UnitCounts, typeof(UnitCountRecord))];
 
     /// <summary>Minutenwert-Variablen der Halle-A-Klimamessung (NodeId <see cref="NodeIdScheme.ClimateVariable"/>, Quelle <see cref="MinuteVariables.HallAClimateSource"/>).</summary>
     public static IReadOnlyList<(string Variable, string MinuteVariable)> ClimateNodes { get; } =
@@ -99,30 +99,30 @@ public static class HistoryNodeMap
     /// <summary>Minutenwert-Variablen einer Station ihres Typs (Zähler und Energie nur bei Rundtisch und Verpackung).</summary>
     public static IReadOnlyList<MinuteNode> MinuteNodes(StationType type) => type switch
     {
-        StationType.RotaryTable => [.. s_counters, .. s_rotaryTable],
-        StationType.Oven => s_oven,
-        StationType.Buffer => s_buffer,
-        StationType.Packaging => [.. s_counters, .. s_packaging],
+        StationType.RotaryTable => [.. Counters, .. RotaryTable],
+        StationType.Oven => Oven,
+        StationType.Buffer => Buffer,
+        StationType.Packaging => [.. Counters, .. Packaging],
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
     };
 
     /// <summary>Ereignis-Variablen einer Station ihres Typs, einschließlich der gemeinsamen.</summary>
     public static IReadOnlyList<EventNode> EventNodes(StationType type) => type switch
     {
-        StationType.RotaryTable => [.. CommonEventNodes, .. s_rotaryTableEvents],
-        StationType.Oven => [.. CommonEventNodes, .. s_ovenEvents],
+        StationType.RotaryTable => [.. CommonEventNodes, .. RotaryTableEvents],
+        StationType.Oven => [.. CommonEventNodes, .. OvenEvents],
         StationType.Buffer => CommonEventNodes,
-        StationType.Packaging => [.. CommonEventNodes, .. s_packagingEvents],
+        StationType.Packaging => [.. CommonEventNodes, .. PackagingEvents],
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
     };
 
     /// <summary>Ereignis-Variablen, die ein Typ zusätzlich zu <see cref="CommonEventNodes"/> hat.</summary>
     public static IReadOnlyList<EventNode> ExtraEventNodes(StationType type) => type switch
     {
-        StationType.RotaryTable => s_rotaryTableEvents,
-        StationType.Oven => s_ovenEvents,
+        StationType.RotaryTable => RotaryTableEvents,
+        StationType.Oven => OvenEvents,
         StationType.Buffer => [],
-        StationType.Packaging => s_packagingEvents,
+        StationType.Packaging => PackagingEvents,
         _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
     };
 

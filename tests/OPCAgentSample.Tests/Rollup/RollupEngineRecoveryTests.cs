@@ -10,18 +10,18 @@ namespace OPCAgentSample.Tests.Rollup;
 [Collection(RollupFixture.Name)]
 public sealed class RollupEngineRecoveryTests(RollupFixture fixture)
 {
-    private static readonly SharedHistory s_history = SharedHistory.Instance;
+    private static readonly SharedHistory History = SharedHistory.Instance;
 
-    private static readonly string[] s_stations = [.. PlantLayout.HallAStations.Select(s => s.Id)];
+    private static readonly string[] Stations = [.. PlantLayout.HallAStations.Select(s => s.Id)];
 
-    private static DateTimeOffset RawStart => s_history.Scenario.HistoryStartUtc;
+    private static DateTimeOffset RawStart => History.Scenario.HistoryStartUtc;
 
     [Fact]
     public async Task Resuming_the_running_shift_after_a_restart_gives_the_same_numbers_as_one_pass()
     {
         var reference = await fixture.GetIngestedAsync();
-        var shift = s_history.Calendar.ShiftPeriodOf(s_history.Now);
-        var midShift = s_history.Calendar.ToUtc(new DateTime(2026, 10, 15, 8, 17, 30));
+        var shift = History.Calendar.ShiftPeriodOf(History.Now);
+        var midShift = History.Calendar.ToUtc(new DateTime(2026, 10, 15, 8, 17, 30));
         await using var redis = await RollupFixture.NewRedisAsync();
 
         using (var first = RollupIngest.NewEngine(redis.Connection))
@@ -31,14 +31,14 @@ public sealed class RollupEngineRecoveryTests(RollupFixture fixture)
 
         using (var restarted = RollupIngest.NewEngine(redis.Connection))
         {
-            await RollupIngest.RunAsync(restarted, midShift, s_history.Now);
+            await RollupIngest.RunAsync(restarted, midShift, History.Now);
         }
 
         var reader = new RollupReader(redis.Connection);
         foreach (var (level, key) in new[] { (RollupLevel.Shift, shift.Key), (RollupLevel.Day, "2026-10-15"), (RollupLevel.Week, "2026-W42") })
         {
-            var expected = await reference.Reader.ReadBlockAsync(s_stations, level, key);
-            var actual = await reader.ReadBlockAsync(s_stations, level, key);
+            var expected = await reference.Reader.ReadBlockAsync(Stations, level, key);
+            var actual = await reader.ReadBlockAsync(Stations, level, key);
             RollupAssert.Equivalent(expected.Block, actual.Block, key);
             Assert.Equal(expected.Block.SourceUntilUtc, actual.Block.SourceUntilUtc);
             Assert.Equal(expected.IsOpen, actual.IsOpen);
@@ -60,12 +60,12 @@ public sealed class RollupEngineRecoveryTests(RollupFixture fixture)
     [Fact]
     public async Task A_reason_entered_later_recomputes_only_the_event_dependent_part_of_the_earlier_shift()
     {
-        var shift = s_history.Shift(14, Shift.Night);
-        var loss = s_history.Records.OfType<LossEvent>()
+        var shift = History.Shift(14, Shift.Night);
+        var loss = History.Records.OfType<LossEvent>()
             .Where(l => l.EndUtc is not null && l.Category == LossCategory.Breakdown && shift.Contains(l.StartUtc) && l.StationId == "RT-03")
             .OrderByDescending(l => l.EndUtc - l.StartUtc)
             .First();
-        var later = s_history.Calendar.ToUtc(new DateTime(2026, 10, 15, 6, 0, 0));
+        var later = History.Calendar.ToUtc(new DateTime(2026, 10, 15, 6, 0, 0));
         var corrected = loss with { Reason = LossReasons.Unspecified, Cause = "nachgetragen", TimestampUtc = later.AddMinutes(1) };
         await using var redis = await RollupFixture.NewRedisAsync();
         using var engine = RollupIngest.NewEngine(redis.Connection);
@@ -83,8 +83,8 @@ public sealed class RollupEngineRecoveryTests(RollupFixture fixture)
         Assert.Equal(before.Figures.ScrapPieces, after.Figures.ScrapPieces);
         Assert.Equal(before.ScrapByReason.OrderBy(p => p.Key), after.ScrapByReason.OrderBy(p => p.Key));
 
-        var builder = new KpiBlockBuilder(shift, s_history.Costs);
-        builder.AddRange(s_history.Records);
+        var builder = new KpiBlockBuilder(shift, History.Costs);
+        builder.AddRange(History.Records);
         builder.Add(corrected);
         var expected = builder.Snapshot(shift.EndUtc);
         RollupAssert.Equivalent(expected.Stations["RT-03"].Figures, after.Figures, "RT-03 nach Nachtrag");
@@ -103,24 +103,24 @@ public sealed class RollupEngineRecoveryTests(RollupFixture fixture)
         var reference = await fixture.GetIngestedAsync();
         await using var redis = await RollupFixture.NewRedisAsync();
         using var engine = RollupIngest.NewEngine(redis.Connection);
-        var cut = s_history.Calendar.ToUtc(new DateTime(2026, 10, 7, 12, 0, 0));
+        var cut = History.Calendar.ToUtc(new DateTime(2026, 10, 7, 12, 0, 0));
         await RollupIngest.RunAsync(engine, RawStart, cut);
 
         await redis.FlushAsync();
-        await RollupIngest.RunAsync(engine, RawStart, s_history.Now);
+        await RollupIngest.RunAsync(engine, RawStart, History.Now);
 
         var reader = new RollupReader(redis.Connection);
-        var expected = await reference.Reader.ReadBlockAsync(s_stations, RollupLevel.Week, "2026-W42");
-        var actual = await reader.ReadBlockAsync(s_stations, RollupLevel.Week, "2026-W42");
+        var expected = await reference.Reader.ReadBlockAsync(Stations, RollupLevel.Week, "2026-W42");
+        var actual = await reader.ReadBlockAsync(Stations, RollupLevel.Week, "2026-W42");
         RollupAssert.Equivalent(expected.Block, actual.Block, "2026-W42");
-        var week41 = await reader.ReadBlockAsync(s_stations, RollupLevel.Week, "2026-W41");
-        RollupAssert.Equivalent((await reference.Reader.ReadBlockAsync(s_stations, RollupLevel.Week, "2026-W41")).Block, week41.Block, "2026-W41");
+        var week41 = await reader.ReadBlockAsync(Stations, RollupLevel.Week, "2026-W41");
+        RollupAssert.Equivalent((await reference.Reader.ReadBlockAsync(Stations, RollupLevel.Week, "2026-W41")).Block, week41.Block, "2026-W41");
     }
 
     [Fact]
     public async Task The_day_of_the_clock_change_has_25_hours_and_100_quarter_hours()
     {
-        var calendar = s_history.Calendar;
+        var calendar = History.Calendar;
         var day = new DateOnly(2026, 10, 24);
         var bounds = PeriodBounds.Of(RollupLevel.Day, PeriodKeys.Day(day), calendar);
         Assert.Equal(TimeSpan.FromHours(25), bounds.Duration);
@@ -154,7 +154,7 @@ public sealed class RollupEngineRecoveryTests(RollupFixture fixture)
     [Fact]
     public void Period_bounds_are_contiguous_across_the_clock_change_and_the_ends_of_month_quarter_and_year()
     {
-        var calendar = s_history.Calendar;
+        var calendar = History.Calendar;
         foreach (var (level, key) in new[] { (RollupLevel.Month, "2026-10"), (RollupLevel.Quarter, "2026-Q4"), (RollupLevel.Year, "2026") })
         {
             var bounds = PeriodBounds.Of(level, key, calendar);
@@ -179,7 +179,7 @@ public sealed class RollupEngineRecoveryTests(RollupFixture fixture)
     [Fact]
     public void Period_keys_follow_the_production_day()
     {
-        var calendar = s_history.Calendar;
+        var calendar = History.Calendar;
         var day = new DateOnly(2026, 12, 31);
 
         Assert.Equal("2026-12", PeriodKeys.Of(RollupLevel.Month, day, calendar));

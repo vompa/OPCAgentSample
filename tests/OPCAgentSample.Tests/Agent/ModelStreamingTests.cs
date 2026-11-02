@@ -10,7 +10,7 @@ namespace OPCAgentSample.Tests.Agent;
 /// </summary>
 public sealed class ModelStreamingTests
 {
-    private static readonly string[] s_events =
+    private static readonly string[] Events =
     [
         """{"type":"message_start","message":{"id":"msg_1","type":"message","role":"assistant","model":"claude-haiku-5-5","content":[],"stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":150,"output_tokens":1,"cache_read_input_tokens":11798,"cache_creation_input_tokens":20}}}""",
         """{"type":"content_block_start","index":0,"content_block":{"type":"thinking","thinking":"","signature":""}}""",
@@ -42,7 +42,7 @@ public sealed class ModelStreamingTests
     [Fact]
     public async Task Streamed_events_are_assembled_to_the_same_reply_as_a_whole_message()
     {
-        var message = await AnthropicModelClient.AggregateAsync(Stream(s_events), null, CancellationToken.None);
+        var message = await AnthropicModelClient.AggregateAsync(Stream(Events), null, CancellationToken.None);
         var reply = AnthropicModelClient.ToReply(message);
 
         Assert.Equal("tool_use", reply.StopReason); // ohne JSON-Anführungszeichen
@@ -65,7 +65,7 @@ public sealed class ModelStreamingTests
     {
         var deltas = new List<string>();
 
-        await AnthropicModelClient.AggregateAsync(Stream(s_events), deltas.Add, CancellationToken.None);
+        await AnthropicModelClient.AggregateAsync(Stream(Events), deltas.Add, CancellationToken.None);
 
         Assert.Equal(["{\"headline\":\"RT-03 ", "steht.\",\"todo\":[]}"], deltas);
     }
@@ -75,12 +75,12 @@ public sealed class ModelStreamingTests
     {
         string[] events =
         [
-            s_events[0],
-            s_events[5],
-            s_events[6],
-            s_events[8],
+            Events[0],
+            Events[5],
+            Events[6],
+            Events[8],
             """{"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"output_tokens":9}}""",
-            s_events[15],
+            Events[15],
         ];
 
         var reply = AnthropicModelClient.ToReply(await AnthropicModelClient.AggregateAsync(Stream(events), null, CancellationToken.None));

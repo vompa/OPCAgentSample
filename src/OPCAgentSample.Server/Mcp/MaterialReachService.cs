@@ -33,8 +33,8 @@ public sealed class MaterialReachService(PlantQueries queries, IOptions<PlantOpt
 {
     private const int ConsumptionMinutes = 30;
     private const int MinSamples = 10;
-    private static readonly TimeSpan s_window = TimeSpan.FromMinutes(31);
-    private static readonly TimeSpan s_mixtureWindow = TimeSpan.FromHours(4);
+    private static readonly TimeSpan Window = TimeSpan.FromMinutes(31);
+    private static readonly TimeSpan MixtureWindow = TimeSpan.FromHours(4);
 
     public async Task<IReadOnlyList<MaterialReachRow>> GetAsync(IEnumerable<Station> stations, DateTimeOffset until)
     {
@@ -46,7 +46,7 @@ public sealed class MaterialReachService(PlantQueries queries, IOptions<PlantOpt
             MinuteVariables.MixtureLevelKg, MinuteVariables.FabricMagazine, MinuteVariables.LabelMagazine, MinuteVariables.CartonMagazine,
         };
         var ids = list.Select(s => s.Id).ToList();
-        var series = await queries.MinuteSeriesAsync(ids, variables, until - s_mixtureWindow, until);
+        var series = await queries.MinuteSeriesAsync(ids, variables, until - MixtureWindow, until);
         var batches = await queries.LatestBatchesAsync(list.Where(s => s.Type == StationType.RotaryTable).Select(s => s.Id).ToList(), until);
 
         var rows = new List<MaterialReachRow>();
@@ -56,7 +56,7 @@ public sealed class MaterialReachService(PlantQueries queries, IOptions<PlantOpt
             {
                 if (!series.TryGetValue((station.Id, variable), out var points) || points.Count == 0) continue;
 
-                var recent = points.Where(p => p.At >= until - s_window).ToList();
+                var recent = points.Where(p => p.At >= until - Window).ToList();
                 var level = points[^1].Value;
                 var consumption = ConsumptionPerMinute(recent);
                 var processable = variable == MinuteVariables.MixtureLevelKg ? LastDelivery(points)?.Add(plant.Value.MixturePotLife) : null;

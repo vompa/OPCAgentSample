@@ -39,7 +39,7 @@ public sealed class MachineReportService(
     private const int MaxMaintenance = 3;
     private const string ReactionMarker = "Reaktionszeit Bereitschaft ";
 
-    private static readonly Shift[] s_shifts = [Shift.Early, Shift.Late, Shift.Night];
+    private static readonly Shift[] Shifts = [Shift.Early, Shift.Late, Shift.Night];
 
     public async Task<MachineReportResponse> BuildAsync(string roleId, string range, bool compare, CancellationToken ct)
     {
@@ -61,7 +61,7 @@ public sealed class MachineReportService(
 
         var shiftRange = ShiftRangeOf(range, plan.Current, rawStart, now);
         var byShift = new Dictionary<Shift, KpiData>();
-        foreach (var kind in s_shifts) byShift[kind] = await kpis.GetByShiftKindAsync(shiftRange, kind, ct);
+        foreach (var kind in Shifts) byShift[kind] = await kpis.GetByShiftKindAsync(shiftRange, kind, ct);
 
         var losses = detailAvailable ? await queries.LossEventsAsync(detailStart, end, ids) : [];
         var scrapReasons = detailAvailable && pressIds.Count > 0 ? await queries.CycleAggregatesAsync(detailStart, end, pressIds) : new Dictionary<string, CycleAggregate>();
@@ -209,7 +209,7 @@ public sealed class MachineReportService(
         var previous = previousData is null ? null : await PreviousOfAsync(station, previousData, plan.Previous, now, costRates, ct);
         if (previous is { OeePercent: null, OccupancyPercent: null }) previous = null;
         var press = station.Area == Area.Pressing;
-        var shiftOee = s_shifts
+        var shiftOee = Shifts
             .Select(kind => new MachineShiftOee(ShiftCalendar.ShiftLabel(kind), isOven ? null : OeeOf(byShift[kind].Figures(id))?.OeePercent))
             .ToList();
 
@@ -391,7 +391,7 @@ public sealed class MachineReportService(
     {
         var reliability = Reliability.From(figures);
         var perShift = new List<MachineShiftReliability>();
-        foreach (var kind in s_shifts)
+        foreach (var kind in Shifts)
         {
             var shiftReliability = Reliability.From(byShift[kind].Figures(stationId));
             var reactions = ReactionTimes(losses.Where(l => l.StationId == stationId), kind);
@@ -513,7 +513,7 @@ public sealed class MachineReportService(
         IReadOnlyList<LossEvent> losses, CostRateTable costRates)
     {
         var rows = new List<MachineShift>();
-        foreach (var kind in s_shifts)
+        foreach (var kind in Shifts)
         {
             var data = byShift[kind];
             var startups = losses

@@ -12,7 +12,7 @@ namespace OPCAgentSample.Server.Live;
 internal static class StationMessages
 {
     private const int MaxParts = 2;
-    private static readonly TrafficLightThresholds s_limits = TrafficLightThresholds.Default;
+    private static readonly TrafficLightThresholds Limits = TrafficLightThresholds.Default;
 
     public static string Compose(StationState station, Station layout, bool breakdownInShift, string shiftStartText)
     {
@@ -22,7 +22,7 @@ internal static class StationMessages
         AddMouldPart(station, parts);
         AddFillWeightPart(station, parts);
         AddCyclePart(station, parts);
-        if (station.Occupancy >= s_limits.OvenWarningAt) parts.Add((TrafficLight.Warning, "Voll"));
+        if (station.Occupancy >= Limits.OvenWarningAt) parts.Add((TrafficLight.Warning, "Voll"));
         if (station.Findings.Any(f => f.Text.StartsWith("Überproduktion", StringComparison.Ordinal)))
         {
             parts.Add((TrafficLight.Warning, "Überproduktion"));
@@ -56,17 +56,17 @@ internal static class StationMessages
 
     private static void AddMaterialPart(StationState station, List<(TrafficLight, string)> parts)
     {
-        if (station.ReachMinutes is not { } reach || reach >= s_limits.MaterialWarningMinutes) return;
+        if (station.ReachMinutes is not { } reach || reach >= Limits.MaterialWarningMinutes) return;
 
-        var light = reach < s_limits.MaterialProblemMinutes ? TrafficLight.Problem : TrafficLight.Warning;
+        var light = reach < Limits.MaterialProblemMinutes ? TrafficLight.Problem : TrafficLight.Warning;
         parts.Add((light, string.Create(CultureInfo.InvariantCulture, $"{station.ReachMaterial} noch {(int)Math.Round(reach)} min")));
     }
 
     private static void AddMouldPart(StationState station, List<(TrafficLight, string)> parts)
     {
-        if (station.MouldWear is not { } wear || wear < s_limits.MouldWarningAt) return;
+        if (station.MouldWear is not { } wear || wear < Limits.MouldWarningAt) return;
 
-        var light = wear >= s_limits.MouldProblemAt ? TrafficLight.Problem : TrafficLight.Warning;
+        var light = wear >= Limits.MouldProblemAt ? TrafficLight.Problem : TrafficLight.Warning;
         parts.Add((light, string.Create(CultureInfo.InvariantCulture, $"Form {OeeResult.Percent(wear)} %")));
     }
 
@@ -75,9 +75,9 @@ internal static class StationMessages
         if (station.FillWeightMeanGrams is not { } mean || station.FillWeightTargetGrams is not { } target) return;
 
         var deviation = mean - target;
-        if (Math.Abs(deviation) < s_limits.FillWeightWarningGrams) return;
+        if (Math.Abs(deviation) < Limits.FillWeightWarningGrams) return;
 
-        var light = Math.Abs(deviation) >= s_limits.FillWeightProblemGrams ? TrafficLight.Problem : TrafficLight.Warning;
+        var light = Math.Abs(deviation) >= Limits.FillWeightProblemGrams ? TrafficLight.Problem : TrafficLight.Warning;
         parts.Add((light, deviation > 0 ? "Füllgewicht ↑" : "Füllgewicht ↓"));
     }
 
@@ -86,18 +86,18 @@ internal static class StationMessages
         if (station.CycleSeconds is not { } cycle || station.TargetCycleSeconds is not { } target || target <= 0) return;
 
         var deviation = (cycle / target) - 1;
-        if (deviation <= s_limits.CycleWarningAbove) return;
+        if (deviation <= Limits.CycleWarningAbove) return;
 
-        var light = deviation > s_limits.CycleProblemAbove ? TrafficLight.Problem : TrafficLight.Warning;
+        var light = deviation > Limits.CycleProblemAbove ? TrafficLight.Problem : TrafficLight.Warning;
         parts.Add((light, string.Create(CultureInfo.InvariantCulture, $"Taktzeit +{OeeResult.Percent(deviation)} %")));
     }
 
     private static (TrafficLight Light, string Text)? PlanPart(StationState station, bool breakdownInShift)
     {
         var waiting = station.State is OperatingState.WaitingForUpstream or OperatingState.WaitingForMaterial;
-        if (waiting || station.PlanRatio is not { } ratio || ratio >= s_limits.PlanWarningBelow) return null;
+        if (waiting || station.PlanRatio is not { } ratio || ratio >= Limits.PlanWarningBelow) return null;
 
-        var light = ratio < s_limits.PlanProblemBelow ? TrafficLight.Problem : TrafficLight.Warning;
+        var light = ratio < Limits.PlanProblemBelow ? TrafficLight.Problem : TrafficLight.Warning;
         return (light, breakdownInShift ? "Rückstand nach Störung" : "Rückstand");
     }
 

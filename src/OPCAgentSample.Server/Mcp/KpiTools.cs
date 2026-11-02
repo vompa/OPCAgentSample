@@ -43,7 +43,7 @@ public sealed class KpiTools(
         + "Schicht kommt die Hochrechnung bis Schichtende (Ist × Schichtdauer / verstrichene Zeit) samt Lücke je Rundtisch und dem Verlust durch "
         + "verlängerte Taktzeit. Die Schicht ist 'aktuell', 'vorherige', 'heute', 'gestern' (alle Schichten), 'Früh', 'Spät', 'Nacht' oder ein "
         + "Schlüssel wie 2026-10-14N. Nächster Schritt: get_downtime_pareto für die Gründe des Stillstands, get_order_progress für die Aufträge.")]
-    public async Task<CallToolResult> GetShiftSummary(
+    public async Task<CallToolResult> GetShiftSummaryAsync(
         [Description("Bereich: Halle A, Bereich oder Station. Standard: Halle A.")] string? scope = null,
         [Description("Schicht: aktuell, vorherige, heute, gestern, Früh, Spät, Nacht oder Schlüssel (2026-10-14N). Standard: aktuell.")] string? schicht = null,
         [Description("true = bei 'aktuell' alle Schichten des Tages.")] bool alle = false,
@@ -123,7 +123,7 @@ public sealed class KpiTools(
         + "Tag oder gesamt. Halle-OEE = Pressen und Verpackung. Zeiträume: heute, gestern, diese Woche, Vorwoche, KW 42, 24 h, 90 Tage ... "
         + "Hallen B und C liegen nur als Tageswerte vor (kein Schichtvergleich). Bewertung: ab 80 % in Ordnung, ab 65 % Warnung. "
         + "Nächster Schritt: get_downtime_pareto, um die Verluste hinter einer niedrigen Verfügbarkeit zu finden.")]
-    public async Task<CallToolResult> GetOee(
+    public async Task<CallToolResult> GetOeeAsync(
         [Description("Bereich: Halle A, Werk, Bereich oder Station. Standard: die Sicht der Rolle.")] string? scope = null,
         [Description("Zeitraum, z. B. heute, gestern, diese Woche, KW 42, Vorwoche. Standard: heute.")] string? zeitraum = null,
         [Description("Gruppierung: Station, Bereich, Halle, Schicht, Tag. Ohne Angabe: ein Gesamtwert.")] string? gruppierung = null,
@@ -204,7 +204,7 @@ public sealed class KpiTools(
         + "geplante Stopps, Taktverluste und Überproduktion zählen nicht. Mit bewertung 'Kosten' wird nach Kosten sortiert und die Kostensumme "
         + "(Ausschuss + Stillstand), der größte Einzelposten und die Vorperiode ausgewiesen. Gruppierung: Station oder Baugruppe. Der Filter kann "
         + "eine Schicht (Nachtschicht) oder ein Grund (Mischung) sein. Nächster Schritt: compare für den Vergleich der Stationen, get_machine_status für Details.")]
-    public async Task<CallToolResult> GetDowntimePareto(
+    public async Task<CallToolResult> GetDowntimeParetoAsync(
         [Description("Bereich: Halle A, Werk, Bereich oder Station. Standard: die Sicht der Rolle.")] string? scope = null,
         [Description("Zeitraum, z. B. Schicht, gestern, KW 42, 90 Tage. Standard: aktuelle Schicht.")] string? zeitraum = null,
         [Description("Gruppierung: Station oder Baugruppe. Ohne Angabe: nach Grund.")] string? gruppierung = null,
@@ -279,7 +279,7 @@ public sealed class KpiTools(
         + "Ausschussquote, Ausschusskosten, Kosten, Stillstand (optional mit Grund, z. B. 'Stillstand Gewebezuführung'), MTBF, MTTR, "
         + "'Fertigstellung vs. Termin'. Zeiträume wie bei get_oee, zusätzlich 24 h. Nächster Schritt: get_downtime_pareto oder get_oee mit der "
         + "auffälligen Zeile als scope.")]
-    public async Task<CallToolResult> Compare(
+    public async Task<CallToolResult> CompareAsync(
         [Description("Dimension: Station, Rundtisch, Bereich, Halle, Schicht, Woche, Tag oder Auftrag.")] string dimension,
         [Description("Kennzahl, z. B. OEE, Ausschussquote, Ausschusskosten, Stillstand Gewebezuführung, MTBF.")] string kpi,
         [Description("Zeitraum, z. B. heute, KW 42, KW 41-42, 24 h. Standard: heute.")] string? zeitraum = null,
@@ -335,7 +335,7 @@ public sealed class KpiTools(
         + "Anteil ungeplanter Stillstände (Störung / (Störung + geplante Wartung)), je Station, Monat oder gesamt, bei einer Station auch den Anteil "
         + "der Störungen je Grund und den Vergleich mit den anderen Rundtischen. Lange Zeiträume (90 Tage, Jul-Okt) kommen aus den "
         + "Tageskennzahlen abgeschlossener Tage. Nächster Schritt: get_downtime_pareto mit scope=Station und get_maintenance_due für überfällige Wartung.")]
-    public async Task<CallToolResult> GetReliabilityKpis(
+    public async Task<CallToolResult> GetReliabilityKpisAsync(
         [Description("Bereich: Halle A, Werk oder Station. Standard: die Sicht der Rolle.")] string? scope = null,
         [Description("Zeitraum, z. B. KW 42, 90 Tage, Jul-Okt. Standard: 90 Tage.")] string? zeitraum = null,
         [Description("Gruppierung: Station oder Monat. Ohne Angabe: ein Gesamtwert.")] string? gruppierung = null,
@@ -402,7 +402,7 @@ public sealed class KpiTools(
         + "Ist/Soll der Schicht (kann über 100 % und im Dashboard trotzdem grün sein) und die Folgen: Pufferfüllung vor den Öfen (Spitze mit "
         + "Zeitpunkt) und Wartezeiten auf den Ofen an den nachfolgenden Stationen (Ursachenkette Überproduktion → Puffer voll → Presse wartet → "
         + "Verpackung steht). Ohne Zeitraum die letzten 14 Tage. Nächster Schritt: get_hall_overview oder get_order_progress.")]
-    public async Task<CallToolResult> GetOverproduction(
+    public async Task<CallToolResult> GetOverproductionAsync(
         [Description("Bereich: Halle A oder Station. Standard: Halle A.")] string? scope = null,
         [Description("Zeitraum, z. B. KW 41, diese Woche, 14 Tage. Standard: letzte 14 Tage.")] string? zeitraum = null,
         CancellationToken cancellationToken = default)

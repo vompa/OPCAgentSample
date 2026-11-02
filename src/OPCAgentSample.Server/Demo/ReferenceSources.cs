@@ -5,11 +5,11 @@ namespace OPCAgentSample.Server.Demo;
 /// <summary>Rollenprofile aus den Referenzdaten.</summary>
 public sealed class ReferenceRoleProfileSource : IRoleProfileSource
 {
-    private static readonly Lazy<ProfilesFile> s_file = new(() => ReferenceDataFiles.Read<ProfilesFile>("profiles.json"));
+    private static readonly Lazy<ProfilesFile> File = new(() => ReferenceDataFiles.Read<ProfilesFile>("profiles.json"));
 
-    public IReadOnlyList<string> RoleIds => [.. s_file.Value.Profiles.Keys];
+    public IReadOnlyList<string> RoleIds => [.. File.Value.Profiles.Keys];
 
-    public RoleProfile? Find(string roleId) => s_file.Value.Profiles.GetValueOrDefault(roleId);
+    public RoleProfile? Find(string roleId) => File.Value.Profiles.GetValueOrDefault(roleId);
 
     private sealed record ProfilesFile(IReadOnlyDictionary<string, RoleProfile> Profiles);
 }

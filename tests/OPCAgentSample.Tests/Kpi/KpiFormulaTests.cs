@@ -6,7 +6,7 @@ namespace OPCAgentSample.Tests.Kpi;
 
 public sealed class KpiFormulaTests
 {
-    private static readonly DateTimeOffset s_now = new(2026, 10, 15, 7, 42, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset Now = new(2026, 10, 15, 7, 42, 0, TimeSpan.Zero);
 
     [Fact]
     public void Oee_is_availability_times_performance_times_quality()
@@ -58,8 +58,8 @@ public sealed class KpiFormulaTests
     [Fact]
     public void Order_backlog_is_planned_progress_minus_produced()
     {
-        var start = s_now.AddHours(-10);
-        var backlog = PlanFulfillment.OrderBacklog(10_000, 4_000, start, start.AddHours(20), s_now);
+        var start = Now.AddHours(-10);
+        var backlog = PlanFulfillment.OrderBacklog(10_000, 4_000, start, start.AddHours(20), Now);
 
         Assert.Equal(1_000, backlog, 6);
     }
@@ -75,7 +75,7 @@ public sealed class KpiFormulaTests
     [Fact]
     public void Material_reach_is_limited_by_processability_of_the_mixture()
     {
-        var reach = MaterialReach.Compute("Mischung", level: 110, consumptionPerMinute: 1.57, s_now.AddMinutes(38), s_now);
+        var reach = MaterialReach.Compute("Mischung", level: 110, consumptionPerMinute: 1.57, Now.AddMinutes(38), Now);
 
         Assert.True(reach.LimitedByProcessability);
         Assert.Equal(TimeSpan.FromMinutes(38), reach.Reach);
@@ -102,10 +102,10 @@ public sealed class KpiFormulaTests
     [Fact]
     public void Mould_wear_and_projection_of_the_stroke_limit()
     {
-        var wear = MouldWear.Compute(strokes: 9_400, strokeLimit: 10_000, strokesPerMinute: 3.4, s_now);
+        var wear = MouldWear.Compute(strokes: 9_400, strokeLimit: 10_000, strokesPerMinute: 3.4, Now);
 
         Assert.Equal(0.94, wear.Wear, 6);
-        Assert.Equal(s_now.AddMinutes(600 / 3.4), wear.LimitReachedUtc);
+        Assert.Equal(Now.AddMinutes(600 / 3.4), wear.LimitReachedUtc);
     }
 
     [Fact]
@@ -124,7 +124,7 @@ public sealed class KpiFormulaTests
             [LossReasons.MixtureWait] = new(TimeSpan.FromMinutes(30), 1),
             [LossReasons.FabricFeedFault] = new(TimeSpan.FromMinutes(60), 2),
         };
-        var block = new KpiBlock("w", s_now, new Dictionary<string, StationBlock> { ["RT-03"] = new(ProductionFigures.Empty, reasons) });
+        var block = new KpiBlock("w", Now, new Dictionary<string, StationBlock> { ["RT-03"] = new(ProductionFigures.Empty, reasons) });
         var rates = new CostRateTable(new Dictionary<string, decimal> { ["RT-03"] = 30m }, new Dictionary<string, decimal>());
 
         var pareto = DowntimePareto.Build(block, ["RT-03"], rates);

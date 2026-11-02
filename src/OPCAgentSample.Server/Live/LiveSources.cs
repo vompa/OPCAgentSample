@@ -23,7 +23,7 @@ public sealed class LiveHallOverviewSource(
     IOptions<PlantOptions> plant) : IHallOverviewSource
 {
     private const string ProductionLeadRoleId = "production_lead";
-    private static readonly (string Id, string Title, string KpiLabel, Area Area)[] s_groups =
+    private static readonly (string Id, string Title, string KpiLabel, Area Area)[] Groups =
     [
         ("pressen", "Pressen", "Ist/Soll", Area.Pressing),
         ("öfen", "Öfen", "Belegung", Area.Curing),
@@ -42,7 +42,7 @@ public sealed class LiveHallOverviewSource(
     {
         var groups = snapshot.Stations.Count == 0
             ? []
-            : s_groups.Select(g => new StationGroup(
+            : Groups.Select(g => new StationGroup(
                 g.Id, g.Title, g.KpiLabel,
                 [.. snapshot.Stations.Where(s => s.Area == g.Area).Select(ToInfo)])).ToList();
         return new HallOverviewSnapshot(plant.Value.HallId, $"Halle {plant.Value.HallId}", ToClimate(snapshot.Climate), groups);

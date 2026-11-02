@@ -20,9 +20,9 @@ public static class HallAScript
     private const string Vp02 = "VP-02";
     private const string Of01 = "OF-01";
 
-    private static readonly TimeSpan s_pressSetup = TimeSpan.FromMinutes(30);
-    private static readonly TimeSpan s_packagingSetup = TimeSpan.FromMinutes(20);
-    private static readonly TimeSpan s_potLife = TimeSpan.FromHours(3);
+    private static readonly TimeSpan PressSetup = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan PackagingSetup = TimeSpan.FromMinutes(20);
+    private static readonly TimeSpan PotLife = TimeSpan.FromHours(3);
 
     public static IReadOnlyList<ScriptedLoss> Losses(LocalClock at)
     {
@@ -365,14 +365,14 @@ public static class HallAScript
         ArgumentNullException.ThrowIfNull(at);
         return
         [
-            new(Rt01, at.Oct(14, "22:00"), 340, s_potLife),
-            new(Rt01, at.Oct(15, "01:10"), 340, s_potLife),
-            new(Rt01, at.Oct(15, "04:20"), 340, s_potLife),
-            new(Rt01, at.Oct(15, "07:20"), 340, s_potLife),
-            new(Rt02, at.Oct(14, "22:00"), 340, s_potLife),
-            new(Rt02, at.Oct(15, "02:30"), 340, s_potLife),
-            new(Rt02, at.Oct(15, "05:30"), 340, s_potLife),
-            new(Rt02, at.Oct(15, "08:30"), 340, s_potLife),
+            new(Rt01, at.Oct(14, "22:00"), 340, PotLife),
+            new(Rt01, at.Oct(15, "01:10"), 340, PotLife),
+            new(Rt01, at.Oct(15, "04:20"), 340, PotLife),
+            new(Rt01, at.Oct(15, "07:20"), 340, PotLife),
+            new(Rt02, at.Oct(14, "22:00"), 340, PotLife),
+            new(Rt02, at.Oct(15, "02:30"), 340, PotLife),
+            new(Rt02, at.Oct(15, "05:30"), 340, PotLife),
+            new(Rt02, at.Oct(15, "08:30"), 340, PotLife),
         ];
     }
 
@@ -462,8 +462,8 @@ public static class HallAScript
         new(id, station, LossCategory.MinorStop, LossReasons.LabelsEmpty, Assemblies.LabelFeed, "Etikettenzufuhr leer", start, Minutes(minutes));
 
     private static ScriptedSetup PressSetup(string id, string station, DateTimeOffset start, int overrunMinutes) =>
-        new(id, station, start, s_pressSetup, Minutes(overrunMinutes));
+        new(id, station, start, PressSetup, Minutes(overrunMinutes));
 
     private static ScriptedSetup PackagingSetup(string id, string station, DateTimeOffset start, int overrunMinutes) =>
-        new(id, station, start, s_packagingSetup, Minutes(overrunMinutes));
+        new(id, station, start, PackagingSetup, Minutes(overrunMinutes));
 }

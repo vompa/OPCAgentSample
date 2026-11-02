@@ -14,7 +14,7 @@ namespace OPCAgentSample.Tests.Server.Ingestion;
 [Collection(InfrastructureFixture.Name)]
 public sealed class IngestionServiceTests(InfrastructureFixture infrastructure)
 {
-    private static readonly SharedHistory s_history = SharedHistory.Instance;
+    private static readonly SharedHistory History = SharedHistory.Instance;
 
     private static async Task WaitForAsync(Func<Task<bool>> condition, string what)
     {
@@ -47,10 +47,10 @@ public sealed class IngestionServiceTests(InfrastructureFixture infrastructure)
     [Fact]
     public async Task With_a_source_it_catches_up_to_the_clock_publishes_the_state_and_continues_periodically()
     {
-        var start = s_history.Calendar.ToUtc(new DateTime(2026, 10, 5, 0, 0, 0));
+        var start = History.Calendar.ToUtc(new DateTime(2026, 10, 5, 0, 0, 0));
         var first = new DateTimeOffset(2026, 10, 5, 12, 0, 0, TimeSpan.Zero);
         var clock = new ManualDemoClock(first);
-        var source = new GeneratorHistorySource(s_history, start);
+        var source = new GeneratorHistorySource(History, start);
         await using var services = await infrastructure.CreateServicesAsync(
             settings: new Dictionary<string, string?> { ["Ingestion:PollInterval"] = "00:00:01" },
             configure: s => s.AddSingleton<IDemoClock>(clock).AddSingleton<IHistorySource>(source));

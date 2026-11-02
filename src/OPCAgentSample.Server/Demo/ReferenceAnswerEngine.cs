@@ -14,7 +14,7 @@ public sealed class ReferenceAnswerEngine(IOptions<DemoOptions> options, IDemoCl
 
     internal const string UnansweredHeadline = "Diese Frage beantwortet die Demo erst mit angebundenem Claude.";
 
-    private static readonly Lazy<AnswersFile> s_file = new(() => ReferenceDataFiles.Read<AnswersFile>("answers.json"));
+    private static readonly Lazy<AnswersFile> File = new(() => ReferenceDataFiles.Read<AnswersFile>("answers.json"));
 
     public async IAsyncEnumerable<AnswerStep> AskAsync(
         AskRequest request, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -40,15 +40,15 @@ public sealed class ReferenceAnswerEngine(IOptions<DemoOptions> options, IDemoCl
 
     public SampleTurn? GetSample(string roleId)
     {
-        if (!s_file.Value.SampleByRole.TryGetValue(roleId, out var id)) return null;
-        var answer = s_file.Value.Answers.Single(a => a.Id == id);
+        if (!File.Value.SampleByRole.TryGetValue(roleId, out var id)) return null;
+        var answer = File.Value.Answers.Single(a => a.Id == id);
         return new SampleTurn(answer.Question, answer.Card, answer.ToolCalls);
     }
 
     private static ReferenceAnswer? Find(string roleId, string question)
     {
         var wanted = Normalize(question);
-        var matches = s_file.Value.Answers
+        var matches = File.Value.Answers
             .Where(a => Normalize(a.Question) == wanted || (a.ShortTitle is not null && Normalize(a.ShortTitle) == wanted))
             .ToList();
         // Fragen aus dem Postfach können rollenübergreifend sein; die eigene Rolle hat Vorrang.

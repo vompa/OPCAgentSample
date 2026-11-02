@@ -170,7 +170,7 @@ public sealed class Reply(string tool)
 /// <summary>Formatierung für Ausgaben: Ortszeit Wien, Dezimalpunkt im JSON, gerundete Werte.</summary>
 public static class Fmt
 {
-    private static readonly string[] s_weekdays = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+    private static readonly string[] Weekdays = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 
     /// <summary>Uhrzeit in Ortszeit, z. B. <c>09:42</c>.</summary>
     public static string Time(DateTimeOffset utc) => DemoTime.TimeText(utc);
@@ -179,18 +179,18 @@ public static class Fmt
     public static string Stamp(DateTimeOffset utc)
     {
         var local = DemoTime.ToLocal(utc);
-        return $"{s_weekdays[(int)local.DayOfWeek]} {local.ToString("dd.MM. HH:mm", CultureInfo.InvariantCulture)}";
+        return $"{Weekdays[(int)local.DayOfWeek]} {local.ToString("dd.MM. HH:mm", CultureInfo.InvariantCulture)}";
     }
 
     /// <summary>Wochentag und Datum in Ortszeit, z. B. <c>Mo 19.10.</c>.</summary>
     public static string Day(DateTimeOffset utc)
     {
         var local = DemoTime.ToLocal(utc);
-        return $"{s_weekdays[(int)local.DayOfWeek]} {local.ToString("dd.MM.", CultureInfo.InvariantCulture)}";
+        return $"{Weekdays[(int)local.DayOfWeek]} {local.ToString("dd.MM.", CultureInfo.InvariantCulture)}";
     }
 
     public static string Day(DateOnly day) =>
-        $"{s_weekdays[(int)day.DayOfWeek]} {day.ToString("dd.MM.", CultureInfo.InvariantCulture)}";
+        $"{Weekdays[(int)day.DayOfWeek]} {day.ToString("dd.MM.", CultureInfo.InvariantCulture)}";
 
     public static double Round(double value, int decimals = 1) => Math.Round(value, decimals, MidpointRounding.AwayFromZero);
 
