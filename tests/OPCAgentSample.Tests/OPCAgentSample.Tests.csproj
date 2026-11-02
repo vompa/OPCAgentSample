@@ -28,4 +28,11 @@
     <ProjectReference Include="..\..\src\OPCAgentSample.Snapshot\OPCAgentSample.Snapshot.csproj" />
   </ItemGroup>
 
+  <!-- Server und Simulator bringen je eine appsettings.json mit; welche im Testausgabeordner landete, hing von Build-Reihenfolge
+       und Zeitstempeln ab (lokal oft die des Simulators). Die Momentaufnahme liest dort die Server-Datei: Ein eigenes Element
+       schlägt die der referenzierten Projekte, und IfDifferent ersetzt auch eine veraltete, neuere Kopie. -->
+  <ItemGroup>
+    <None Include="..\..\src\OPCAgentSample.Server\appsettings.json" Link="appsettings.json" CopyToOutputDirectory="IfDifferent" />
+  </ItemGroup>
+
 </Project>
