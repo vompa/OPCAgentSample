@@ -1,62 +1,141 @@
+# .editorconfig of this repository, based on the vibe-coding skill template for .NET.
+# These rules only act in the build with EnforceCodeStyleInBuild and GenerateDocumentationFile
+# set to true; with TreatWarningsAsErrors a warning fails the build like an error.
 root = true
 
 [*]
 charset = utf-8
-indent_style = space
-indent_size = 4
+end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
 
-[*.{json,yml,yaml,csproj,props,slnx,xml,html,css,js,ts,vue,mjs}]
+[*.{json,yml,yaml,ts,tsx,js,css,html,md,props,targets,csproj,slnx,axaml,xaml,xml,sh,ps1}]
 indent_size = 2
+
+[*.{bat,cmd}]
+end_of_line = crlf
 
 [*.md]
 trim_trailing_whitespace = false
 
 [*.cs]
-# Microsoft C# Coding Conventions
-csharp_style_namespace_declarations = file_scoped:warning
-csharp_style_var_for_built_in_types = true:suggestion
-csharp_style_var_when_type_is_apparent = true:suggestion
-csharp_prefer_braces = when_multiline:suggestion
-csharp_using_directive_placement = outside_namespace:warning
+max_line_length = 140
+csharp_using_directive_placement = outside_namespace
 dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+csharp_style_namespace_declarations = file_scoped:warning
+dotnet_diagnostic.IDE0161.severity = warning
 
-# Benennung: private Felder _camelCase, statische s_camelCase, Konstanten PascalCase, Async-Suffix
-# Reihenfolge zählt: Konstanten gelten als statisch und stehen deshalb vor der s_-Regel.
-dotnet_naming_rule.constants_pascal.symbols = constants
-dotnet_naming_rule.constants_pascal.style = pascal
-dotnet_naming_rule.constants_pascal.severity = warning
-dotnet_naming_symbols.constants.applicable_kinds = field
+# Needed for IDE0005 in the build: the documentation file is generated, missing comments are no finding.
+dotnet_diagnostic.CS1591.severity = none
+dotnet_diagnostic.CS1573.severity = none
+
+# Dead code.
+dotnet_diagnostic.IDE0005.severity = warning
+dotnet_diagnostic.IDE0035.severity = warning
+dotnet_diagnostic.IDE0051.severity = warning
+dotnet_diagnostic.IDE0052.severity = warning
+dotnet_diagnostic.IDE0079.severity = warning
+
+# Small guards.
+dotnet_style_readonly_field = true
+dotnet_diagnostic.IDE0044.severity = warning
+csharp_prefer_system_threading_lock = true
+dotnet_diagnostic.IDE0330.severity = warning
+
+# Build time: a lambda the compiler has to bind at least 100 times.
+dotnet_diagnostic.CS9236.severity = error
+
+# Resources and cancellation.
+dotnet_diagnostic.CA2213.severity = warning
+dotnet_diagnostic.CA2016.severity = warning
+
+# Security: input reaching SQL, paths, commands, redirects and similar.
+dotnet_diagnostic.CA3001.severity = warning
+dotnet_diagnostic.CA3002.severity = warning
+dotnet_diagnostic.CA3003.severity = warning
+dotnet_diagnostic.CA3004.severity = warning
+dotnet_diagnostic.CA3005.severity = warning
+dotnet_diagnostic.CA3006.severity = warning
+dotnet_diagnostic.CA3007.severity = warning
+dotnet_diagnostic.CA3008.severity = warning
+dotnet_diagnostic.CA3009.severity = warning
+dotnet_diagnostic.CA3010.severity = warning
+dotnet_diagnostic.CA3011.severity = warning
+dotnet_diagnostic.CA3012.severity = warning
+
+# Security: weak cryptography, disabled certificate checks, old TLS.
+dotnet_diagnostic.CA5350.severity = warning
+dotnet_diagnostic.CA5351.severity = warning
+dotnet_diagnostic.CA5359.severity = warning
+dotnet_diagnostic.CA5364.severity = warning
+dotnet_diagnostic.CA5397.severity = warning
+
+# Naming.
+dotnet_diagnostic.IDE1006.severity = warning
+
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+dotnet_naming_style.camel_case.capitalization = camel_case
+dotnet_naming_style.begins_with_i.required_prefix = I
+dotnet_naming_style.begins_with_i.capitalization = pascal_case
+dotnet_naming_style.begins_with_t.required_prefix = T
+dotnet_naming_style.begins_with_t.capitalization = pascal_case
+dotnet_naming_style.begins_with_underscore.required_prefix = _
+dotnet_naming_style.begins_with_underscore.capitalization = camel_case
+
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_rule.interfaces_begin_with_i.symbols = interfaces
+dotnet_naming_rule.interfaces_begin_with_i.style = begins_with_i
+dotnet_naming_rule.interfaces_begin_with_i.severity = warning
+
+dotnet_naming_symbols.type_parameters.applicable_kinds = type_parameter
+dotnet_naming_rule.type_parameters_begin_with_t.symbols = type_parameters
+dotnet_naming_rule.type_parameters_begin_with_t.style = begins_with_t
+dotnet_naming_rule.type_parameters_begin_with_t.severity = warning
+
+dotnet_naming_symbols.constants.applicable_kinds = field, local
 dotnet_naming_symbols.constants.required_modifiers = const
-dotnet_naming_style.pascal.capitalization = pascal_case
+dotnet_naming_rule.constants_are_pascal_case.symbols = constants
+dotnet_naming_rule.constants_are_pascal_case.style = pascal_case
+dotnet_naming_rule.constants_are_pascal_case.severity = warning
 
-dotnet_naming_rule.private_static_fields_s.symbols = private_static_fields
-dotnet_naming_rule.private_static_fields_s.style = s_camel
-dotnet_naming_rule.private_static_fields_s.severity = warning
 dotnet_naming_symbols.private_static_fields.applicable_kinds = field
 dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
 dotnet_naming_symbols.private_static_fields.required_modifiers = static
-dotnet_naming_style.s_camel.capitalization = camel_case
-dotnet_naming_style.s_camel.required_prefix = s_
+dotnet_naming_rule.private_static_fields_are_pascal_case.symbols = private_static_fields
+dotnet_naming_rule.private_static_fields_are_pascal_case.style = pascal_case
+dotnet_naming_rule.private_static_fields_are_pascal_case.severity = warning
 
-dotnet_naming_rule.private_fields_underscore.symbols = private_fields
-dotnet_naming_rule.private_fields_underscore.style = underscore_camel
-dotnet_naming_rule.private_fields_underscore.severity = warning
 dotnet_naming_symbols.private_fields.applicable_kinds = field
 dotnet_naming_symbols.private_fields.applicable_accessibilities = private
-dotnet_naming_style.underscore_camel.capitalization = camel_case
-dotnet_naming_style.underscore_camel.required_prefix = _
+dotnet_naming_rule.private_fields_begin_with_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_begin_with_underscore.style = begins_with_underscore
+dotnet_naming_rule.private_fields_begin_with_underscore.severity = warning
 
+dotnet_naming_style.async_suffix.capitalization = pascal_case
+dotnet_naming_style.async_suffix.required_suffix = Async
+dotnet_naming_symbols.async_methods.applicable_kinds = method
+dotnet_naming_symbols.async_methods.required_modifiers = async
 dotnet_naming_rule.async_suffix.symbols = async_methods
 dotnet_naming_rule.async_suffix.style = async_suffix
 dotnet_naming_rule.async_suffix.severity = suggestion
-dotnet_naming_symbols.async_methods.applicable_kinds = method
-dotnet_naming_symbols.async_methods.required_modifiers = async
-dotnet_naming_style.async_suffix.capitalization = pascal_case
-dotnet_naming_style.async_suffix.required_suffix = Async
 
-# Testmethoden mit Unterstrichen sind lesbarer
+dotnet_naming_symbols.types_and_members.applicable_kinds = namespace, class, struct, enum, method, property, event, local_function, delegate
+dotnet_naming_rule.types_and_members_are_pascal_case.symbols = types_and_members
+dotnet_naming_rule.types_and_members_are_pascal_case.style = pascal_case
+dotnet_naming_rule.types_and_members_are_pascal_case.severity = warning
+
+dotnet_naming_symbols.parameters_and_locals.applicable_kinds = parameter, local
+dotnet_naming_rule.parameters_and_locals_are_camel_case.symbols = parameters_and_locals
+dotnet_naming_rule.parameters_and_locals_are_camel_case.style = camel_case
+dotnet_naming_rule.parameters_and_locals_are_camel_case.severity = warning
+
+[**/Migrations/*.cs]
+generated_code = true
+
 [tests/**.cs]
+# Test names are readable sentences with underscores.
 dotnet_diagnostic.CA1707.severity = none
 dotnet_naming_rule.async_suffix.severity = none
