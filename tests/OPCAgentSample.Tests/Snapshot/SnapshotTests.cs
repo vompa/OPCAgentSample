@@ -18,11 +18,11 @@ public sealed class SnapshotTests(InfrastructureFixture infrastructure)
         + "  dotnet run --project src/OPCAgentSample.Snapshot -- src/OPCAgentSample.Web/public/snapshot\n"
         + "und die geänderten Dateien einchecken.";
 
-    private static Task<IReadOnlyDictionary<string, string>>? s_generated;
+    private static Task<IReadOnlyDictionary<string, string>>? Generated;
 
     /// <summary>Die Momentaufnahme wird einmal je Testlauf erzeugt (Aufnahme der Historie in Datenbank 15 des Test-Redis).</summary>
     private Task<IReadOnlyDictionary<string, string>> BuildAsync() =>
-        s_generated ??= SnapshotTool.BuildAsync(infrastructure.RedisConnectionString);
+        Generated ??= SnapshotTool.BuildAsync(infrastructure.RedisConnectionString);
 
     private static string SnapshotDirectory()
     {

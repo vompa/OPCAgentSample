@@ -19,7 +19,7 @@ namespace OPCAgentSample.Tests.Simulator;
 public sealed class LiveFeedDeterminismTests
 {
     // Ortszeit Wien, Do 15.10.2026: kurz vor dem Schichtwechsel 14:00 (Palettenversand 14:00 liegt im Fenster).
-    private static readonly DateTimeOffset s_start = new(2026, 10, 15, 11, 55, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset Start = new(2026, 10, 15, 11, 55, 0, TimeSpan.Zero);
 
     private const ulong ExpectedGeneratedChecksum = 10716837576292420060UL;
     private const long ExpectedGeneratedCount = 20456;
@@ -31,9 +31,9 @@ public sealed class LiveFeedDeterminismTests
     {
         var generator = new HistoryGenerator(HallAScenario.Create());
 
-        var records = HistoryChecksum.Of(generator.Generate(s_start - TimeSpan.FromHours(2), s_start + TimeSpan.FromHours(1)));
-        var cycles = HistoryChecksum.Of(generator.Cycles("RT-04", s_start - TimeSpan.FromHours(6), s_start + TimeSpan.FromHours(1))
-            .Concat(generator.Cycles("RT-01", s_start - TimeSpan.FromMinutes(20), s_start + TimeSpan.FromMinutes(5))));
+        var records = HistoryChecksum.Of(generator.Generate(Start - TimeSpan.FromHours(2), Start + TimeSpan.FromHours(1)));
+        var cycles = HistoryChecksum.Of(generator.Cycles("RT-04", Start - TimeSpan.FromHours(6), Start + TimeSpan.FromHours(1))
+            .Concat(generator.Cycles("RT-01", Start - TimeSpan.FromMinutes(20), Start + TimeSpan.FromMinutes(5))));
 
         Assert.Equal(ExpectedGeneratedCount, records.Count);
         Assert.Equal(ExpectedGeneratedChecksum, records.Value);
@@ -43,14 +43,14 @@ public sealed class LiveFeedDeterminismTests
     [Fact]
     public void Live_values_and_alarm_changes_over_a_shift_change_are_unchanged()
     {
-        var runtime = SimulatorRuntime.Create(new SimulatorOptions { StartUtc = s_start, Speed = 0 });
+        var runtime = SimulatorRuntime.Create(new SimulatorOptions { StartUtc = Start, Speed = 0 });
         var hash = new Fnv();
-        var now = s_start;
+        var now = Start;
 
         // Sekundentakt wie im Betrieb, danach größere Sprünge (Geschwindigkeit > 1) über den Schichtwechsel.
         for (var second = 1; second <= 90; second++)
         {
-            now = s_start + TimeSpan.FromSeconds(second);
+            now = Start + TimeSpan.FromSeconds(second);
             runtime.Feed.Advance(now);
             if (second % 30 == 0) AddLiveValues(hash, runtime.Feed, now);
         }
@@ -69,15 +69,15 @@ public sealed class LiveFeedDeterminismTests
     public void Incrementally_grown_history_equals_a_fresh_read()
     {
         var generator = new HistoryGenerator(HallAScenario.Create());
-        var clock = new SteppedClock { UtcNow = s_start };
+        var clock = new SteppedClock { UtcNow = Start };
         var incremental = new HistoryService(generator, clock);
         var minute = new MinuteHistory(MinuteVariables.EnergyKwh);
 
         // Der laufende Abschnitt wächst mit der Uhr (inkl. Schichtwechsel und Wechsel des Sechs-Stunden-Abschnitts).
         for (var minutes = 0; minutes <= 150; minutes += 7)
         {
-            clock.UtcNow = s_start + TimeSpan.FromMinutes(minutes);
-            _ = incremental.Read(minute, "RT-01", s_start - TimeSpan.FromHours(1), clock.UtcNow).Count();
+            clock.UtcNow = Start + TimeSpan.FromMinutes(minutes);
+            _ = incremental.Read(minute, "RT-01", Start - TimeSpan.FromHours(1), clock.UtcNow).Count();
         }
 
         var fresh = new HistoryService(generator, clock);
@@ -87,8 +87,8 @@ public sealed class LiveFeedDeterminismTests
                      (new StateHistory(), "VP-01"), (new RecordHistory(typeof(PalletRecord)), "VP-01"),
                  })
         {
-            var expected = fresh.Read(binding, station, s_start - TimeSpan.FromHours(8), clock.UtcNow).ToList();
-            var actual = incremental.Read(binding, station, s_start - TimeSpan.FromHours(8), clock.UtcNow).ToList();
+            var expected = fresh.Read(binding, station, Start - TimeSpan.FromHours(8), clock.UtcNow).ToList();
+            var actual = incremental.Read(binding, station, Start - TimeSpan.FromHours(8), clock.UtcNow).ToList();
             Assert.Equal(expected, actual);
         }
     }

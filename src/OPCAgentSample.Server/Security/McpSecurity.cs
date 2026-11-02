@@ -6,7 +6,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 
@@ -153,11 +152,11 @@ public sealed class ApiKeyAuthenticationHandler(
             return header[0];
         }
 
-        const string prefix = "Bearer ";
+        const string Prefix = "Bearer ";
         var authorization = Request.Headers.Authorization.ToString();
-        if (!authorization.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) return null;
+        if (!authorization.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase)) return null;
 
-        var token = authorization[prefix.Length..].Trim();
+        var token = authorization[Prefix.Length..].Trim();
         return token.Length > 0 ? token : null;
     }
 }

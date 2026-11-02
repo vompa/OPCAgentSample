@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Anthropic.Models.Messages;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using OPCAgentSample.Server.Agent;
 using OPCAgentSample.Server.Demo;
 using OPCAgentSample.Tests.Server;

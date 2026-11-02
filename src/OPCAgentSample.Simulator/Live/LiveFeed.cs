@@ -2,10 +2,9 @@ using OPCAgentSample.Domain;
 using OPCAgentSample.Domain.History;
 using OPCAgentSample.Domain.Opc;
 using OPCAgentSample.Simulation.Generation;
-using OPCAgentSample.Simulator.History;
 using OPCAgentSample.Simulator.Model;
-using V = OPCAgentSample.Domain.Opc.StationVariables;
 using G = OPCAgentSample.Domain.Opc.StationGroups;
+using V = OPCAgentSample.Domain.Opc.StationVariables;
 
 namespace OPCAgentSample.Simulator.Live;
 
@@ -20,13 +19,20 @@ internal sealed class LiveFeed
 {
     private const double PressTimeShareOfCycle = 0.55;
     private const int BufferCapacityPlates = 60;
-    private static readonly TimeSpan s_lookahead = TimeSpan.FromMinutes(1);
-    private static readonly DateTimeOffset s_lastDoorLockInspection = new(2026, 4, 14, 0, 0, 0, TimeSpan.Zero);
+    private static readonly TimeSpan Lookahead = TimeSpan.FromMinutes(1);
+    private static readonly DateTimeOffset LastDoorLockInspection = new(2026, 4, 14, 0, 0, 0, TimeSpan.Zero);
 
-    private static readonly Dictionary<string, int> s_yearOfConstruction = new Dictionary<string, int>
+    private static readonly Dictionary<string, int> YearOfConstruction = new Dictionary<string, int>
     {
-        ["RT-01"] = 2016, ["RT-02"] = 2016, ["RT-03"] = 2014, ["RT-04"] = 2019, ["PU-OFEN"] = 2012,
-        ["OF-01"] = 2012, ["OF-02"] = 2015, ["VP-01"] = 2018, ["VP-02"] = 2021,
+        ["RT-01"] = 2016,
+        ["RT-02"] = 2016,
+        ["RT-03"] = 2014,
+        ["RT-04"] = 2019,
+        ["PU-OFEN"] = 2012,
+        ["OF-01"] = 2012,
+        ["OF-02"] = 2015,
+        ["VP-01"] = 2018,
+        ["VP-02"] = 2021,
     };
 
     private readonly HistoryGenerator _generator;
@@ -63,7 +69,7 @@ internal sealed class LiveFeed
 
     private void Generate(DateTimeOffset until)
     {
-        if (until - _generatedUntil > s_lookahead)
+        if (until - _generatedUntil > Lookahead)
         {
             // Großer Sprung (Start, hohe Geschwindigkeit): direkt einspielen statt zwischenzuspeichern.
             while (_pending.TryDequeue(out var queued)) State.Ingest(queued);
@@ -71,7 +77,7 @@ internal sealed class LiveFeed
             _generatedUntil = until;
         }
 
-        var target = until + s_lookahead;
+        var target = until + Lookahead;
         foreach (var record in _generator.Generate(_generatedUntil, target)) _pending.Enqueue(record);
         _generatedUntil = target;
     }
@@ -105,7 +111,7 @@ internal sealed class LiveFeed
         Put(G.Identity, V.Designation, station.Name);
         Put(G.Identity, V.AreaName, AreaLabel(station.Area));
         Put(G.Identity, V.Manufacturer, "Demo-Anlagenbau (fiktiv)");
-        Put(G.Identity, V.YearOfConstruction, s_yearOfConstruction[station.Id]);
+        Put(G.Identity, V.YearOfConstruction, YearOfConstruction[station.Id]);
         Put(G.State, V.OperatingState, (int)state);
         Put(G.State, V.StateSince, since.UtcDateTime);
         Put(G.State, V.MachineryItemState, MachineryItemState(state));
@@ -254,7 +260,7 @@ internal sealed class LiveFeed
         put(G.Planning, V.NextRelease, oven.NextUnloadUtc?.UtcDateTime, null);
         put(G.Planning, V.AssignmentRule, oven.AssignmentRule, null);
         put(G.Safety, V.DoorLockState, "Verriegelt", null);
-        put(G.Safety, V.LastInspection, s_lastDoorLockInspection.UtcDateTime, null);
+        put(G.Safety, V.LastInspection, LastDoorLockInspection.UtcDateTime, null);
     }
 
     private static void AddBuffer(Action<string, string, object?, DateTimeOffset?> put, BufferSnapshot buffer)

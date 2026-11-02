@@ -16,7 +16,7 @@ public sealed record SseFrame(string? Event, string? Id, string? Data, string? C
 /// </summary>
 public sealed class SseTestClient : IAsyncDisposable
 {
-    private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(30);
 
     private readonly CancellationTokenSource _cancellation = new();
     private readonly HttpResponseMessage _response;
@@ -54,7 +54,7 @@ public sealed class SseTestClient : IAsyncDisposable
     /// <summary>Wartet auf den <paramref name="skip"/>+1-ten Eintrag, der die Bedingung erfüllt, und liefert ihn.</summary>
     public async Task<SseFrame> WaitForAsync(Func<SseFrame, bool> predicate, int skip = 0)
     {
-        using var timeout = new CancellationTokenSource(s_timeout);
+        using var timeout = new CancellationTokenSource(Timeout);
         while (true)
         {
             var match = Frames.Where(predicate).Skip(skip).FirstOrDefault();

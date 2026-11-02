@@ -1,5 +1,4 @@
 using OPCAgentSample.Domain;
-using OPCAgentSample.Domain.Opc;
 using OPCAgentSample.Simulation.Generation;
 using OPCAgentSample.Simulation.Scenario;
 using OPCAgentSample.Simulator.History;

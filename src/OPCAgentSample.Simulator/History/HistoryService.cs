@@ -18,8 +18,8 @@ internal readonly record struct HistoryPoint(DateTimeOffset Timestamp, object Va
 internal sealed class HistoryService
 {
     private const int MaxCachedSlices = 80;
-    private static readonly TimeSpan s_lookahead = TimeSpan.FromMinutes(1);
-    private static readonly TimeSpan s_slice = TimeSpan.FromHours(6);
+    private static readonly TimeSpan Lookahead = TimeSpan.FromMinutes(1);
+    private static readonly TimeSpan SliceLength = TimeSpan.FromHours(6);
 
     private readonly HistoryGenerator _generator;
     private readonly ISimulationClock _clock;
@@ -64,8 +64,8 @@ internal sealed class HistoryService
 
     private IEnumerable<HistoryRecord> Slices(DateTimeOffset from, DateTimeOffset until, string stationId, string key)
     {
-        var first = (long)Math.Floor((from - _origin) / s_slice);
-        var last = (long)Math.Floor((until - _origin - TimeSpan.FromTicks(1)) / s_slice);
+        var first = (long)Math.Floor((from - _origin) / SliceLength);
+        var last = (long)Math.Floor((until - _origin - TimeSpan.FromTicks(1)) / SliceLength);
         for (var index = first; index <= last; index++)
         {
             if (!Slice(index).TryGetValue((stationId, key), out var records)) continue;
@@ -79,8 +79,8 @@ internal sealed class HistoryService
 
     private SliceData Slice(long index)
     {
-        var start = _origin + (s_slice * index);
-        var end = start + s_slice;
+        var start = _origin + (SliceLength * index);
+        var end = start + SliceLength;
 
         lock (_lock)
         {
@@ -114,7 +114,7 @@ internal sealed class HistoryService
     private SliceData GrowPartial(long index, DateTimeOffset start, DateTimeOffset end)
     {
         var now = End;
-        var target = now + s_lookahead < end ? now + s_lookahead : end;
+        var target = now + Lookahead < end ? now + Lookahead : end;
         if (_partial is null || _partial.Index != index) _partial = new PartialSlice(index, new SliceData(), start);
         if (target > _partial.BuiltUntil) _partial = Extend(_partial, target);
         return _partial.Data;

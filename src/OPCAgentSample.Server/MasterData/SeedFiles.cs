@@ -8,7 +8,7 @@ namespace OPCAgentSample.Server.MasterData;
 /// <summary>Liest die eingebetteten Seed-Dateien (<c>Seed/*.json</c>).</summary>
 internal static class SeedFiles
 {
-    private static readonly JsonSerializerOptions s_json = new(JsonSerializerDefaults.Web)
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web)
     {
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
@@ -19,7 +19,7 @@ internal static class SeedFiles
         var resource = $"Seed/{fileName}";
         using var stream = typeof(SeedFiles).Assembly.GetManifestResourceStream(resource)
             ?? throw new InvalidOperationException($"Seed-Datei '{resource}' fehlt in der Assembly.");
-        return JsonSerializer.Deserialize<T>(stream, s_json)
+        return JsonSerializer.Deserialize<T>(stream, Json)
             ?? throw new InvalidOperationException($"Seed-Datei '{resource}' ist leer.");
     }
 }
@@ -31,7 +31,7 @@ internal static class SeedFiles
 /// </summary>
 internal sealed class SeedTime(ShiftCalendar calendar, DateTimeOffset reference)
 {
-    private static readonly TimeOnly s_defaultTime = new(6, 0);
+    private static readonly TimeOnly DefaultTime = new(6, 0);
 
     private DateOnly Today => DateOnly.FromDateTime(calendar.ToLocal(reference).DateTime);
 
@@ -47,7 +47,7 @@ internal sealed class SeedTime(ShiftCalendar calendar, DateTimeOffset reference)
             "yesterday" => Today.AddDays(-1),
             var iso => DateOnly.ParseExact(iso, "yyyy-MM-dd", CultureInfo.InvariantCulture),
         };
-        var time = parts.Length == 2 ? TimeOnly.ParseExact(parts[1], "HH:mm", CultureInfo.InvariantCulture) : s_defaultTime;
+        var time = parts.Length == 2 ? TimeOnly.ParseExact(parts[1], "HH:mm", CultureInfo.InvariantCulture) : DefaultTime;
         return calendar.ToUtc(day.ToDateTime(time));
     }
 

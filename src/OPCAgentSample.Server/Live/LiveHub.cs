@@ -33,6 +33,10 @@ public sealed class LiveSubscription : IDisposable
         {
             // Die Schleife ist bereits geweckt; die Änderungen sammeln sich in _pending.
         }
+        catch (ObjectDisposedException)
+        {
+            // Die Verbindung wurde gerade geschlossen, während Dispatch noch eine Kopie der Liste abarbeitet.
+        }
     }
 
     /// <summary>Wartet auf Änderungen oder das Ende der Zeit; liefert die seit dem letzten Aufruf gesammelten Änderungen.</summary>
@@ -42,7 +46,11 @@ public sealed class LiveSubscription : IDisposable
         return (LiveChangeKind)Interlocked.Exchange(ref _pending, 0);
     }
 
-    public void Dispose() => _hub.Remove(this);
+    public void Dispose()
+    {
+        _hub.Remove(this);
+        _signal.Dispose();
+    }
 }
 
 /// <summary>
@@ -51,7 +59,7 @@ public sealed class LiveSubscription : IDisposable
 /// </summary>
 public sealed class LiveHub
 {
-    private readonly object _gate = new();
+    private readonly Lock _gate = new();
     private readonly List<LiveSubscription> _subscriptions = [];
 
     /// <summary>Anzahl offener Verbindungen dieser Instanz.</summary>
@@ -101,7 +109,7 @@ public sealed class LiveHub
 public sealed partial class LiveSubscriberService(IConnectionMultiplexer connection, LiveHub hub, ILogger<LiveSubscriberService> logger)
     : BackgroundService
 {
-    private static readonly TimeSpan s_retryDelay = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(2);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -138,7 +146,7 @@ public sealed partial class LiveSubscriberService(IConnectionMultiplexer connect
             catch (Exception ex) when (ex is RedisException or TimeoutException)
             {
                 LogSubscribeFailed(ex.GetType().Name);
-                await Task.Delay(s_retryDelay, cancellationToken);
+                await Task.Delay(RetryDelay, cancellationToken);
             }
         }
     }

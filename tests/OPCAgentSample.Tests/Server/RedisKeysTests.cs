@@ -5,16 +5,16 @@ namespace OPCAgentSample.Tests.Server;
 
 public sealed class RedisKeysTests
 {
-    private static readonly ShiftCalendar s_calendar = new();
-    private static readonly DateTimeOffset s_now = SimulationClock.DemoStart;
-    private static readonly ProductionPeriod s_day = s_calendar.DayPeriod(new DateOnly(2026, 10, 14));
-    private static readonly ProductionPeriod s_nightShift = s_calendar.ShiftPeriod(new DateOnly(2026, 10, 14), Shift.Night);
+    private static readonly ShiftCalendar Calendar = new();
+    private static readonly DateTimeOffset Now = SimulationClock.DemoStart;
+    private static readonly ProductionPeriod Day = Calendar.DayPeriod(new DateOnly(2026, 10, 14));
+    private static readonly ProductionPeriod NightShift = Calendar.ShiftPeriod(new DateOnly(2026, 10, 14), Shift.Night);
 
     [Fact]
     public void Keys_follow_the_layout_of_the_specification()
     {
         Assert.Equal("st:RT-01", RedisKeys.Station("RT-01"));
-        Assert.Equal("ev:A:2026-10-14", RedisKeys.Events("A", s_day));
+        Assert.Equal("ev:A:2026-10-14", RedisKeys.Events("A", Day));
         Assert.Equal("alarm:A:active", RedisKeys.ActiveAlarms("A"));
         Assert.Equal("inbox:shift_lead", RedisKeys.Inbox("shift_lead"));
         Assert.Equal("hist:user:martin.huber", RedisKeys.History("user:martin.huber"));
@@ -26,8 +26,8 @@ public sealed class RedisKeysTests
     [Fact]
     public void Day_keys_reject_other_period_levels()
     {
-        Assert.Throws<ArgumentException>(() => RedisKeys.Events("A", s_nightShift));
-        Assert.Throws<ArgumentException>(() => RedisKeys.Events("A", s_calendar.WeekPeriodOf(s_now)));
+        Assert.Throws<ArgumentException>(() => RedisKeys.Events("A", NightShift));
+        Assert.Throws<ArgumentException>(() => RedisKeys.Events("A", Calendar.WeekPeriodOf(Now)));
     }
 
     [Theory]

@@ -14,7 +14,7 @@ namespace OPCAgentSample.Simulator;
 public sealed class SimulatorHost : IAsyncDisposable
 {
     private const string ApplicationName = "OPCAgentSample.Simulator";
-    private static readonly ITelemetryContext s_telemetry = DefaultTelemetry.Create(_ => { });
+    private static readonly ITelemetryContext Telemetry = DefaultTelemetry.Create(_ => { });
 
     private readonly ApplicationInstance _application;
     private readonly PlantServer _server;
@@ -45,7 +45,7 @@ public sealed class SimulatorHost : IAsyncDisposable
 
         var runtime = SimulatorRuntime.Create(options);
         var configuration = await CreateConfigurationAsync(options, ct);
-        var application = new ApplicationInstance(configuration, s_telemetry);
+        var application = new ApplicationInstance(configuration, Telemetry);
         await EnsureCertificateAsync(application, options, logger, ct);
 
         var server = new PlantServer(runtime);

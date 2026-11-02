@@ -37,7 +37,7 @@ public sealed record ProductionPeriod(PeriodKind Kind, string Key, DateTimeOffse
 /// </summary>
 public sealed class ShiftCalendar
 {
-    private static readonly TimeSpan s_dayStart = TimeSpan.FromHours(6);
+    private static readonly TimeSpan DayStart = TimeSpan.FromHours(6);
 
     private readonly HashSet<DateOnly> _holidays;
 
@@ -63,7 +63,7 @@ public sealed class ShiftCalendar
     {
         var local = ToLocal(instant);
         var day = DateOnly.FromDateTime(local.DateTime);
-        return local.TimeOfDay < s_dayStart ? day.AddDays(-1) : day;
+        return local.TimeOfDay < DayStart ? day.AddDays(-1) : day;
     }
 
     public Shift ShiftOf(DateTimeOffset instant)
@@ -97,7 +97,7 @@ public sealed class ShiftCalendar
 
     public ProductionPeriod ShiftPeriod(DateOnly productionDay, Shift shift)
     {
-        var dayStart = productionDay.ToDateTime(TimeOnly.MinValue).Add(s_dayStart);
+        var dayStart = productionDay.ToDateTime(TimeOnly.MinValue).Add(DayStart);
         var start = dayStart.AddHours(8 * (int)shift);
         var key = $"{FormatDay(productionDay)}{ShiftCode(shift)}";
         return new ProductionPeriod(PeriodKind.Shift, key, ToUtc(start), ToUtc(start.AddHours(8)));
@@ -107,7 +107,7 @@ public sealed class ShiftCalendar
 
     public ProductionPeriod DayPeriod(DateOnly productionDay)
     {
-        var start = productionDay.ToDateTime(TimeOnly.MinValue).Add(s_dayStart);
+        var start = productionDay.ToDateTime(TimeOnly.MinValue).Add(DayStart);
         return new ProductionPeriod(PeriodKind.Day, FormatDay(productionDay), ToUtc(start), ToUtc(start.AddDays(1)));
     }
 
@@ -117,7 +117,7 @@ public sealed class ShiftCalendar
     public ProductionPeriod WeekPeriod(DateOnly productionDay)
     {
         var monday = productionDay.AddDays(-(((int)productionDay.DayOfWeek + 6) % 7));
-        var start = monday.ToDateTime(TimeOnly.MinValue).Add(s_dayStart);
+        var start = monday.ToDateTime(TimeOnly.MinValue).Add(DayStart);
         var date = monday.ToDateTime(TimeOnly.MinValue);
         var key = $"{ISOWeek.GetYear(date)}-W{ISOWeek.GetWeekOfYear(date):00}";
         return new ProductionPeriod(PeriodKind.Week, key, ToUtc(start), ToUtc(start.AddDays(7)));

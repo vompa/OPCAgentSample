@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using OPCAgentSample.Server.Agent;
 using OPCAgentSample.Server.Demo;
 using OPCAgentSample.Server.Observability;

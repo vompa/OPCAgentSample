@@ -16,22 +16,22 @@ public static class AnswerCardFormat
     public const int MaxWhyItems = 4;
     public const int MaxTextLength = 600;
 
-    private static readonly string[] s_ratings = [Rating.Ok, Rating.Warn, Rating.Crit, Rating.Info];
+    private static readonly string[] Ratings = [Rating.Ok, Rating.Warn, Rating.Crit, Rating.Info];
 
     /// <summary>Spalten der Werte-Tabelle; sie legt der Server fest, nicht das Modell.</summary>
-    private static readonly string[] s_columns = ["Thema", "Daten", "Bewertung"];
+    private static readonly string[] Columns = ["Thema", "Daten", "Bewertung"];
 
-    private static readonly JsonSerializerOptions s_json = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     /// <summary>JSON-Schema der Karte. Alle Objekte mit <c>additionalProperties: false</c>, wie Structured Outputs es verlangen.</summary>
-    public static IReadOnlyDictionary<string, JsonElement> Schema() => s_schema.Value;
+    public static IReadOnlyDictionary<string, JsonElement> Schema() => LazySchema.Value;
 
-    private static readonly Lazy<IReadOnlyDictionary<string, JsonElement>> s_schema = new(BuildSchema);
+    private static readonly Lazy<IReadOnlyDictionary<string, JsonElement>> LazySchema = new(BuildSchema);
 
     private static Dictionary<string, JsonElement> BuildSchema()
     {
         var text = new { type = "string" };
-        var rating = new { type = "string", @enum = s_ratings };
+        var rating = new { type = "string", @enum = Ratings };
         // Feste Felder statt einer Zellenliste: Structured Outputs garantiert die Form, eine Länge ließe sich nicht erzwingen
         var row = new
         {
@@ -98,7 +98,7 @@ public static class AnswerCardFormat
         ModelCard? dto;
         try
         {
-            dto = JsonSerializer.Deserialize<ModelCard>(json, s_json);
+            dto = JsonSerializer.Deserialize<ModelCard>(json, Json);
         }
         catch (JsonException ex)
         {
@@ -118,7 +118,7 @@ public static class AnswerCardFormat
         {
             if (string.IsNullOrWhiteSpace(row.Topic) || TooLong(row.Topic) || TooLong(row.Data))
                 return Fail("Eine Tabellenzeile hat kein Thema oder zu langen Text.", out problem);
-            if (!s_ratings.Contains(row.Rating, StringComparer.Ordinal)) return Fail("Unbekannte Bewertung in der Tabelle.", out problem);
+            if (!Ratings.Contains(row.Rating, StringComparer.Ordinal)) return Fail("Unbekannte Bewertung in der Tabelle.", out problem);
             rows.Add(new AnswerTableRow([row.Topic.Trim(), row.Data!.Trim()], row.Rating!));
         }
 
@@ -126,7 +126,7 @@ public static class AnswerCardFormat
         if (dto.Chart is { } c)
         {
             if (c.Bars is null || c.Bars.Count == 0 || c.Bars.Count > MaxBars) return Fail("Diagramm ohne oder mit zu vielen Balken.", out problem);
-            if (c.Bars.Any(b => string.IsNullOrWhiteSpace(b.Label) || !s_ratings.Contains(b.Rating, StringComparer.Ordinal)
+            if (c.Bars.Any(b => string.IsNullOrWhiteSpace(b.Label) || !Ratings.Contains(b.Rating, StringComparer.Ordinal)
                     || double.IsNaN(b.Value) || double.IsInfinity(b.Value)))
                 return Fail("Ein Balken ist ungültig.", out problem);
             if (string.IsNullOrWhiteSpace(c.Title) || c.Decimals is < 0 or > 3 || !(c.Max > 0) || c.Bars.Any(b => b.Value > c.Max || b.Value < 0))
@@ -134,7 +134,7 @@ public static class AnswerCardFormat
             chart = new AnswerChart(c.Title, c.Max, c.Unit ?? string.Empty, c.Decimals, [.. c.Bars.Select(b => new ChartBar(b.Label!, b.Value, b.Rating!))]);
         }
 
-        var table = new AnswerTable(s_columns, rows);
+        var table = new AnswerTable(Columns, rows);
         card = new AnswerCard(
             dto.Headline.Trim(), dto.Todo, table, chart, dto.Why,
             DataAsOf: string.Empty, Sources: [], Prompt: null, Form: FormOf(rows.Count, chart));

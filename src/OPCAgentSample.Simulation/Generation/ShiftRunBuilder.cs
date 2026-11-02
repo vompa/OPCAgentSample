@@ -22,10 +22,10 @@ internal sealed class ShiftRunBuilder
     private const double MinUtilization = 0.05;
     private const double MaxUtilization = 3.0;
     private const int BisectionSteps = 60;
-    private static readonly TimeSpan s_stopMargin = TimeSpan.FromMinutes(2);
-    private static readonly TimeSpan s_endOfShiftMargin = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan StopMargin = TimeSpan.FromMinutes(2);
+    private static readonly TimeSpan EndOfShiftMargin = TimeSpan.FromMinutes(5);
 
-    private static readonly (string Reason, string Assembly)[] s_pressMinorStops =
+    private static readonly (string Reason, string Assembly)[] PressMinorStops =
     [
         ("Kurzstopp Abstreifer", Assemblies.Stripper),
         ("Kurzstopp Ausstoß", Assemblies.Ejector),
@@ -34,7 +34,7 @@ internal sealed class ShiftRunBuilder
         ("Kurzstopp Sensor Presse", Assemblies.Press),
     ];
 
-    private static readonly (string Reason, string Assembly)[] s_packagingMinorStops =
+    private static readonly (string Reason, string Assembly)[] PackagingMinorStops =
     [
         ("Kurzstopp Kartonaufrichter", Assemblies.CartonErector),
         ("Kurzstopp Kontrollwaage", Assemblies.Checkweigher),
@@ -126,12 +126,12 @@ internal sealed class ShiftRunBuilder
         var positions = Enumerable.Range(0, count).Select(_ => random.NextDouble()).ToArray();
         var reasonPicks = Enumerable.Range(0, count).Select(_ => random.NextDouble()).ToArray();
 
-        var excluded = blocks.Select(b => new TimeWindow(b.StartUtc - s_stopMargin, b.EndUtc + s_stopMargin))
+        var excluded = blocks.Select(b => new TimeWindow(b.StartUtc - StopMargin, b.EndUtc + StopMargin))
             .Append(startup)
-            .Append(new TimeWindow(shift.EndUtc - s_endOfShiftMargin, shift.EndUtc))
+            .Append(new TimeWindow(shift.EndUtc - EndOfShiftMargin, shift.EndUtc))
             .Concat(_scenario.QuietWindows.Select(q => new TimeWindow(q.StartUtc, q.EndUtc)))
             .ToList();
-        var catalog = _plan.Spec.IsPress ? s_pressMinorStops : s_packagingMinorStops;
+        var catalog = _plan.Spec.IsPress ? PressMinorStops : PackagingMinorStops;
         var stops = new List<PlannedLoss>();
         for (var i = 0; i < count; i++)
         {
@@ -149,7 +149,7 @@ internal sealed class ShiftRunBuilder
             var stop = new PlannedLoss($"K-{_plan.StationId}-{shift.Key}-{i + 1}", _plan.StationId, LossCategory.MinorStop,
                 reason, assembly, reason, start, start + duration, 0, true, null);
             stops.Add(stop);
-            excluded.Add(new TimeWindow(stop.StartUtc - s_stopMargin, stop.EndUtc + s_stopMargin));
+            excluded.Add(new TimeWindow(stop.StartUtc - StopMargin, stop.EndUtc + StopMargin));
         }
 
         return [.. stops.OrderBy(s => s.StartUtc)];

@@ -33,7 +33,7 @@ public sealed record OrderView(
 public sealed class OrderService(
     MasterDataStore masterData, PlantQueries queries, ShiftCalendar calendar)
 {
-    private static readonly TimeSpan s_rateWindow = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan RateWindow = TimeSpan.FromMinutes(30);
 
     /// <summary>
     /// Aufträge der angegebenen Stationen und – ohne Station – der angegebenen Hallen (B/C). Mit <paramref name="orderId"/> nur
@@ -102,7 +102,7 @@ public sealed class OrderService(
         if (order.State == OrderState.Running && order.StartedAtUtc is not null)
         {
             produced = Math.Max(produced, await queries.OrderCyclesAsync(order.Id));
-            rate = await queries.CyclesAsync(station, now - s_rateWindow, now) / s_rateWindow.TotalHours;
+            rate = await queries.CyclesAsync(station, now - RateWindow, now) / RateWindow.TotalHours;
         }
 
         var remaining = Math.Max(0, order.TargetQuantity - produced);

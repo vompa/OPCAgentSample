@@ -7,13 +7,13 @@ namespace OPCAgentSample.Simulation.Generation;
 /// <summary>Meldet Alarme in ihren Ständen (aktiv, quittiert, beendet) mit derselben Id.</summary>
 internal static class AlarmVersions
 {
-    private static readonly TimeSpan s_acknowledgeDelay = TimeSpan.FromMinutes(2);
+    private static readonly TimeSpan AcknowledgeDelay = TimeSpan.FromMinutes(2);
 
     /// <summary>Störungsalarm zu einem Stillstandsereignis der Kategorie Störung.</summary>
     public static void AddFaultAlarm(PlannedLoss loss, TimeWindow window, List<HistoryRecord> records)
     {
         var id = $"AL-{loss.Id}";
-        var acknowledged = loss.StartUtc + s_acknowledgeDelay;
+        var acknowledged = loss.StartUtc + AcknowledgeDelay;
         AlarmRecord Version(DateTimeOffset at, DateTimeOffset? ack, DateTimeOffset? cleared) =>
             new(loss.StationId, at, id, AlarmKind.Fault, AlarmSeverity.High, loss.Assembly, loss.Cause, loss.StartUtc, ack, cleared, loss.Id);
 

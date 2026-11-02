@@ -22,10 +22,10 @@ internal sealed record MouldFacts(string MouldId, string StationId, int Strokes,
 /// </summary>
 internal sealed class StationFacts
 {
-    private static readonly TimeSpan s_cycleWindow = TimeSpan.FromMinutes(5);
-    private static readonly TimeSpan s_fillWindow = TimeSpan.FromMinutes(15);
-    private static readonly TimeSpan s_minuteWindow = TimeSpan.FromMinutes(31);
-    private static readonly TimeSpan s_mixtureWindow = TimeSpan.FromHours(4);
+    private static readonly TimeSpan CycleWindow = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan FillWindow = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan MinuteWindow = TimeSpan.FromMinutes(31);
+    private static readonly TimeSpan MixtureWindow = TimeSpan.FromHours(4);
 
     private readonly Dictionary<string, (OperatingState State, DateTimeOffset Since, string? OrderId)> _states = [];
     private readonly Dictionary<(string Station, string Variable), IReadOnlyList<(DateTimeOffset At, double Value)>> _series = [];
@@ -100,7 +100,7 @@ internal sealed class StationFacts
         foreach (var variable in new[] { MinuteVariables.Temperature, MinuteVariables.Humidity })
         {
             facts._series[(MinuteVariables.HallAClimateSource, variable)] = await reader.ReadMinutesAsync(
-                MinuteVariables.HallAClimateSource, variable, until - s_minuteWindow, until);
+                MinuteVariables.HallAClimateSource, variable, until - MinuteWindow, until);
         }
 
         facts.ClimateAtShiftStart = await reader.ReadClimateAtShiftStartAsync(shift.Key);
@@ -127,8 +127,8 @@ internal sealed class StationFacts
         if (recent.Count == 0) return;
 
         var last = recent[^1];
-        var fiveMinutes = recent.Where(c => c.TimestampUtc >= until - s_cycleWindow).ToList();
-        var fifteenMinutes = recent.Where(c => c.TimestampUtc >= until - s_fillWindow).ToList();
+        var fiveMinutes = recent.Where(c => c.TimestampUtc >= until - CycleWindow).ToList();
+        var fifteenMinutes = recent.Where(c => c.TimestampUtc >= until - FillWindow).ToList();
         Cycles[stationId] = new CycleFacts(
             last.ArticleId, last.MixtureBatchId, last.TargetCycleSeconds,
             fiveMinutes.Count > 0 ? fiveMinutes.Average(c => c.CycleTimeSeconds) : null,
@@ -149,7 +149,7 @@ internal sealed class StationFacts
         };
         foreach (var variable in variables)
         {
-            var window = variable == MinuteVariables.MixtureLevelKg ? s_mixtureWindow : s_minuteWindow;
+            var window = variable == MinuteVariables.MixtureLevelKg ? MixtureWindow : MinuteWindow;
             _series[(station.Id, variable)] = await reader.ReadMinutesAsync(station.Id, variable, until - window, until);
         }
     }

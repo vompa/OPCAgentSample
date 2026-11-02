@@ -2,8 +2,8 @@ using Microsoft.Extensions.Options;
 using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.Configuration;
-using ISession = Opc.Ua.Client.ISession;
 using OPCAgentSample.Domain.Opc;
+using ISession = Opc.Ua.Client.ISession;
 
 namespace OPCAgentSample.Server.Collector;
 
@@ -34,7 +34,7 @@ public sealed partial class OpcSessionProvider(
     /// <summary>Telemetrie-Kontext des OPC-Stacks (ohne Ausgabe); auch für Subscriptions.</summary>
     internal static ITelemetryContext Telemetry { get; } = DefaultTelemetry.Create(_ => { });
 
-    private readonly object _sync = new();
+    private readonly Lock _sync = new();
     private TaskCompletionSource<OpcConnection> _connected = NewSignal();
     private OpcConnection? _current;
     private DateTimeOffset? _historyStartUtc;

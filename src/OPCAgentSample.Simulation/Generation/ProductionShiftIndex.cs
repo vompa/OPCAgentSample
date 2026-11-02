@@ -5,7 +5,7 @@ namespace OPCAgentSample.Simulation.Generation;
 /// <summary>Sortierte Liste der Produktionsschichten ab Historienbeginn (wächst bei Bedarf); schnelle Suche je Zeitpunkt.</summary>
 internal sealed class ProductionShiftIndex
 {
-    private static readonly TimeSpan s_chunk = TimeSpan.FromDays(28);
+    private static readonly TimeSpan Chunk = TimeSpan.FromDays(28);
 
     private readonly ShiftCalendar _calendar;
     private readonly DateTimeOffset _startUtc;
@@ -77,7 +77,7 @@ internal sealed class ProductionShiftIndex
         {
             while (_coveredUntilUtc < untilUtc)
             {
-                var next = _coveredUntilUtc + s_chunk;
+                var next = _coveredUntilUtc + Chunk;
                 foreach (var shift in _calendar.ProductionShiftsBetween(_coveredUntilUtc, next))
                 {
                     if (shift.StartUtc >= _coveredUntilUtc && shift.StartUtc >= _startUtc) _shifts.Add(shift);

@@ -39,7 +39,7 @@ public sealed class MachineReportService(
     private const int MaxMaintenance = 3;
     private const string ReactionMarker = "Reaktionszeit Bereitschaft ";
 
-    private static readonly Shift[] s_shifts = [Shift.Early, Shift.Late, Shift.Night];
+    private static readonly Shift[] Shifts = [Shift.Early, Shift.Late, Shift.Night];
 
     public async Task<MachineReportResponse> BuildAsync(string roleId, string range, bool compare, CancellationToken ct)
     {
@@ -61,7 +61,7 @@ public sealed class MachineReportService(
 
         var shiftRange = ShiftRangeOf(range, plan.Current, rawStart, now);
         var byShift = new Dictionary<Shift, KpiData>();
-        foreach (var kind in s_shifts) byShift[kind] = await kpis.GetByShiftKindAsync(shiftRange, kind, ct);
+        foreach (var kind in Shifts) byShift[kind] = await kpis.GetByShiftKindAsync(shiftRange, kind, ct);
 
         var losses = detailAvailable ? await queries.LossEventsAsync(detailStart, end, ids) : [];
         var scrapReasons = detailAvailable && pressIds.Count > 0 ? await queries.CycleAggregatesAsync(detailStart, end, pressIds) : new Dictionary<string, CycleAggregate>();
@@ -98,40 +98,40 @@ public sealed class MachineReportService(
         switch (range)
         {
             case MachineRanges.Shift:
-            {
-                var current = calendar.ShiftPeriodOf(now);
-                var previous = ranges.PreviousShift(current);
-                return new RangePlan(
-                    ranges.ForPeriod(current), ranges.ForPeriod(previous),
-                    $"Laufende Schicht · {ranges.ShiftLabel(current)}", ranges.ShiftLabel(previous));
-            }
+                {
+                    var current = calendar.ShiftPeriodOf(now);
+                    var previous = ranges.PreviousShift(current);
+                    return new RangePlan(
+                        ranges.ForPeriod(current), ranges.ForPeriod(previous),
+                        $"Laufende Schicht · {ranges.ShiftLabel(current)}", ranges.ShiftLabel(previous));
+                }
 
             case MachineRanges.Yesterday:
-            {
-                var day = ranges.PreviousProductionDay(calendar.ProductionDayOf(now));
-                var before = ranges.PreviousProductionDay(day);
-                return new RangePlan(
-                    ranges.ForPeriod(calendar.DayPeriod(day)), ranges.ForPeriod(calendar.DayPeriod(before)),
-                    $"Gestern · {Fmt.Day(day)}", Fmt.Day(before));
-            }
+                {
+                    var day = ranges.PreviousProductionDay(calendar.ProductionDayOf(now));
+                    var before = ranges.PreviousProductionDay(day);
+                    return new RangePlan(
+                        ranges.ForPeriod(calendar.DayPeriod(day)), ranges.ForPeriod(calendar.DayPeriod(before)),
+                        $"Gestern · {Fmt.Day(day)}", Fmt.Day(before));
+                }
 
             case MachineRanges.Week:
-            {
-                var current = calendar.WeekPeriodOf(now);
-                var previous = PreviousWeek(current);
-                return new RangePlan(
-                    ranges.ForPeriod(current), ranges.ForPeriod(previous),
-                    $"Diese Woche · {TimeRangeResolver.WeekLabel(current)}", TimeRangeResolver.WeekLabel(previous));
-            }
+                {
+                    var current = calendar.WeekPeriodOf(now);
+                    var previous = PreviousWeek(current);
+                    return new RangePlan(
+                        ranges.ForPeriod(current), ranges.ForPeriod(previous),
+                        $"Diese Woche · {TimeRangeResolver.WeekLabel(current)}", TimeRangeResolver.WeekLabel(previous));
+                }
 
             case MachineRanges.FourWeeks:
-            {
-                var weeks = new List<ProductionPeriod> { calendar.WeekPeriodOf(now) };
-                for (var i = 1; i < 8; i++) weeks.Add(PreviousWeek(weeks[^1]));
-                var current = WeekSpan(weeks.Take(4));
-                var previous = WeekSpan(weeks.Skip(4));
-                return new RangePlan(current, previous, $"Letzte 4 Wochen · {current.Label}", previous.Label);
-            }
+                {
+                    var weeks = new List<ProductionPeriod> { calendar.WeekPeriodOf(now) };
+                    for (var i = 1; i < 8; i++) weeks.Add(PreviousWeek(weeks[^1]));
+                    var current = WeekSpan(weeks.Take(4));
+                    var previous = WeekSpan(weeks.Skip(4));
+                    return new RangePlan(current, previous, $"Letzte 4 Wochen · {current.Label}", previous.Label);
+                }
 
             default:
                 throw new ArgumentOutOfRangeException(nameof(range), range, "Unbekannter Zeitraum.");
@@ -209,7 +209,7 @@ public sealed class MachineReportService(
         var previous = previousData is null ? null : await PreviousOfAsync(station, previousData, plan.Previous, now, costRates, ct);
         if (previous is { OeePercent: null, OccupancyPercent: null }) previous = null;
         var press = station.Area == Area.Pressing;
-        var shiftOee = s_shifts
+        var shiftOee = Shifts
             .Select(kind => new MachineShiftOee(ShiftCalendar.ShiftLabel(kind), isOven ? null : OeeOf(byShift[kind].Figures(id))?.OeePercent))
             .ToList();
 
@@ -313,25 +313,25 @@ public sealed class MachineReportService(
         switch (station.Area)
         {
             case Area.Pressing:
-            {
-                var tolerance = TrafficLightThresholds.Default.CycleWarningAbove * 100;
-                var cycle = await trendQueries.PressBucketsAsync(station.Id, PressValue.CycleDeviationPercent, from, to, bucket, origin);
-                AddBand(trends, "cycle", "Taktzeit gegen Soll", "% Abweichung", 1, 0, -tolerance, tolerance, "Takte", cycle, range);
+                {
+                    var tolerance = TrafficLightThresholds.Default.CycleWarningAbove * 100;
+                    var cycle = await trendQueries.PressBucketsAsync(station.Id, PressValue.CycleDeviationPercent, from, to, bucket, origin);
+                    AddBand(trends, "cycle", "Taktzeit gegen Soll", "% Abweichung", 1, 0, -tolerance, tolerance, "Takte", cycle, range);
 
-                var limits = mcp.Value.ProcessLimits;
-                var target = limits.BuildUpTargetSeconds;
-                var buildUp = await trendQueries.PressBucketsAsync(station.Id, PressValue.BuildUpSeconds, from, to, bucket, origin);
-                AddBand(trends, "buildup", "Presskraftaufbau", "s", 2, target, target * (2 - limits.BuildUpWarningRatio), target * limits.BuildUpWarningRatio, "Takte", buildUp, range);
-                break;
-            }
+                    var limits = mcp.Value.ProcessLimits;
+                    var target = limits.BuildUpTargetSeconds;
+                    var buildUp = await trendQueries.PressBucketsAsync(station.Id, PressValue.BuildUpSeconds, from, to, bucket, origin);
+                    AddBand(trends, "buildup", "Presskraftaufbau", "s", 2, target, target * (2 - limits.BuildUpWarningRatio), target * limits.BuildUpWarningRatio, "Takte", buildUp, range);
+                    break;
+                }
 
             case Area.Curing:
-            {
-                var temperature = await trendQueries.OvenBucketsAsync(station.Id, from, to, bucket, origin);
-                AddBand(trends, "temperature", "Temperatur Zone 2 (Haltephase)", "°C", 1, OvenHoldCelsius,
-                    OvenHoldCelsius - OvenToleranceCelsius, OvenHoldCelsius + OvenToleranceCelsius, "Minutenwerte", temperature, range);
-                break;
-            }
+                {
+                    var temperature = await trendQueries.OvenBucketsAsync(station.Id, from, to, bucket, origin);
+                    AddBand(trends, "temperature", "Temperatur Zone 2 (Haltephase)", "°C", 1, OvenHoldCelsius,
+                        OvenHoldCelsius - OvenToleranceCelsius, OvenHoldCelsius + OvenToleranceCelsius, "Minutenwerte", temperature, range);
+                    break;
+                }
 
             default:
                 await AddCartonsAsync(trends, station, figures, range, from, to, bucket, origin, ct);
@@ -391,7 +391,7 @@ public sealed class MachineReportService(
     {
         var reliability = Reliability.From(figures);
         var perShift = new List<MachineShiftReliability>();
-        foreach (var kind in s_shifts)
+        foreach (var kind in Shifts)
         {
             var shiftReliability = Reliability.From(byShift[kind].Figures(stationId));
             var reactions = ReactionTimes(losses.Where(l => l.StationId == stationId), kind);
@@ -513,7 +513,7 @@ public sealed class MachineReportService(
         IReadOnlyList<LossEvent> losses, CostRateTable costRates)
     {
         var rows = new List<MachineShift>();
-        foreach (var kind in s_shifts)
+        foreach (var kind in Shifts)
         {
             var data = byShift[kind];
             var startups = losses

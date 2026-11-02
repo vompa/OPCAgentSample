@@ -5,7 +5,6 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
 using OPCAgentSample.Server.DemoAccess;
 using OPCAgentSample.Server.Security;
 using OPCAgentSample.Tests.Server;

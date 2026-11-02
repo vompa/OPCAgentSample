@@ -5,9 +5,8 @@ using OPCAgentSample.Domain;
 using OPCAgentSample.Domain.History;
 using OPCAgentSample.Kpi;
 using OPCAgentSample.Rollup;
-using OPCAgentSample.Server.MasterData;
-using OPCAgentSample.Server.Kpis;
 using OPCAgentSample.Server.Live;
+using OPCAgentSample.Server.MasterData;
 using OPCAgentSample.Server.Mcp;
 using OPCAgentSample.Server.Security;
 
@@ -41,7 +40,7 @@ public sealed class RuleInboxSource(
     private const string RuleMaintenanceOverdue = "ER-MAINT-OVERDUE";
     private const string RuleMixtureExpiring = "ER-MIXTURE-EXPIRING";
     private const string RuleFaultOpen = "ER-FAULT-OPEN";
-    private static readonly TimeSpan s_cacheLifetime = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan CacheLifetime = TimeSpan.FromSeconds(10);
 
     private readonly ConcurrentDictionary<(string OwnerKey, string ItemId), (string By, string At)> _taken = new();
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -76,7 +75,7 @@ public sealed class RuleInboxSource(
         try
         {
             var real = timeProvider.GetUtcNow();
-            if (_cache is { } cached && cached.Now == now && real - cached.Built < s_cacheLifetime) return cached.Items;
+            if (_cache is { } cached && cached.Now == now && real - cached.Built < CacheLifetime) return cached.Items;
 
             var items = await BuildAsync(now, ct);
             _cache = (now, real, items);

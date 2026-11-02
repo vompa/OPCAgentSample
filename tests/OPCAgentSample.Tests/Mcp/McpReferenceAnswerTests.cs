@@ -16,8 +16,8 @@ public sealed class McpReferenceAnswerTests(InfrastructureFixture infrastructure
     private const string HallLead = McpRoles.HallLead;
     private const string ProductionLead = McpRoles.ProductionLead;
 
-    private static readonly string[] s_pressPair = ["RT-01", "RT-02"];
-    private static readonly string[] s_ovens = ["OF-01", "OF-02"];
+    private static readonly string[] PressPair = ["RT-01", "RT-02"];
+    private static readonly string[] Ovens = ["OF-01", "OF-02"];
 
     private async Task<JsonElement> CallAsync(string role, string tool, object? arguments = null) =>
         await (await McpHost.GetAsync(infrastructure)).CallAsync(role, tool, arguments);
@@ -239,9 +239,9 @@ public sealed class McpReferenceAnswerTests(InfrastructureFixture infrastructure
     public async Task Hl2_quality_RT01_and_RT02_drift_since_2200_common_batch_M_2410_17_scales_unremarkable()
     {
         var scrap = await CallAsync(HallLead, "compare", new { dimension = "Rundtisch", kpi = "Ausschussquote", zeitraum = "24 h" });
-        var trend = await CallAsync(HallLead, "get_process_trend", new { machineId = s_pressPair, variable = "Füllgewicht", zeitraum = "24 h" });
-        var orders = await CallAsync(HallLead, "get_order_progress", new { machineId = s_pressPair });
-        var scales = await CallAsync(HallLead, "get_maintenance_due", new { scope = s_pressPair, baugruppe = "Waage", historie = true });
+        var trend = await CallAsync(HallLead, "get_process_trend", new { machineId = PressPair, variable = "Füllgewicht", zeitraum = "24 h" });
+        var orders = await CallAsync(HallLead, "get_order_progress", new { machineId = PressPair });
+        var scales = await CallAsync(HallLead, "get_maintenance_due", new { scope = PressPair, baugruppe = "Waage", historie = true });
         var climate = await CallAsync(HallLead, "get_process_trend", new { machineId = "Klima", variable = "Temperatur", zeitraum = "24 h" });
         var rt03 = await CallAsync(HallLead, "get_machine_status", new { machineId = "RT-03" });
 
@@ -300,7 +300,7 @@ public sealed class McpReferenceAnswerTests(InfrastructureFixture infrastructure
     public async Task Hl4_ovens_unevenly_occupied_OF02_96_OF01_78_assignment_rule_is_not_a_technical_limit()
     {
         var overview = await CallAsync(HallLead, "get_hall_overview", new { hallId = "A", stationType = "Ofen" });
-        var trend = await CallAsync(HallLead, "get_process_trend", new { machineId = s_ovens, variable = "Temperaturprofil", zeitraum = "heute" });
+        var trend = await CallAsync(HallLead, "get_process_trend", new { machineId = Ovens, variable = "Temperaturprofil", zeitraum = "heute" });
         var flow = await CallAsync(HallLead, "get_order_progress", new { scope = "Halle A", stufe = "Ofen → Verpackung" });
 
         Assert.Equal("78 %", overview.At("stationen").Item("id", "OF-01").Text("kennzahl.wert"));

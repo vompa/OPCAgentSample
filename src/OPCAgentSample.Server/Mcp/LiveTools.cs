@@ -7,8 +7,8 @@ using OPCAgentSample.Domain;
 using OPCAgentSample.Domain.History;
 using OPCAgentSample.Kpi;
 using OPCAgentSample.Server.Demo;
-using OPCAgentSample.Server.MasterData;
 using OPCAgentSample.Server.Live;
+using OPCAgentSample.Server.MasterData;
 
 namespace OPCAgentSample.Server.Mcp;
 
@@ -35,7 +35,7 @@ public sealed class LiveTools(
         + "zusammenhängen – die Ursachenkette (z. B. RT-04 → OF-02 → VP-02: nur das Problem am Anfang der Kette ist eigenständig). "
         + "Das ist der richtige erste Schritt für 'Wie ist die Lage?'. Mit hallId 'Werk' (nur Produktionsleiter) kommen die Hallen A bis C "
         + "mit ihrer OEE der Kalenderwoche. Nächster Schritt: get_machine_status für Details einer Station, get_active_alarms für Meldungen.")]
-    public async Task<CallToolResult> GetHallOverview(
+    public async Task<CallToolResult> GetHallOverviewAsync(
         [Description("Halle: A, B, C oder Werk. Standard: Halle A (Produktionsleiter: Werk).")] string? hallId = null,
         [Description("Nur Stationen dieses Typs: Rundtisch, Ofen, Verpackung oder Puffer.")] string? stationType = null,
         CancellationToken cancellationToken = default)
@@ -86,7 +86,7 @@ public sealed class LiveTools(
         + "(Taktzeit, Presskraftaufbau, Füllgewicht, Formstandzeit), Materialreichweiten, bei Öfen Belegung und Zuordnungsregel, "
         + "aktive Alarme und die Störungen der laufenden Schicht. Beantwortet 'Warum hängt/steht Station X?'. "
         + "Nächster Schritt: get_process_trend für den Verlauf eines Prozesswerts, get_maintenance_due für Wartung der Station.")]
-    public async Task<CallToolResult> GetMachineStatus(
+    public async Task<CallToolResult> GetMachineStatusAsync(
         [Description("Station: RT-01 bis RT-04, OF-01, OF-02, PU-OFEN, VP-01 oder VP-02.")] string machineId,
         CancellationToken cancellationToken = default)
     {
@@ -142,7 +142,7 @@ public sealed class LiveTools(
         + "mit zeitraum alle, die in diesem Zeitraum aktiv waren, und zusätzlich die Liste 'Störungen und Alarme' mit Anzahl und "
         + "Stillstand in Minuten. Die Rolle bestimmt den Meldungsfilter (Schichtleiter alle, Hallenleiterin ab Warnung, Produktionsleiter "
         + "nur Eskalationen). Nächster Schritt: get_machine_status der betroffenen Station oder get_downtime_pareto für den Stillstand.")]
-    public async Task<CallToolResult> GetActiveAlarms(
+    public async Task<CallToolResult> GetActiveAlarmsAsync(
         [Description("Bereich: Halle A, Bereich oder Station. Standard: Halle A.")] string? scope = null,
         [Description("Mindestschwere: info, niedrig, mittel oder hoch. Standard: alle.")] string? minSeverity = null,
         [Description("Zeitraum, z. B. 'seit 06:00', 'aktuelle Schicht', 'heute', 'gestern'. Ohne Angabe: nur aktive Alarme.")] string? zeitraum = null,
@@ -208,7 +208,7 @@ public sealed class LiveTools(
         + "ein reines Füllstandsdashboard würde die begrenzende Verarbeitbarkeit übersehen. Ergebnis: je Material Füllstand, Verbrauch je Minute, "
         + "beide Reichweiten, Bewertung (< 60 min Warnung, < 15 min Problem) und die kürzeste Reichweite je Station. "
         + "Nächster Schritt: get_order_progress, um zu sehen, welcher Auftrag betroffen ist.")]
-    public async Task<CallToolResult> GetMaterialReach(
+    public async Task<CallToolResult> GetMaterialReachAsync(
         [Description("Bereich: Halle A, Pressen, Verpackung oder Station. Standard: Halle A.")] string? scope = null,
         CancellationToken cancellationToken = default)
     {
@@ -231,7 +231,7 @@ public sealed class LiveTools(
         + "Station (Halle B/C) teilen sich die Hallenkapazität und werden gemeinsam bewertet. Je Station außerdem Charge und Folgeauftrag. "
         + "Mit stufe 'Ofen → Verpackung' kommt der Materialfluss (Puffer, Ofenbelegung mit Zuordnungsregel, Verpackung). "
         + "Nächster Schritt: get_oee oder compare, um die Ursache zu klären.")]
-    public async Task<CallToolResult> GetOrderProgress(
+    public async Task<CallToolResult> GetOrderProgressAsync(
         [Description("Station oder Liste von Stationen, z. B. RT-03 oder [\"RT-01\",\"RT-02\"].")] JsonElement? machineId = null,
         [Description("Auftragsnummer, z. B. 4711.")] string? orderId = null,
         [Description("Bereich: Halle A, Halle B, Werk oder Station. Standard: die Sicht der Rolle.")] JsonElement? scope = null,
@@ -285,7 +285,7 @@ public sealed class LiveTools(
         + "dem letzten Wert (Mittel der letzten 5 Minuten) und einer Driftbewertung: ob der Wert dauerhaft vom Ausgangswert abweicht, ab wann "
         + "(Beginn ca.) und wie stark. Bei Takt und Presskraftaufbau auch den Verlust in Stück bis Schichtende. Mehrere Stationen sind möglich, "
         + "z. B. um eine gemeinsame Ursache zu prüfen. Nächster Schritt: get_condition_warnings oder get_maintenance_due.")]
-    public async Task<CallToolResult> GetProcessTrend(
+    public async Task<CallToolResult> GetProcessTrendAsync(
         [Description("Station oder Liste von Stationen, z. B. RT-04 oder [\"RT-01\",\"RT-02\"].")] JsonElement machineId,
         [Description("Variable: Taktzeit, Presskraft, Presskraftaufbau, Füllgewicht, Dicke, Belegung, Temperatur, Temperaturprofil, Füllstand, Öltemperatur ...")] string variable,
         [Description("Zeitraum, z. B. '06:00-jetzt', 'aktuelle Schicht', 'heute', '24 h'. Standard: aktuelle Schicht.")] string? zeitraum = null,
@@ -326,7 +326,7 @@ public sealed class LiveTools(
         + "(z. B. Presskraftaufbau an RT-04), Formstandzeit ab 90 %, Füllgewicht außerhalb der Warngrenze, Taktzeit über Soll, knappes Material, "
         + "volle Öfen. Je Eintrag Station, Art, Wert, Bewertung und seit wann. Nächster Schritt: get_maintenance_due für passende Wartungstermine "
         + "oder get_process_trend für den Verlauf.")]
-    public async Task<CallToolResult> GetConditionWarnings(
+    public async Task<CallToolResult> GetConditionWarningsAsync(
         [Description("Bereich: Halle A, Bereich oder Station. Standard: Halle A.")] string? scope = null,
         CancellationToken cancellationToken = default)
     {

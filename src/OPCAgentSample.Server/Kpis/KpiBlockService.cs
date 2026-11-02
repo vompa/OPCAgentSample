@@ -15,7 +15,7 @@ public sealed class KpiBlockService(RollupReader reader)
 {
     public const string SourceLabel = "Redis";
 
-    private static readonly IReadOnlyList<string> s_stations = [.. PlantLayout.HallAStations.Select(s => s.Id)];
+    private static readonly IReadOnlyList<string> Stations = [.. PlantLayout.HallAStations.Select(s => s.Id)];
 
     public async Task<KpiBlockResult> GetAsync(ProductionPeriod period, CancellationToken cancellationToken = default)
     {
@@ -28,7 +28,7 @@ public sealed class KpiBlockService(RollupReader reader)
             PeriodKind.Week => RollupLevel.Week,
             _ => throw new ArgumentException("Stundenblöcke gibt es nicht; Kennzahlen liegen je Schicht, Tag und Woche vor.", nameof(period)),
         };
-        var stored = await reader.ReadBlockAsync(s_stations, level, period.Key);
+        var stored = await reader.ReadBlockAsync(Stations, level, period.Key);
         return new KpiBlockResult(stored.Block, !stored.IsOpen, SourceLabel);
     }
 }

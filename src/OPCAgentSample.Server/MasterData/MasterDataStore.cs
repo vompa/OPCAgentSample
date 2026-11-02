@@ -12,12 +12,12 @@ namespace OPCAgentSample.Server.MasterData;
 /// </summary>
 public sealed class MasterDataStore(IConnectionMultiplexer redis) : IDisposable
 {
-    private static readonly string[] s_types =
+    private static readonly string[] Types =
     [
         "article", "mixture", "batch", "mould", "order", "cost", "maint:plan", "maint:hist", "role", "user", "rule", "holiday", "calendar",
     ];
 
-    private static readonly JsonSerializerOptions s_json = new(JsonSerializerDefaults.Web) { Converters = { new JsonStringEnumConverter() } };
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) { Converters = { new JsonStringEnumConverter() } };
 
     private readonly SemaphoreSlim _gate = new(1, 1);
     private MasterDataSnapshot? _current;
@@ -92,18 +92,18 @@ public sealed class MasterDataStore(IConnectionMultiplexer redis) : IDisposable
     {
         var key = RedisKeys.MasterData(type);
         _ = batch.KeyDeleteAsync(key);
-        return batch.HashSetAsync(key, [.. items.Select(i => new HashEntry(id(i), JsonSerializer.Serialize(i, s_json)))]);
+        return batch.HashSetAsync(key, [.. items.Select(i => new HashEntry(id(i), JsonSerializer.Serialize(i, Json)))]);
     }
 
     private static async Task<MasterDataSnapshot> LoadAsync(IDatabase database)
     {
         var batch = database.CreateBatch();
-        var tasks = s_types.ToDictionary(type => type, type => batch.HashGetAllAsync(RedisKeys.MasterData(type)));
+        var tasks = Types.ToDictionary(type => type, type => batch.HashGetAllAsync(RedisKeys.MasterData(type)));
         batch.Execute();
         await Task.WhenAll(tasks.Values);
 
         List<T> Read<T>(string type) =>
-            [.. tasks[type].Result.OrderBy(e => (string)e.Name!, StringComparer.Ordinal).Select(e => JsonSerializer.Deserialize<T>(e.Value.ToString(), s_json)!)];
+            [.. tasks[type].Result.OrderBy(e => (string)e.Name!, StringComparer.Ordinal).Select(e => JsonSerializer.Deserialize<T>(e.Value.ToString(), Json)!)];
 
         return new MasterDataSnapshot
         {

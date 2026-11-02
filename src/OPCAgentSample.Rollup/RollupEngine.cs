@@ -25,7 +25,7 @@ namespace OPCAgentSample.Rollup;
 /// </remarks>
 public sealed partial class RollupEngine(IConnectionMultiplexer redis, IRollupContextSource contextSource) : IDisposable
 {
-    private static readonly TimeSpan s_fineWindow = TimeSpan.FromDays(2);
+    private static readonly TimeSpan FineWindow = TimeSpan.FromDays(2);
 
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly RollupReader _reader = new(redis);
@@ -154,7 +154,7 @@ public sealed partial class RollupEngine(IConnectionMultiplexer redis, IRollupCo
 
         var run = _running?.Period.Key == shift.Key ? _running : null;
         var work = new WindowWork();
-        var fineFrom = horizonUtc - s_fineWindow;
+        var fineFrom = horizonUtc - FineWindow;
         foreach (var record in records)
         {
             Consume(record, context, run, shift, work, fineFrom);

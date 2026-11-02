@@ -18,7 +18,7 @@ public sealed class SharedHistory
 {
     public static readonly string[] OeeStations = ["RT-01", "RT-02", "RT-03", "RT-04", "VP-01", "VP-02"];
 
-    private static readonly Lazy<SharedHistory> s_instance = new(() => new SharedHistory(), LazyThreadSafetyMode.ExecutionAndPublication);
+    private static readonly Lazy<SharedHistory> LazyInstance = new(() => new SharedHistory(), LazyThreadSafetyMode.ExecutionAndPublication);
 
     private SharedHistory()
     {
@@ -32,7 +32,7 @@ public sealed class SharedHistory
         GenerationTime = watch.Elapsed;
     }
 
-    public static SharedHistory Instance => s_instance.Value;
+    public static SharedHistory Instance => LazyInstance.Value;
 
     public ScenarioDefinition Scenario { get; }
 

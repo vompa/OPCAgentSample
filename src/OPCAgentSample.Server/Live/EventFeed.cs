@@ -25,8 +25,8 @@ public sealed record StreamedFeedEntry(string Id, FeedEntry Entry);
 public sealed partial class EventFeed(RollupReader reader, RedisAccess redis, ShiftCalendar calendar)
 {
     private const string HallId = PlantLayout.HallA;
-    private static readonly TimeSpan s_streamTtl = TimeSpan.FromHours(48);
-    private static readonly JsonSerializerOptions s_json = new(JsonSerializerDefaults.Web);
+    private static readonly TimeSpan StreamTtl = TimeSpan.FromHours(48);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     /// <summary>Schreibt Meldungsstrom des Produktionstags und aktive Alarme neu nach Redis.</summary>
     public async Task SyncAsync(DateTimeOffset untilUtc, CancellationToken cancellationToken)
@@ -118,7 +118,7 @@ public sealed partial class EventFeed(RollupReader reader, RedisAccess redis, Sh
             database => database.SortedSetRangeByRankAsync(RedisKeys.ActiveAlarms(HallId), order: Order.Descending), [], "alarms read");
         if (members.Length > 0)
         {
-            return [.. members.Select(m => JsonSerializer.Deserialize<ActiveAlarm>(m.ToString(), s_json)!)];
+            return [.. members.Select(m => JsonSerializer.Deserialize<ActiveAlarm>(m.ToString(), Json)!)];
         }
 
         var active = await LoadActiveAsync(nowUtc, cancellationToken);
@@ -151,7 +151,7 @@ public sealed partial class EventFeed(RollupReader reader, RedisAccess redis, Sh
                 ], messageId: string.Create(CultureInfo.InvariantCulture, $"{milliseconds}-{sequence}"));
             }
 
-            _ = transaction.KeyExpireAsync(key, s_streamTtl);
+            _ = transaction.KeyExpireAsync(key, StreamTtl);
             await transaction.ExecuteAsync();
         }, "feed write");
 
@@ -164,7 +164,7 @@ public sealed partial class EventFeed(RollupReader reader, RedisAccess redis, Sh
             if (active.Count > 0)
             {
                 _ = transaction.SortedSetAddAsync(key,
-                    [.. active.Select(a => new SortedSetEntry(JsonSerializer.Serialize(ToActive(a), s_json), (int)a.Severity))]);
+                    [.. active.Select(a => new SortedSetEntry(JsonSerializer.Serialize(ToActive(a), Json), (int)a.Severity))]);
             }
 
             await transaction.ExecuteAsync();

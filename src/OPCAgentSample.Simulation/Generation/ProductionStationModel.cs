@@ -13,13 +13,13 @@ namespace OPCAgentSample.Simulation.Generation;
 internal sealed class ProductionStationModel
 {
     private const double KgPerGram = 0.001;
-    private static readonly TimeSpan s_mixtureInterval = TimeSpan.FromMinutes(160);
-    private static readonly TimeSpan s_mixturePotLife = TimeSpan.FromHours(4);
+    private static readonly TimeSpan MixtureInterval = TimeSpan.FromMinutes(160);
+    private static readonly TimeSpan MixturePotLife = TimeSpan.FromHours(4);
     private const double MixtureKilogramsPerDelivery = 340;
     private const int DeliveriesPerShift = 3;
     private const int MaxCachedCycleRuns = 4;
-    private static readonly TimeSpan s_shippingLookback = TimeSpan.FromDays(4);
-    private static readonly TimeSpan s_orderHorizon = TimeSpan.FromDays(21);
+    private static readonly TimeSpan ShippingLookback = TimeSpan.FromDays(4);
+    private static readonly TimeSpan OrderHorizon = TimeSpan.FromDays(21);
 
     private readonly ScenarioDefinition _scenario;
     private readonly ProductionShiftIndex _shifts;
@@ -134,7 +134,7 @@ internal sealed class ProductionStationModel
         {
             // Versandmeldungen können Paletten früherer Schichten betreffen.
             var window = new TimeWindow(fromUtc, untilUtc);
-            foreach (var run in RunsBetween(fromUtc - s_shippingLookback, untilUtc))
+            foreach (var run in RunsBetween(fromUtc - ShippingLookback, untilUtc))
             {
                 records.AddRange(PackagingTrace.Pallets(_scenario, this, run, ovens, window));
             }
@@ -339,7 +339,7 @@ internal sealed class ProductionStationModel
 
     private DateTimeOffset? FindQuantityReached(DateTimeOffset startUtc, DateTimeOffset endUtc, int quantity)
     {
-        var horizon = startUtc + s_orderHorizon;
+        var horizon = startUtc + OrderHorizon;
         var until = endUtc < horizon ? endUtc : horizon;
         var produced = 0;
         foreach (var run in RunsBetween(startUtc, until))
@@ -435,9 +435,9 @@ internal sealed class ProductionStationModel
                 : new TimeWindow(scripted[0].DeliveredUtc, scripted[^1].ProcessableUntilUtc);
             var periodic = _shifts.Between(_scenario.HistoryStartUtc, _scenario.DemoTimeUtc + TimeSpan.FromDays(21))
                 .SelectMany(shift => Enumerable.Range(0, DeliveriesPerShift)
-                    .Select(i => shift.StartUtc + (s_mixtureInterval * i)))
+                    .Select(i => shift.StartUtc + (MixtureInterval * i)))
                 .Where(at => !span.Contains(at))
-                .Select(at => new MixtureDeliveryInfo(at, MixtureKilogramsPerDelivery, at + s_mixturePotLife));
+                .Select(at => new MixtureDeliveryInfo(at, MixtureKilogramsPerDelivery, at + MixturePotLife));
             _mixtureDeliveries = [.. periodic
                 .Concat(scripted.Select(d => new MixtureDeliveryInfo(d.DeliveredUtc, d.Kilograms, d.ProcessableUntilUtc)))
                 .OrderBy(d => d.DeliveredUtc)];

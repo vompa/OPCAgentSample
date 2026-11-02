@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using OPCAgentSample.Domain;
-using OPCAgentSample.Server.Demo;
 using OPCAgentSample.Server.Observability;
 using OPCAgentSample.Server.Security;
 
@@ -28,10 +27,10 @@ public static class McpAuditFilter
 
             if (context.MatchedPrimitive is McpServerTool { ProtocolTool.Annotations.ReadOnlyHint: not true })
             {
-                const string message = "Dieses Tool ist nicht als nur lesend markiert und wird nicht ausgeführt: Der Server steuert keine Maschinen.";
-                await audit.RecordAsync(AuditChannels.Mcp, user, action, arguments, AuditOutcomes.Denied, message, cancellationToken);
+                const string Message = "Dieses Tool ist nicht als nur lesend markiert und wird nicht ausgeführt: Der Server steuert keine Maschinen.";
+                await audit.RecordAsync(AuditChannels.Mcp, user, action, arguments, AuditOutcomes.Denied, Message, cancellationToken);
                 telemetry.Complete(AppTelemetry.Results.Denied);
-                return ErrorResult(message);
+                return ErrorResult(Message);
             }
 
             try

@@ -2,7 +2,6 @@ using System.ComponentModel;
 using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using OPCAgentSample.Domain;
 using OPCAgentSample.Rollup;
 using OPCAgentSample.Server.Demo;
 
@@ -27,7 +26,7 @@ public sealed class TraceAndActionTools(
         + "Ofencharge oder Palette aus auch rückwärts bis zur Mischungscharge. Die Zusammenfassung nennt, wie viele Kartons Scheiben der Charge enthalten "
         + "und wie viele davon noch nicht ausgeliefert sind (Sperre oder Rückruf möglich). Eine Palette kann auch Scheiben anderer Chargen enthalten; "
         + "das ist je Palette vermerkt. Nächster Schritt: get_process_trend, um die Qualitätsabweichung der Charge zu belegen.")]
-    public async Task<CallToolResult> TraceBatch(
+    public async Task<CallToolResult> TraceBatchAsync(
         [Description("Mischungscharge (M-2410-17), Ofencharge oder Palette aus einem früheren Ergebnis.")] string charge,
         CancellationToken cancellationToken = default)
     {
@@ -140,7 +139,7 @@ public sealed class TraceAndActionTools(
         + "gefährdete Aufträge, Zuverlässigkeit). Je Fall Stufe, Priorität, Titel, Details, Frist und die Frage, mit der Claude ihn analysieren kann. "
         + "Die Rolle bestimmt die Fälle: Schichtleiter, Hallenleiterin oder Produktionsleiter sehen nur ihr eigenes Postfach. "
         + "Nächster Schritt: das Tool zur Frage des Falls, z. B. get_order_progress oder get_maintenance_due.")]
-    public async Task<CallToolResult> GetActionItems(
+    public async Task<CallToolResult> GetActionItemsAsync(
         [Description("Rolle: Schichtleiter, Hallenleiterin oder Produktionsleiter (oder shift_lead, hall_lead, production_lead). Standard: die eigene Rolle.")] string? role = null,
         [Description("Halle: A (Standard).")] string? hallId = null,
         CancellationToken cancellationToken = default)
