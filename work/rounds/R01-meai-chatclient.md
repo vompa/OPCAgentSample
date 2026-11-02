@@ -1,4 +1,4 @@
-Status: open
+Status: closed
 
 # Round R01 – meai-chatclient
 
@@ -55,6 +55,7 @@ Build decision (slice 03): Alle fünf Spalten der Checkliste gelten (Tests rot: 
 - Slice 03: Der Vergleich mit dem eingefrorenen Altbody (`Reference/legacy-request.json`, erzeugt aus `Build` vor dem Löschen) fand genau einen Unterschied ohne Ruling: die erste User-Nachricht als Textblock-Liste statt Zeichenkette (siehe Build decision). Tool-Schemata (`additionalProperties:false`) und `tool_choice` (`disable_parallel_tool_use:false`) sind wie in den Rulings; `thinking`, `output_config` und `metadata` stimmen überein.
 - Slice 03: Gegenüberstellung der Testfälle. `ClaudeRequestTests` (10) bleiben mit gleichen Namen und Erwartungen, lesen jetzt den Body des echten Adapters. `ModelStreamingTests` (3) bleiben mit denselben Stream-Ereignissen und Erwartungen (150/42/11798/20), laufen über `ChatClientModelClient`. `ModelReplyMappingTests` entfällt (Eingabe ist die ganze `Message` des Altcodes): `Stop_reason_is_the_plain_api_value_and_tool_use_blocks_are_mapped` → `Thinking_redacted_thinking_text_and_tool_use_from_a_real_stream_become_model_blocks` und `Raw_stop_reasons_map_to_the_stop_enum_and_stay_readable`; `Raw_stop_reason_maps_to_the_stop_enum_and_arrives_without_quotes` (7 Werte) → `Raw_stop_reasons_map_to_the_stop_enum_and_stay_readable` (dieselben 7 Werte); `A_missing_stop_reason_maps_to_other_with_a_null_raw_value` → gleichnamiger Test in `ChatClientModelClientTests`.
 - Slice 03: Im Worktree fehlt `src/OPCAgentSample.Server/wwwroot` (gebaute Weboberfläche, nicht eingecheckt); es wurde aus dem Hauptordner kopiert (nicht in Git), sonst wären die Web-Tests rot.
+- Rundenabschluss: Der erste Lauf der vollen Prüfkette auf `feature/meai-chatclient` war in `dotnet test` rot (93 von 670, alle `RedisTimeoutException`, quer durch Mcp-, Web-, Agent- und Collector-Tests); `ClaudeEndpointTests` allein danach grün (11 von 11), der zweite unveränderte Gesamtlauf grün (670 von 670) – Last, kein Fehler.
 
 ## Deferred minors
 - Slice 02 (Review): Fehlerabbildung ohne Testzeile für den `Other`-Zweig (`AnthropicException`-Basis) und ohne Prüfung der Meldungstexte – in Slice 03 nachziehen, wenn `AnthropicModelClient` entfällt.
