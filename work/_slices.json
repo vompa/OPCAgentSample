@@ -1,0 +1,125 @@
+[
+  {
+    "nr": "01",
+    "slug": "neutral-interface",
+    "name": "Neutrale Schnittstelle",
+    "goal": "Die Engine hängt nur noch an IAgentModelClient und ModelStop; das Verhalten bleibt gleich, der bisherige Anthropic-Aufruf läuft hinter der neuen Schnittstelle.",
+    "round": "R01",
+    "source": "R01 – AC-01, AC-03; Aufgaben 2, 3 und 5 der Anweisung",
+    "deps": "–",
+    "model": "sonnet",
+    "ids": "F-01–F-06",
+    "scope": [
+      "IAgentModelClient mit CreateAsync(AgentModelRequest, Action<string>?, CancellationToken) und AgentModelRequest(Tools, Turns, OwnerHash, AllowTools) ersetzen IClaudeModelClient",
+      "ModelReply bekommt ModelStop { Done, ToolCalls, MaxTokens, Refused, Other } und RawStopReason; Conclude nutzt das Enum, claude.stop_reason und LogStop nutzen RawStopReason",
+      "ClaudeRequest wird zu AgentPrompt mit SystemPrompt, QuestionText, OwnerHash; Build wandert vorerst nach AnthropicModelClient, das IAgentModelClient implementiert",
+      "AgentTestSupport und die Engine-Tests auf IAgentModelClient umstellen, inhaltlich unverändert"
+    ],
+    "mirror": [
+      "src/OPCAgentSample.Server/Agent/ClaudeAnswerEngine.cs:181 – Conclude, das Verhalten je Stopp-Grund",
+      "src/OPCAgentSample.Server/Agent/ModelClient.cs:60 – bisheriger Client"
+    ],
+    "files": [
+      "src/OPCAgentSample.Server/Agent/ModelClient.cs",
+      "src/OPCAgentSample.Server/Agent/ClaudeRequest.cs",
+      "src/OPCAgentSample.Server/Agent/AgentPrompt.cs",
+      "src/OPCAgentSample.Server/Agent/ClaudeAnswerEngine.cs",
+      "src/OPCAgentSample.Server/Agent/ClaudeRegistration.cs",
+      "tests/OPCAgentSample.Tests/Agent/"
+    ],
+    "not_building": [
+      "IChatClient, neue Pakete, Löschen von AnthropicModelClient"
+    ],
+    "acceptance": [
+      "Given ClaudeAnswerEngine.cs When nach Anthropic. gesucht wird Then gibt es keinen Treffer",
+      "Given end_turn oder stop_sequence When Conclude läuft Then gilt ModelStop.Done und die Karte entsteht wie bisher",
+      "Given refusal, max_tokens, pause_turn oder keinen Stopp-Grund When Conclude läuft Then entstehen Refused, TooLongAnswer bzw. UnexpectedStop wie bisher und claude.stop_reason trägt den Rohwert",
+      "Given alle Agent-Tests When sie laufen Then sind sie grün, ohne dass ein Testinhalt abgeschwächt wurde"
+    ],
+    "non_goals": "Anbieterwechsel; Änderungen an Karten, Limits, Quota oder Konfiguration"
+  },
+  {
+    "nr": "02",
+    "slug": "chatclient-adapter",
+    "name": "ChatClient-Adapter",
+    "goal": "ChatClientModelClient bildet AgentModelRequest und Modellantworten vollständig auf einen IChatClient ab, noch ohne dass die Registrierung ihn nutzt.",
+    "round": "R01",
+    "source": "R01 – AC-03, AC-04, AC-05; Aufgabe 1 und 4 der Anweisung sowie die Rulings",
+    "deps": "01",
+    "model": "sonnet",
+    "ids": "F-07–F-12",
+    "scope": [
+      "Direkte Paketreferenz Microsoft.Extensions.AI.Abstractions in der aufgelösten Version 10.8.3; das Paket Microsoft.Extensions.AI ist nicht nötig",
+      "ChatClientModelClient: Turns zu ChatMessage, Tools nach Name sortiert über AIFunctionFactory.CreateDeclaration, ToolMode, ResponseFormat, Streaming, Text-Deltas nur aus nicht leerem Antworttext",
+      "IModelRequestDialect mit AnthropicRequestDialect: Cache-Marker, Redacted Thinking, unveränderter Assistant-Text, Optionen über RawRepresentationFactory (Model, MaxTokens, Messages = [], Effort einschließlich max, Metadata.UserID), Rohwert des Stopp-Grunds",
+      "IModelErrorMapper mit AnthropicErrorMapper aus der heutigen Logik; OperationCanceledException bleibt unberührt",
+      "Usage: Input = InputTokenCount − CachedInputTokenCount − CacheCreationInputTokens, fehlende Werte 0",
+      "Ungültiges Tool-JSON (FunctionCallContent.Exception) ergibt ein Nicht-Objekt als Input, damit die Engine ihren bestehenden Fehlertext sendet",
+      "ChatClientModelClientTests mit Fake-IChatClient nach der Testliste der Anweisung"
+    ],
+    "mirror": [
+      "src/OPCAgentSample.Server/Agent/ModelClient.cs:70 – Fehlerabbildung",
+      "src/OPCAgentSample.Server/Agent/ClaudeRequest.cs:126 – Abbildung der Turns und Cache-Marker"
+    ],
+    "files": [
+      "src/OPCAgentSample.Server/Agent/ChatClientModelClient.cs",
+      "src/OPCAgentSample.Server/Agent/AnthropicRequestDialect.cs",
+      "src/OPCAgentSample.Server/Agent/AnthropicErrorMapper.cs",
+      "src/OPCAgentSample.Server/OPCAgentSample.Server.csproj",
+      "tests/OPCAgentSample.Tests/Agent/ChatClientModelClientTests.cs"
+    ],
+    "not_building": [
+      "Umschalten der Registrierung, Löschen von Alt-Code"
+    ],
+    "acceptance": [
+      "Given mehrere Tool-Ergebnisse When die Anfrage entsteht Then stehen sie in einer Nachricht und nur das letzte des letzten ToolResultsTurn trägt den Cache-Marker",
+      "Given ModelThinking und ModelRedactedThinking When sie über den echten Adapter gehen Then kommen thinking mit Signatur und redacted_thinking mit denselben Daten an",
+      "Given Claude:Effort=max When die Optionen entstehen Then ist OutputConfig.Effort Max und ChatOptions.Reasoning null",
+      "Given Input 100, Cache-Read 30, Cache-Write 20, Output 7 als Adapterwerte When die Nutzung abgebildet wird Then ergibt sich 50, 7, 30, 20",
+      "Given jede Fehlerart des SDK When sie im Stream auftritt Then entsteht dieselbe ModelFailureKind wie bisher",
+      "Given Reasoning-Text und Antworttext im Stream When sie eintreffen Then erreicht onTextDelta nur der Antworttext"
+    ],
+    "non_goals": "OpenAI, Azure OpenAI oder andere Anbieter; Prompt-Änderungen"
+  },
+  {
+    "nr": "03",
+    "slug": "switch-and-cleanup",
+    "name": "Umschalten und Alt-Code entfernen",
+    "goal": "Die Registrierung nutzt ChatClientModelClient, der alte Client ist weg, und ein Vergleichstest belegt die gleiche Anfrage an die API.",
+    "round": "R01",
+    "source": "R01 – AC-01, AC-02; Aufgaben 6 und 7 der Anweisung",
+    "deps": "02",
+    "model": "sonnet",
+    "ids": "F-13–F-18",
+    "scope": [
+      "Zuerst Vergleichstest: JSON der alten Build-Anfrage als eingefrorener Sollwert gegen die Anfrage des echten Adapters über einen Stub-HttpMessageHandler, ohne Key; erlaubte Unterschiede nur laut Rulings",
+      "Registrierung: AnthropicClient, AsIChatClient(options.Model, options.MaxTokens) als Singleton erst beim Auflösen; IAgentModelClient, IModelRequestDialect, IModelErrorMapper; Referenz-Engine ohne Key unverändert",
+      "AnthropicModelClient und Build löschen",
+      "ClaudeRequestTests, ModelReplyMappingTests, ModelStreamingTests umschreiben; Gegenüberstellung aller bisherigen Testfälle in der Rundenakte unter Surprises festhalten"
+    ],
+    "mirror": [
+      "src/OPCAgentSample.Server/Agent/ClaudeRegistration.cs:21 – heutige Registrierung",
+      "tests/OPCAgentSample.Tests/Agent/ModelStreamingTests.cs:13 – echte Streaming-Ereignisse"
+    ],
+    "files": [
+      "src/OPCAgentSample.Server/Agent/ClaudeRegistration.cs",
+      "src/OPCAgentSample.Server/Agent/ModelClient.cs",
+      "src/OPCAgentSample.Server/Agent/AgentPrompt.cs",
+      "tests/OPCAgentSample.Tests/Agent/",
+      "README.md"
+    ],
+    "not_building": [
+      "Neue Konfigurationsschlüssel; Änderungen an MCP-Server, OPC-Anbindung oder Weboberfläche"
+    ],
+    "acceptance": [
+      "Given Registrierung und Agent-Code When nach Anthropic-Typen gesucht wird Then finden sie sich nur in ClaudeRegistration.cs, AnthropicErrorMapper.cs und AnthropicRequestDialect.cs",
+      "Given derselbe Verlauf When der Vergleichstest läuft Then weicht das JSON nur in den per Ruling erlaubten Punkten ab",
+      "Given kein Key When der Server startet Then ist die Referenz-Engine aktiv wie bisher",
+      "Given die volle Prüfkette When sie läuft Then ist sie grün, und jeder bisherige Testfall hat eine Entsprechung"
+    ],
+    "manual": [
+      "Mit Key eine Frage in der Weboberfläche stellen: Karte erscheint, Überschrift streamt, LogUsage zeigt plausible Werte"
+    ],
+    "non_goals": "Neue Funktionen; Profile"
+  }
+]
