@@ -1348,8 +1348,10 @@
   }
 }
 
-/* ---- Querformat (844 x 390): einzeiliger Kopf, Navigation als Schiene links, Antwort links und Eingabe rechts ---- */
-@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+/* ---- Querformat (844 x 390): einzeiliger Kopf, Navigation als Schiene links, Antwort links und Eingabe rechts.
+   Seitenverhältnis statt orientation: landscape, denn mit interactive-widget=resizes-content wird das Hochformat bei
+   offener Tastatur (ca. 430 x 400) ebenfalls „landscape“ und bekäme sonst dieses Layout. ---- */
+@media (max-width: 900px) and (min-aspect-ratio: 3/2) and (max-height: 500px) {
   .app {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
