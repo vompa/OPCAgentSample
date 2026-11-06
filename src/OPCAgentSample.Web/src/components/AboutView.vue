@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useUiStore } from '@/stores/ui';
 import AccessForm from './AccessForm.vue';
+import DataFlowSchema from './DataFlowSchema.vue';
 import IconSvg from './IconSvg.vue';
 
 const REPO_URL = 'https://github.com/vompa/OPCAgentSample';
@@ -369,6 +370,7 @@ onBeforeUnmount(() => {
               <span class="about-fact-label">{{ fact.label }}</span>
             </li>
           </ul>
+          <DataFlowSchema />
           <ol class="about-flow" aria-label="Weg einer Antwort">
             <li v-for="step in FLOW" :key="step.tag" class="about-flow-step">
               <span class="about-flow-tag">{{ step.tag }}</span>
