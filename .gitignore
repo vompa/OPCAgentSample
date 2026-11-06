@@ -30,6 +30,16 @@ src/OPCAgentSample.Server/wwwroot/
 ## Oberfläche für Azure Static Web Apps (WEB_OUT_DIR=dist)
 src/OPCAgentSample.Web/dist/
 
-## Arbeitsdateien von vibe-coding
+## Archiv work/ (vibe-coding bis R01)
 work/_raw/
-.slice-loop/
+
+## Laufdateien von Code Guardian
+.code-guardian-todo*
+.code-guardian-evidence/
+.code-guardian-propagation*
+.code-guardian-scope
+.code-guardian-teardown*
+.code-guardian-autopilot.md
+.code-guardian-*-report.md
+.audit-log.md
+.task-journal.md
