@@ -12,9 +12,9 @@ import { apiMock, resetApiMock } from '@/test/apiMock';
 import { CARD, FAVORITES, ME, REPORTS_SUMMARY, TOOL_CALLS, sessionPackage } from '@/test/fixtures';
 import { setSleep } from '@/utils/sleep';
 import { PREVIEW_NOTICE, useConversationStore } from './conversation';
-import { setLiveConnectionFactory, useAppStore } from './app';
+import { QUEUE_FAILED_TEXT, setLiveConnectionFactory, useAppStore } from './app';
 import { useAuthStore } from './auth';
-import { WAKE_DEADLINE_MS, useBackendStore, waitDelay } from './backend';
+import { WAKE_DEADLINE_MS, WAKE_SLOW_MS, useBackendStore, waitDelay } from './backend';
 import { useFavoritesStore } from './favorites';
 import { useIdentityStore } from './identity';
 import { useInboxStore } from './inbox';
@@ -197,6 +197,29 @@ describe('Aufwachen des Backends', () => {
     }
   });
 
+  it('meldet einen ungewöhnlich langen Start (Demo evtl. pausiert) und nimmt die Meldung zurück, sobald die Halle antwortet', async () => {
+    await signedIn();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      const backend = useBackendStore();
+      const slowDuringWake: boolean[] = [];
+      let calls = 0;
+      apiMock.health.mockImplementation(() => {
+        slowDuringWake.push(backend.slow);
+        calls += 1;
+        if (calls === 4) return Promise.resolve({ status: 'healthy' });
+        vi.setSystemTime(Date.now() + WAKE_SLOW_MS / 2 - 5_000); // je Versuch 25 s
+        return Promise.reject(new TypeError('Failed to fetch'));
+      });
+
+      expect(await backend.wake()).toBe(true);
+      expect(slowDuringWake).toEqual([false, false, false, true]);
+      expect(backend.slow).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('wartet einen laufenden Anmeldeversuch ab und wertet einen ungültigen Code als Abbruch', async () => {
     const auth = useAuthStore();
     await auth.check(); // keine Sitzung
@@ -320,6 +343,43 @@ describe('Vorschau und Wechsel auf Live-Daten', () => {
     await vi.waitFor(() => expect(conversation.pending).toBeNull());
     expect(conversation.turns.at(-1)?.question).toBe('Eine ganz freie Frage?');
     app.stopLive();
+  });
+
+  it('gibt eine wartende Frage frei, wenn die Halle innerhalb der Frist nicht bereit wird (Eingabe bleibt nicht blockiert)', async () => {
+    await signedIn();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      let failHealth: () => void = () => {};
+      apiMock.health.mockImplementation(
+        () =>
+          new Promise((_resolve, reject) => {
+            failHealth = () => {
+              vi.setSystemTime(Date.now() + WAKE_DEADLINE_MS + 1);
+              reject(new ApiError(503, 'Service Unavailable'));
+            };
+          }),
+      );
+      const app = useAppStore();
+      await app.init();
+      const conversation = useConversationStore();
+
+      await conversation.ask('Eine ganz freie Frage?');
+      expect(conversation.pending?.queued).toBe(true);
+      expect(conversation.busy).toBe(true);
+
+      failHealth();
+      await vi.waitFor(() => expect(useBackendStore().phase).toBe('failed'));
+      await vi.waitFor(() => expect(conversation.busy).toBe(false));
+      expect(conversation.pending).toMatchObject({
+        question: 'Eine ganz freie Frage?',
+        queued: false,
+        error: QUEUE_FAILED_TEXT,
+      });
+      expect(conversation.queuedQuestion).toBeNull();
+      expect(apiMock.ask).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('behält im Browser beantwortete Vorschau-Antworten, wenn die Live-Daten kommen', async () => {
