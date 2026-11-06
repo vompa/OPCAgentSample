@@ -4,8 +4,8 @@ name: Uptime
 #
 # Die Demo besteht aus zwei Teilen mit unterschiedlichem Verhalten:
 #   Oberfläche (Static Web App, https://opc.vompa.dev)  immer da, kostenlos: täglich prüfen.
-#   Backend (Container App, https://api.opc.vompa.dev)   schläft im Leerlauf; jede Prüfung weckt es für etwa eine Stunde
-#                                                        (cooldownPeriod) und kostet rund 0,16 USD je Laufstunde:
+#   Backend (Container App, https://api.opc.vompa.dev)   schläft im Leerlauf; jede Prüfung weckt es für etwa 15 Minuten
+#                                                        (cooldownPeriod) und kostet rund 0,04 USD je Prüfung:
 #                                                        nur wöchentlich, mit Kaltstart.
 #
 # Hinweis: GitHub deaktiviert geplante Workflows nach 60 Tagen ohne Aktivität im Repository. Dann im Actions-Tab den

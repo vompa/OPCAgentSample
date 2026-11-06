@@ -183,6 +183,18 @@ export const useConversationStore = defineStore('conversation', () => {
     pending.value = { question, toolCalls: [], card: null, draft: null, error: null, queued: true };
   }
 
+  /**
+   * Die Halle ist innerhalb der Frist nicht bereit geworden: Die wartende Frage wird nicht mehr automatisch gesendet und
+   * blockiert das Eingabefeld nicht länger. Sie bleibt mit Hinweis und „Erneut fragen“ im Verlauf stehen.
+   */
+  function abandonQueue(message: string): void {
+    if (!queuedQuestion.value) return;
+    queuedQuestion.value = null;
+    queuedReport.value = null;
+    busy.value = false;
+    if (pending.value) pending.value = { ...pending.value, queued: false, error: message };
+  }
+
   /** Sendet die wartende Frage, sobald die Halle bereit ist (Live-Daten sind geladen). */
   async function flushQueue(): Promise<void> {
     const question = queuedQuestion.value;
@@ -365,6 +377,7 @@ export const useConversationStore = defineStore('conversation', () => {
     clear,
     ask,
     flushQueue,
+    abandonQueue,
     askFrom,
     refreshRecentQuestions,
     startNewSession,
