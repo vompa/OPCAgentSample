@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Channels;
@@ -17,7 +16,7 @@ namespace OPCAgentSample.Server.Agent;
 /// Jeder Tool-Aufruf läuft über den eigenen MCP-Endpunkt mit der Rolle des Fragenden (Scoping und Audit wie bei externem Zugriff).
 /// </summary>
 public sealed partial class ClaudeAnswerEngine(
-    IClaudeModelClient model,
+    IAgentModelClient model,
     IAgentToolbox toolbox,
     ClaudeQuota quota,
     IOptions<ClaudeOptions> options,
@@ -78,7 +77,7 @@ public sealed partial class ClaudeAnswerEngine(
         AskRequest request, string ownerKey, Run run, [EnumeratorCancellation] CancellationToken token, CancellationToken clientToken)
     {
         var settings = options.Value;
-        var ownerHash = ClaudeRequest.OwnerHash(ownerKey);
+        var ownerHash = AgentPrompt.OwnerHash(ownerKey);
         var plantNow = clock.UtcNow;
         var stamp = DataStamp(plantNow);
 
@@ -92,7 +91,7 @@ public sealed partial class ClaudeAnswerEngine(
         await using var connection = connected.Connection!;
         var tools = connected.Tools!;
         var toolNames = tools.Select(t => t.Name).ToHashSet(StringComparer.Ordinal);
-        var turns = new List<AgentTurn> { new UserQuestionTurn(ClaudeRequest.QuestionText(request.RoleId, Fmt.Stamp(plantNow), request.Question, request.Report?.Text)) };
+        var turns = new List<AgentTurn> { new UserQuestionTurn(AgentPrompt.QuestionText(request.RoleId, Fmt.Stamp(plantNow), request.Question, request.Report?.Text)) };
 
         for (var round = 1; round <= settings.MaxRounds + 1; round++)
         {
@@ -102,7 +101,7 @@ public sealed partial class ClaudeAnswerEngine(
             // (Überschrift zuerst) schon vor dem Ende des Aufrufs als Schritt hinausgeht.
             var deltas = Channel.CreateUnbounded<string>(new UnboundedChannelOptions { SingleReader = true });
             var callTask = CallModelStreamedAsync(
-                ClaudeRequest.Build(settings, tools, turns, ownerHash, allowTools: !wrapUp), round, run, deltas.Writer, token, clientToken);
+                new AgentModelRequest(tools, turns, ownerHash, AllowTools: !wrapUp), round, run, deltas.Writer, token, clientToken);
             var extractor = new AnswerDraftExtractor();
             await foreach (var delta in deltas.Reader.ReadAllAsync(CancellationToken.None))
             {
@@ -182,20 +181,20 @@ public sealed partial class ClaudeAnswerEngine(
     {
         AnswerReadyStep Ready(AnswerCard card) => run.Ready(card);
 
-        switch (reply.StopReason)
+        switch (reply.Stop)
         {
-            case "refusal":
-                LogStop("refusal");
+            case ModelStop.Refused:
+                LogStop(reply.RawStopReason ?? "(keiner)");
                 return Ready(AgentCards.Refused(stamp));
-            case "max_tokens":
-                LogStop("max_tokens");
+            case ModelStop.MaxTokens:
+                LogStop(reply.RawStopReason ?? "(keiner)");
                 return Ready(AgentCards.TooLongAnswer(stamp));
-            case "tool_use" when !wrapUp && reply.Blocks.OfType<ModelToolUse>().Any():
+            case ModelStop.ToolCalls when !wrapUp && reply.Blocks.OfType<ModelToolUse>().Any():
                 return null;
-            case "end_turn" or "tool_use" or "stop_sequence":
+            case ModelStop.Done or ModelStop.ToolCalls:
                 break;
             default:
-                LogStop(reply.StopReason ?? "(keiner)");
+                LogStop(reply.RawStopReason ?? "(keiner)");
                 return Ready(AgentCards.UnexpectedStop(stamp));
         }
 
@@ -250,7 +249,7 @@ public sealed partial class ClaudeAnswerEngine(
 
     /// <summary>Wie <see cref="CallModelTracedAsync"/>, schließt aber am Ende den Kanal der Text-Deltas (auch bei Fehler und Abbruch).</summary>
     private async Task<ModelCallResult> CallModelStreamedAsync(
-        Anthropic.Models.Messages.MessageCreateParams request, int round, Run run, ChannelWriter<string> deltas,
+        AgentModelRequest request, int round, Run run, ChannelWriter<string> deltas,
         CancellationToken token, CancellationToken clientToken)
     {
         try
@@ -265,7 +264,7 @@ public sealed partial class ClaudeAnswerEngine(
 
     /// <summary>Ein Modellaufruf als Span <c>claude.model_call</c> (Modell, Runde, Tokens, Stopp-Grund) samt Token-Metrik.</summary>
     private async Task<ModelCallResult> CallModelTracedAsync(
-        Anthropic.Models.Messages.MessageCreateParams request, int round, Run run, Action<string>? onTextDelta,
+        AgentModelRequest request, int round, Run run, Action<string>? onTextDelta,
         CancellationToken token, CancellationToken clientToken)
     {
         var modelName = options.Value.Model;
@@ -277,7 +276,7 @@ public sealed partial class ClaudeAnswerEngine(
         if (call.Reply is { } reply)
         {
             var usage = reply.Usage;
-            span?.SetTag("claude.stop_reason", reply.StopReason);
+            span?.SetTag("claude.stop_reason", reply.RawStopReason);
             span?.SetTag("claude.tokens.input", usage.InputTokens);
             span?.SetTag("claude.tokens.output", usage.OutputTokens);
             span?.SetTag("claude.tokens.cache_read", usage.CacheReadTokens);
@@ -294,7 +293,7 @@ public sealed partial class ClaudeAnswerEngine(
     }
 
     private async Task<ModelCallResult> CallModelAsync(
-        Anthropic.Models.Messages.MessageCreateParams request, Action<string>? onTextDelta, CancellationToken token, CancellationToken clientToken)
+        AgentModelRequest request, Action<string>? onTextDelta, CancellationToken token, CancellationToken clientToken)
     {
         try
         {

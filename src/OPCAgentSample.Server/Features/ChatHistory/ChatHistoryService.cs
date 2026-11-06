@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using OPCAgentSample.Server.Configuration;
@@ -30,7 +29,7 @@ public sealed class ChatHistoryService(
     private const string NewSessionTitle = "Neue Sitzung";
     private const string TurnField = "d";
 
-    private static readonly JsonSerializerOptions s_json = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     private IDatabase Database => redis.GetDatabase();
 
@@ -106,7 +105,7 @@ public sealed class ChatHistoryService(
             turn.InputTokens, turn.OutputTokens, turn.CacheReadTokens, turn.CacheWriteTokens, turn.DurationMs);
 
         var transaction = database.CreateTransaction();
-        _ = transaction.StreamAddAsync(RedisKeys.ChatTurns(sessionId), TurnField, JsonSerializer.Serialize(stored, s_json));
+        _ = transaction.StreamAddAsync(RedisKeys.ChatTurns(sessionId), TurnField, JsonSerializer.Serialize(stored, Json));
         _ = transaction.KeyExpireAsync(RedisKeys.ChatTurns(sessionId), Lifetime);
         _ = transaction.HashSetAsync(sessionKey, "last", now.UtcTicks);
         if (sequence == 1) _ = transaction.HashSetAsync(sessionKey, "title", Shorten(question));
@@ -236,7 +235,7 @@ public sealed class ChatHistoryService(
 
         var rows = await Database.StreamRangeAsync(RedisKeys.ChatTurns(sessionId));
         var turns = rows
-            .Select(r => JsonSerializer.Deserialize<StoredTurn>(r.Values.First(v => v.Name == TurnField).Value.ToString(), s_json)!)
+            .Select(r => JsonSerializer.Deserialize<StoredTurn>(r.Values.First(v => v.Name == TurnField).Value.ToString(), Json)!)
             .OrderBy(t => t.Sequence)
             .Select(ToRecord)
             .ToList();

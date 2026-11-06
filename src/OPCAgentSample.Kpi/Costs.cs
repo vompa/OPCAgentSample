@@ -1,5 +1,3 @@
-using OPCAgentSample.Domain.History;
-
 namespace OPCAgentSample.Kpi;
 
 /// <summary>

@@ -34,7 +34,7 @@ public sealed partial class LiveStreamService(
 
     private const string IdleJson = "{\"reason\":\"max-duration\"}";
 
-    private static readonly JsonSerializerOptions s_json = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     public async Task RunAsync(
         RoleContext context, string? lastEventId, LiveSubscription subscription, SseWriter writer, CancellationToken cancellationToken)
@@ -153,7 +153,7 @@ public sealed partial class LiveStreamService(
         _ => Rating.Info,
     };
 
-    private static string Serialize<T>(T value) => JsonSerializer.Serialize(value, s_json);
+    private static string Serialize<T>(T value) => JsonSerializer.Serialize(value, Json);
 
     /// <summary>Ein Fehler beim Berechnen (z. B. Datenbank kurz weg) beendet den Strom nicht; der nächste Anlass versucht es erneut.</summary>
     private async Task<T?> TryAsync<T>(Func<Task<T>> compute, string what)

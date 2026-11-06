@@ -1,3 +1,5 @@
+using Anthropic;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using OPCAgentSample.Server.Demo;
@@ -18,7 +20,18 @@ public static class ClaudeRegistration
         services.AddSingleton<IValidateOptions<ClaudeOptions>, ClaudeOptionsValidator>();
         services.TryAddSingletonTimeProvider();
 
-        services.TryAddSingleton<IClaudeModelClient, AnthropicModelClient>();
+        // Der Modellaufruf läuft über IChatClient; Anthropic-Typen stehen nur hier, im Dialekt und in der Fehlerabbildung.
+        // Beides entsteht erst beim Auflösen, also nie ohne Key; der Container entsorgt den AnthropicClient.
+        services.TryAddSingleton<IAnthropicClient>(provider =>
+            new AnthropicClient { ApiKey = provider.GetRequiredService<IOptions<ClaudeOptions>>().Value.ApiKey });
+        services.TryAddSingleton<IChatClient>(provider =>
+        {
+            var settings = provider.GetRequiredService<IOptions<ClaudeOptions>>().Value;
+            return provider.GetRequiredService<IAnthropicClient>().AsIChatClient(settings.Model, settings.MaxTokens);
+        });
+        services.TryAddSingleton<IModelRequestDialect, AnthropicRequestDialect>();
+        services.TryAddSingleton<IModelErrorMapper, AnthropicErrorMapper>();
+        services.TryAddSingleton<IAgentModelClient, ChatClientModelClient>();
         services.TryAddSingleton<IMcpLoopback, HttpMcpLoopback>();
         services.TryAddSingleton<InternalAgentKeys>();
         services.TryAddSingleton<IAgentToolbox, McpAgentToolbox>();

@@ -1,5 +1,3 @@
-using OPCAgentSample.Domain;
-
 namespace OPCAgentSample.Server.MasterData;
 
 /// <summary>Artikel (Trennscheibe) mit Durchmesser, Körnung und Dicke.</summary>

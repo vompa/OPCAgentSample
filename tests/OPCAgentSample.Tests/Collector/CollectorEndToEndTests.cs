@@ -3,7 +3,6 @@ using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAgentSample.Domain;
-using OPCAgentSample.Domain.History;
 using OPCAgentSample.Kpi;
 using OPCAgentSample.Rollup;
 using OPCAgentSample.Server.Collector;
@@ -29,9 +28,9 @@ public sealed class CollectorEndToEndTests(InfrastructureFixture infrastructure,
     /// <summary>Datenbank der Vorlage mit der Aufnahme der Generator-Quelle (siehe <see cref="InfrastructureFixture"/>).</summary>
     private const int TemplateDatabase = 14;
 
-    private static readonly string[] s_stations = [.. PlantLayout.HallAStations.Select(s => s.Id)];
+    private static readonly string[] Stations = [.. PlantLayout.HallAStations.Select(s => s.Id)];
 
-    private static readonly ShiftCalendar s_calendar = new();
+    private static readonly ShiftCalendar Calendar = new();
 
     [Fact]
     public async Task Full_ingestion_over_OPC_to_the_demo_clock_gives_the_same_counters_as_the_generator_source()
@@ -110,7 +109,7 @@ public sealed class CollectorEndToEndTests(InfrastructureFixture infrastructure,
         var builder = new KpiBlockBuilder(history.Calendar.WeekPeriodOf(until), history.Costs);
         builder.AddRange(history.Records);
         builder.AddRange(gap);
-        var stored = await sources.ReadBlockAsync(s_stations, RollupLevel.Week, "2026-W42");
+        var stored = await sources.ReadBlockAsync(Stations, RollupLevel.Week, "2026-W42");
         RollupAssert.Equivalent(builder.Snapshot(until), stored.Block, "Woche mit nachgeladener Lücke");
         Assert.Equal(until, services.Get<IDemoClock>().UtcNow);
     }
@@ -127,7 +126,7 @@ public sealed class CollectorEndToEndTests(InfrastructureFixture infrastructure,
         });
         await using var collector = await RunningCollector.StartAsync(services, live: false);
         var clock = services.Get<IDemoClock>();
-        var start = s_calendar.ToUtc(new DateTime(2026, 10, 15, 10, 5, 0));
+        var start = Calendar.ToUtc(new DateTime(2026, 10, 15, 10, 5, 0));
         Assert.IsType<OpcSimulationClock>(clock);
 
         await CollectorSettings.WaitForAsync(async () => services.Get<OpcSessionProvider>().Current is not null, "OPC-Verbindung");
@@ -173,13 +172,13 @@ public sealed class CollectorEndToEndTests(InfrastructureFixture infrastructure,
         foreach (var shift in shifts)
         {
             RollupAssert.Equivalent(
-                (await expected.ReadBlockAsync(s_stations, RollupLevel.Shift, shift.Key)).Block,
-                (await actual.ReadBlockAsync(s_stations, RollupLevel.Shift, shift.Key)).Block, shift.Key);
+                (await expected.ReadBlockAsync(Stations, RollupLevel.Shift, shift.Key)).Block,
+                (await actual.ReadBlockAsync(Stations, RollupLevel.Shift, shift.Key)).Block, shift.Key);
         }
 
         RollupAssert.Equivalent(
-            (await expected.ReadBlockAsync(s_stations, RollupLevel.Week, "2026-W42")).Block,
-            (await actual.ReadBlockAsync(s_stations, RollupLevel.Week, "2026-W42")).Block, "2026-W42");
+            (await expected.ReadBlockAsync(Stations, RollupLevel.Week, "2026-W42")).Block,
+            (await actual.ReadBlockAsync(Stations, RollupLevel.Week, "2026-W42")).Block, "2026-W42");
 
         var start = history.Scenario.HistoryStartUtc;
         Assert.Equal(
@@ -196,7 +195,7 @@ public sealed class CollectorEndToEndTests(InfrastructureFixture infrastructure,
     /// <summary>Gesamtzahl der Zustandswechsel in den Streams aller Stationen.</summary>
     private static async Task<long> StateChangeCountAsync(IDatabase redis)
     {
-        var lengths = await Task.WhenAll(s_stations.Select(station => redis.StreamLengthAsync(RollupKeys.StateStream(station))));
+        var lengths = await Task.WhenAll(Stations.Select(station => redis.StreamLengthAsync(RollupKeys.StateStream(station))));
         return lengths.Sum();
     }
 

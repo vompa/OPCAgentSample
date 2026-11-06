@@ -1,6 +1,5 @@
 using OPCAgentSample.Domain;
 using OPCAgentSample.Domain.History;
-using OPCAgentSample.Simulator.Model;
 
 namespace OPCAgentSample.Simulator.Live;
 

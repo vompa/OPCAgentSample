@@ -35,7 +35,7 @@ public readonly record struct QuotaDecision(bool Allowed, QuotaDenial Denial, lo
 /// </summary>
 public sealed class ClaudeQuota(IQuotaCounters counters, IOptions<ClaudeOptions> options, TimeProvider time)
 {
-    private static readonly TimeSpan s_expiry = TimeSpan.FromHours(48);
+    private static readonly TimeSpan Expiry = TimeSpan.FromHours(48);
 
     private DateOnly Today => DateOnly.FromDateTime(time.GetUtcNow().UtcDateTime);
 
@@ -50,18 +50,18 @@ public sealed class ClaudeQuota(IQuotaCounters counters, IOptions<ClaudeOptions>
 
         if (await counters.GetAsync(tokensKey) >= limits.DailyTokensPerOwner) return QuotaDecision.Denied(QuotaDenial.OwnerTokens);
 
-        var total = await counters.AddAsync(totalKey, 1, s_expiry);
+        var total = await counters.AddAsync(totalKey, 1, Expiry);
         if (total > limits.DailyQuestionsTotal)
         {
-            await counters.AddAsync(totalKey, -1, s_expiry);
+            await counters.AddAsync(totalKey, -1, Expiry);
             return QuotaDecision.Denied(QuotaDenial.TotalQuestions);
         }
 
-        var asked = await counters.AddAsync(questionsKey, 1, s_expiry);
+        var asked = await counters.AddAsync(questionsKey, 1, Expiry);
         if (asked > limits.DailyQuestionsPerOwner)
         {
-            await counters.AddAsync(questionsKey, -1, s_expiry);
-            await counters.AddAsync(totalKey, -1, s_expiry);
+            await counters.AddAsync(questionsKey, -1, Expiry);
+            await counters.AddAsync(totalKey, -1, Expiry);
             return QuotaDecision.Denied(QuotaDenial.OwnerQuestions);
         }
 
@@ -71,7 +71,7 @@ public sealed class ClaudeQuota(IQuotaCounters counters, IOptions<ClaudeOptions>
 
     /// <summary>Bucht die verbrauchten Tokens nach der Frage; die Grenze wirkt ab der nächsten Frage.</summary>
     public Task AddTokensAsync(string ownerKey, long tokens) =>
-        tokens > 0 ? counters.AddAsync(RedisKeys.ClaudeQuota(ownerKey, "t", Today), tokens, s_expiry) : Task.CompletedTask;
+        tokens > 0 ? counters.AddAsync(RedisKeys.ClaudeQuota(ownerKey, "t", Today), tokens, Expiry) : Task.CompletedTask;
 }
 
 /// <summary>Redis-Zähler (<c>INCRBY</c> mit Ablauf); fällt Redis aus, zählt der Speicher dieses Prozesses weiter.</summary>

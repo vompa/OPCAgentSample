@@ -17,7 +17,7 @@ public static class AskEndpoint
 {
     public const int MaxQuestionLength = 500;
 
-    private static readonly JsonSerializerOptions s_json = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     public static IEndpointRouteBuilder MapAskEndpoint(this IEndpointRouteBuilder endpoints)
     {
@@ -29,8 +29,8 @@ public static class AskEndpoint
     }
 
     internal static NewChatTurn ToNewTurn(SampleTurn sample, DateTimeOffset dataAsOf) =>
-        new(sample.Question, JsonSerializer.SerializeToElement(sample.Card, s_json),
-            JsonSerializer.SerializeToElement(sample.ToolCalls, s_json), dataAsOf);
+        new(sample.Question, JsonSerializer.SerializeToElement(sample.Card, Json),
+            JsonSerializer.SerializeToElement(sample.ToolCalls, Json), dataAsOf);
 
     private static async Task<IResult> AskAsync(
         AskBody body, RoleContext context, HttpContext http, IAnswerEngine engine,
@@ -81,7 +81,7 @@ public static class AskEndpoint
         // Datenstand und Speichern erst nach der Antwort; der Turn bleibt auch erhalten, wenn der Client schon fort ist.
         var dataAsOf = ready.DataAsOfUtc ?? clock.UtcNow;
         var turn = new NewChatTurn(
-            question, JsonSerializer.SerializeToElement(ready.Card, s_json), JsonSerializer.SerializeToElement(toolCalls, s_json),
+            question, JsonSerializer.SerializeToElement(ready.Card, Json), JsonSerializer.SerializeToElement(toolCalls, Json),
             dataAsOf, ready.InputTokens, ready.OutputTokens, ready.CacheReadTokens, ready.CacheWriteTokens,
             (int)Math.Clamp(stopwatch.ElapsedMilliseconds, 1, int.MaxValue), // mindestens 1 ms, denn 0 heißt „nicht erfasst“
             ready.Repeat);
@@ -107,7 +107,7 @@ public static class AskEndpoint
 
     private static async Task WriteEventAsync<T>(HttpContext http, string name, T data)
     {
-        var json = JsonSerializer.Serialize(data, s_json);
+        var json = JsonSerializer.Serialize(data, Json);
         await http.Response.WriteAsync($"event: {name}\ndata: {json}\n\n", http.RequestAborted);
         await http.Response.Body.FlushAsync(http.RequestAborted);
     }

@@ -1,7 +1,6 @@
 using OPCAgentSample.Domain;
 using OPCAgentSample.Domain.History;
 using OPCAgentSample.Kpi;
-using OPCAgentSample.Simulation.Scenario;
 
 namespace OPCAgentSample.Simulation.Generation;
 
@@ -89,10 +88,10 @@ public sealed record ClimateSnapshot(DateTimeOffset AtUtc, double Celsius, doubl
 public sealed class LiveStateProvider(HistoryGenerator generator)
 {
     private const double KgPerGram = 0.001;
-    private static readonly TimeSpan s_cycleWindow = TimeSpan.FromMinutes(5);
-    private static readonly TimeSpan s_fillWeightWindow = TimeSpan.FromMinutes(15);
-    private static readonly TimeSpan s_strokeRateWindow = TimeSpan.FromMinutes(60);
-    private static readonly TimeSpan s_stateLookback = TimeSpan.FromDays(4);
+    private static readonly TimeSpan CycleWindow = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan FillWeightWindow = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan StrokeRateWindow = TimeSpan.FromMinutes(60);
+    private static readonly TimeSpan StateLookback = TimeSpan.FromDays(4);
 
     public ProductionStationSnapshot Station(string stationId, DateTimeOffset atUtc)
     {
@@ -102,7 +101,7 @@ public sealed class LiveStateProvider(HistoryGenerator generator)
             ?? throw new InvalidOperationException("Vor dem Historienbeginn gibt es keinen Zustand.");
         var run = model.Run(shift);
         var (state, order) = model.StateAt(atUtc);
-        var since = model.StateChangesBetween(atUtc - s_stateLookback, atUtc + TimeSpan.FromTicks(1)).LastOrDefault()?.TimestampUtc
+        var since = model.StateChangesBetween(atUtc - StateLookback, atUtc + TimeSpan.FromTicks(1)).LastOrDefault()?.TimestampUtc
             ?? scenario.HistoryStartUtc;
         var articleId = model.Plan.AssignmentAt(atUtc).ArticleId;
         var target = CycleProfile.TargetCycle(scenario, model.Plan, articleId);
@@ -123,9 +122,9 @@ public sealed class LiveStateProvider(HistoryGenerator generator)
             run.CountBefore(atUtc),
             run.ScrapBefore(atUtc),
             planned,
-            Mean(recent.Where(c => c.TimestampUtc >= atUtc - s_cycleWindow).Select(c => c.CycleTimeSeconds)),
+            Mean(recent.Where(c => c.TimestampUtc >= atUtc - CycleWindow).Select(c => c.CycleTimeSeconds)),
             target,
-            Mean(recent.Where(c => c.TimestampUtc >= atUtc - s_cycleWindow).Select(c => c.PressForceBuildUpSeconds)),
+            Mean(recent.Where(c => c.TimestampUtc >= atUtc - CycleWindow).Select(c => c.PressForceBuildUpSeconds)),
             Mean(recent.Select(c => c.FillWeightGrams)),
             model.IsPress ? scenario.Article(articleId).FillWeightTargetGrams : null,
             Materials(model, run.PlannedQuantity / shift.Duration.TotalMinutes, atUtc),
@@ -157,7 +156,7 @@ public sealed class LiveStateProvider(HistoryGenerator generator)
     }
 
     private List<CycleRecord> RecentCycles(ProductionStationModel model, DateTimeOffset atUtc) =>
-        [.. generator.Cycles(model.StationId, atUtc - s_fillWeightWindow, atUtc)];
+        [.. generator.Cycles(model.StationId, atUtc - FillWeightWindow, atUtc)];
 
     private List<MaterialLevel> Materials(ProductionStationModel model, double planPiecesPerMinute, DateTimeOffset atUtc)
     {
@@ -182,7 +181,7 @@ public sealed class LiveStateProvider(HistoryGenerator generator)
             .MaxBy(m => m.MountedUtc);
         if (mould is null) return null;
         var strokes = model.CountCycles(mould.MountedUtc, atUtc) / mould.Nests;
-        var rate = model.CountCycles(atUtc - s_strokeRateWindow, atUtc) / s_strokeRateWindow.TotalMinutes / mould.Nests;
+        var rate = model.CountCycles(atUtc - StrokeRateWindow, atUtc) / StrokeRateWindow.TotalMinutes / mould.Nests;
         return new MouldStatus(mould.Id, strokes, mould.StrokeLimit, rate);
     }
 

@@ -38,6 +38,9 @@ jobs:
           dotnet-version: 10.0.x
       - name: Restore
         run: dotnet restore OPCAgentSample.slnx
+      # Der Build meldet Benennung, Whitespace und Imports nicht vollständig; dotnet format prüft sie.
+      - name: Codestil prüfen (dotnet format)
+        run: dotnet format OPCAgentSample.slnx --no-restore --verify-no-changes --verbosity minimal
       - name: Build (Warnungen sind Fehler)
         run: dotnet build OPCAgentSample.slnx --no-restore -c Release
       - name: Test (Redis über Testcontainers)

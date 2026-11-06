@@ -43,9 +43,9 @@ public interface IMcpLoopback
 /// </summary>
 public sealed class HttpMcpLoopback(IHttpContextAccessor httpContext, IOptions<ClaudeOptions> options) : IMcpLoopback
 {
-    private static readonly SocketsHttpHandler s_handler = new() { PooledConnectionLifetime = TimeSpan.FromMinutes(2) };
+    private static readonly SocketsHttpHandler Handler = new() { PooledConnectionLifetime = TimeSpan.FromMinutes(2) };
 
-    public HttpClient CreateClient() => new(s_handler, disposeHandler: false);
+    public HttpClient CreateClient() => new(Handler, disposeHandler: false);
 
     public Uri Endpoint
     {

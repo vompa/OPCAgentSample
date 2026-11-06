@@ -26,7 +26,7 @@ public static class PlantComparison
 
     // Halle, Woche, Schicht, Planbelegung (min), Laufzeit (min), Soll-Zeit (s), Soll-Zeit gut (s), Ist, Ausschuss, Soll, Ausschusskosten, Mischung (min)
     private static readonly (string Hall, string Week, Shift Shift, double Planning, double Run, double Ideal, double GoodIdeal,
-        long Actual, long Scrap, long Planned, decimal ScrapCost, double MixtureMinutes)[] s_rows =
+        long Actual, long Scrap, long Planned, decimal ScrapCost, double MixtureMinutes)[] Rows =
     [
         (HallBStation, Week41, Shift.Early, 17_937.5, 15_516.8, 919_159.9, 896_631.7, 360_000, 1_950, 365_000, 2_082m, 0),
         (HallBStation, Week41, Shift.Late, 17_862.5, 15_186.2, 901_275.6, 878_331.6, 355_000, 1_930, 365_000, 2_059m, 0),
@@ -42,7 +42,7 @@ public static class PlantComparison
         (HallCStation, Week42, Shift.Night, 10_775.0, 7_968.0, 468_937.3, 467_340.3, 147_000, 2_095, 153_000, 1_265m, 42),
     ];
 
-    public static IReadOnlyList<HallShiftFigures> Figures { get; } = [.. s_rows.Select(ToFigures)];
+    public static IReadOnlyList<HallShiftFigures> Figures { get; } = [.. Rows.Select(ToFigures)];
 
     /// <summary>Kennzahlenblock der Hallen B und C für eine Woche (optional nur eine Schichtart).</summary>
     public static KpiBlock Block(string weekKey, Shift? shift = null)

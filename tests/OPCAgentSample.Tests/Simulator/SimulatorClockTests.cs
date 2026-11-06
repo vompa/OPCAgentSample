@@ -7,7 +7,7 @@ namespace OPCAgentSample.Tests.Simulator;
 /// <summary>Die Simulationsuhr läuft mit der konfigurierten Geschwindigkeit; Alarme entstehen und enden zur Simulationszeit.</summary>
 public sealed class SimulatorClockTests
 {
-    private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(40);
+    private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(40);
 
     [Fact]
     public async Task Sixty_times_speed_advances_the_simulation_time_by_about_a_minute_per_second()
@@ -88,7 +88,7 @@ public sealed class SimulatorClockTests
 
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
-        using var cts = new CancellationTokenSource(s_timeout);
+        using var cts = new CancellationTokenSource(Timeout);
         while (!condition())
         {
             try

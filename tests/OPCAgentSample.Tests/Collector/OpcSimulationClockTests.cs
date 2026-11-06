@@ -10,7 +10,7 @@ namespace OPCAgentSample.Tests.Collector;
 /// <summary>Die Simulationsuhr aus dem OPC-Knoten: fortgeschrieben mit der Geschwindigkeit, eingefroren ohne Verbindung, nie vor dem Server.</summary>
 public sealed class OpcSimulationClockTests
 {
-    private static readonly DateTimeOffset s_start = new(2026, 10, 15, 8, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset Start = new(2026, 10, 15, 8, 0, 0, TimeSpan.Zero);
 
     [Fact]
     public void Before_the_first_reading_it_shows_the_demo_clock()
@@ -27,11 +27,11 @@ public sealed class OpcSimulationClockTests
         var time = new SteppingTimeProvider();
         var clock = new OpcSimulationClock(time);
 
-        clock.Update(s_start, 60);
+        clock.Update(Start, 60);
         time.Advance(TimeSpan.FromSeconds(10));
 
         Assert.True(clock.HasReading);
-        Assert.Equal(s_start.AddMinutes(10), clock.UtcNow);
+        Assert.Equal(Start.AddMinutes(10), clock.UtcNow);
         Assert.Equal(60, clock.Speed);
     }
 
@@ -41,10 +41,10 @@ public sealed class OpcSimulationClockTests
         var time = new SteppingTimeProvider();
         var clock = new OpcSimulationClock(time);
 
-        clock.Update(s_start, 0);
+        clock.Update(Start, 0);
         time.Advance(TimeSpan.FromMinutes(5));
 
-        Assert.Equal(s_start, clock.UtcNow);
+        Assert.Equal(Start, clock.UtcNow);
     }
 
     [Fact]
@@ -52,13 +52,13 @@ public sealed class OpcSimulationClockTests
     {
         var time = new SteppingTimeProvider();
         var clock = new OpcSimulationClock(time);
-        clock.Update(s_start, 60);
+        clock.Update(Start, 60);
         time.Advance(TimeSpan.FromSeconds(2));
 
         clock.Freeze();
         time.Advance(TimeSpan.FromMinutes(1));
 
-        Assert.Equal(s_start.AddMinutes(2), clock.UtcNow);
+        Assert.Equal(Start.AddMinutes(2), clock.UtcNow);
     }
 
     [Fact]
@@ -66,11 +66,11 @@ public sealed class OpcSimulationClockTests
     {
         var time = new SteppingTimeProvider();
         var clock = new OpcSimulationClock(time);
-        clock.Update(s_start, 60);
+        clock.Update(Start, 60);
         time.Advance(TimeSpan.FromSeconds(5));
         var before = clock.UtcNow;
 
-        clock.Update(s_start.AddMinutes(4), 60); // der Knoten hinkt dem Takt der Aktualisierungsschleife hinterher
+        clock.Update(Start.AddMinutes(4), 60); // der Knoten hinkt dem Takt der Aktualisierungsschleife hinterher
 
         Assert.Equal(before, clock.UtcNow);
         time.Advance(TimeSpan.FromSeconds(1));
@@ -82,12 +82,12 @@ public sealed class OpcSimulationClockTests
     {
         var time = new SteppingTimeProvider();
         var clock = new OpcSimulationClock(time);
-        clock.Update(s_start, 1);
+        clock.Update(Start, 1);
         time.Advance(TimeSpan.FromMinutes(30));
 
-        clock.Update(s_start.AddHours(-3), 1);
+        clock.Update(Start.AddHours(-3), 1);
 
-        Assert.Equal(s_start.AddHours(-3), clock.UtcNow);
+        Assert.Equal(Start.AddHours(-3), clock.UtcNow);
     }
 
     [Fact]
@@ -95,13 +95,13 @@ public sealed class OpcSimulationClockTests
     {
         var time = new SteppingTimeProvider();
         var clock = new OpcSimulationClock(time);
-        clock.Update(s_start, 60);
+        clock.Update(Start, 60);
         time.Advance(TimeSpan.FromSeconds(30));
         clock.Freeze();
 
-        clock.Update(s_start.AddMinutes(1), 60);
+        clock.Update(Start.AddMinutes(1), 60);
 
-        Assert.Equal(s_start.AddMinutes(1), clock.UtcNow);
+        Assert.Equal(Start.AddMinutes(1), clock.UtcNow);
     }
 
     [Fact]

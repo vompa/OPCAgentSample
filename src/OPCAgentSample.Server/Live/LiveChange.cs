@@ -38,12 +38,12 @@ public sealed class NullLiveNotifier : ILiveNotifier
 /// <summary>Kanal und Nachrichtenformat des Pub/Sub: <c>live:A</c>, Nutzlast <c>{"kinds":"Station, Feed","owner":null}</c>.</summary>
 public static class LiveChannel
 {
-    private static readonly JsonSerializerOptions s_json = new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     public static string Name(string hallId = PlantLayout.HallA) => $"live:{hallId}";
 
     public static string Serialize(LiveChangeKind kinds, string? ownerKey) =>
-        JsonSerializer.Serialize(new Message(kinds.ToString(), ownerKey), s_json);
+        JsonSerializer.Serialize(new Message(kinds.ToString(), ownerKey), Json);
 
     /// <summary>Liest eine Nachricht; unlesbare Nachrichten ergeben <see langword="false"/> (der Strom bleibt davon unberührt).</summary>
     public static bool TryParse(string? text, out LiveChangeKind kinds, out string? ownerKey)
@@ -54,7 +54,7 @@ public static class LiveChannel
 
         try
         {
-            var message = JsonSerializer.Deserialize<Message>(text, s_json);
+            var message = JsonSerializer.Deserialize<Message>(text, Json);
             if (message is null || !Enum.TryParse(message.Kinds, ignoreCase: true, out kinds)) return false;
 
             ownerKey = message.Owner;

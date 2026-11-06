@@ -1,4 +1,3 @@
-using OPCAgentSample.Domain;
 using OPCAgentSample.Domain.History;
 using OPCAgentSample.Server.Ingestion;
 using OPCAgentSample.Simulation.Generation;

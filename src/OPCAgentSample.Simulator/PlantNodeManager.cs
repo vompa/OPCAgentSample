@@ -2,7 +2,6 @@ using Opc.Ua;
 using Opc.Ua.Server;
 using OPCAgentSample.Domain;
 using OPCAgentSample.Domain.Opc;
-using OPCAgentSample.Simulator.History;
 using OPCAgentSample.Simulator.Live;
 using OPCAgentSample.Simulator.Model;
 

@@ -15,7 +15,7 @@ namespace OPCAgentSample.Tests.Mcp;
 [Collection(InfrastructureFixture.Name)]
 public sealed class MachineReportTests(InfrastructureFixture infrastructure)
 {
-    private static readonly string[] s_ranges = ["shift", "yesterday", "week", "fourWeeks"];
+    private static readonly string[] Ranges = ["shift", "yesterday", "week", "fourWeeks"];
 
     private async Task<McpHost> HostAsync() => await McpHost.GetAsync(infrastructure);
 
@@ -59,7 +59,7 @@ public sealed class MachineReportTests(InfrastructureFixture infrastructure)
     [Fact]
     public async Task Every_range_can_be_chosen_and_names_the_previous_period()
     {
-        foreach (var range in s_ranges)
+        foreach (var range in Ranges)
         {
             var report = await ReportAsync(McpRoles.HallLead, range);
             Assert.Equal(range, report.Text("range"));

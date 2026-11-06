@@ -7,10 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OPCAgentSample.Server.Agent;
 using OPCAgentSample.Server.Demo;
-using StackExchange.Redis;
 using OPCAgentSample.Server.Security;
 using OPCAgentSample.Tests.Mcp;
 using OPCAgentSample.Tests.Server;
+using StackExchange.Redis;
 
 namespace OPCAgentSample.Tests.Agent;
 
@@ -69,7 +69,7 @@ public sealed class ClaudeEndpointTests(InfrastructureFixture infrastructure)
             builder.ConfigureTestServices(services =>
             {
                 services.AddLogging(logging => logging.AddProvider(logs));
-                services.AddSingleton<IClaudeModelClient>(model);
+                services.AddSingleton<IAgentModelClient>(model);
                 services.AddSingleton<IMcpLoopback>(loopback);
             });
         });
@@ -123,13 +123,13 @@ public sealed class ClaudeEndpointTests(InfrastructureFixture infrastructure)
         var (factory, model, logs) = await CreateAsync(withKey: true);
         using var factoryScope = factory;
         using var client = factory.CreateClient();
-        const string question = "Wie ist die Lage in Halle A?";
+        const string Question = "Wie ist die Lage in Halle A?";
         for (var i = 0; i < 2; i++)
         {
             model.Then(Replies.Tools(("t1", "get_hall_overview", "{}"), ("t2", "get_active_alarms", "{}"))).Then(Replies.Card(usage: Replies.Usage(1500, 250, 1200, 300)));
         }
 
-        var events = await AskAsync(client, "hall_lead", question);
+        var events = await AskAsync(client, "hall_lead", Question);
 
         Assert.Equal(["tool_call", "tool_call", "answer", "done"], events.Select(e => e.Name));
         foreach (var call in events.Where(e => e.Name == "tool_call").Select(e => e.Data))
@@ -152,10 +152,10 @@ public sealed class ClaudeEndpointTests(InfrastructureFixture infrastructure)
         Assert.Equal(300, done.GetProperty("tokens").GetProperty("cacheWrite").GetInt32());
 
         // Verlauf: Antwortkarte, Tool-Aufrufe und Datenstand sind gespeichert; "Neu fragen" (fresh) ist eine zweite Frage derselben Sitzung.
-        var again = await AskAsync(client, "hall_lead", question, fresh: true);
+        var again = await AskAsync(client, "hall_lead", Question, fresh: true);
         Assert.Equal(["tool_call", "tool_call", "answer", "done"], again.Select(e => e.Name));
         var latest = await client.GetFromJsonAsync<JsonElement>(new Uri("/api/history/latest?role=hall_lead", UriKind.Relative));
-        var turns = latest.GetProperty("turns").EnumerateArray().Where(t => t.GetProperty("question").GetString() == question).ToList();
+        var turns = latest.GetProperty("turns").EnumerateArray().Where(t => t.GetProperty("question").GetString() == Question).ToList();
         Assert.Equal(2, turns.Count);
         Assert.Equal(2, turns[0].GetProperty("toolCalls").GetArrayLength());
         Assert.StartsWith("RT-03", turns[0].GetProperty("answerCard").GetProperty("headline").GetString(), StringComparison.Ordinal);
@@ -169,7 +169,7 @@ public sealed class ClaudeEndpointTests(InfrastructureFixture infrastructure)
     }
 
     private static string FirstUserMessage(ScriptedModelClient model, int request = 0) =>
-        RequestJson.Messages(model.Requests[request])[0].GetProperty("content").GetString()!;
+        RequestJson.Messages(model.Requests[request])[0].GetProperty("content")[0].GetProperty("text").GetString()!;
 
     [Fact]
     public async Task A_question_from_a_report_carries_range_and_values_computed_by_the_server()
@@ -236,9 +236,9 @@ public sealed class ClaudeEndpointTests(InfrastructureFixture infrastructure)
         using var client = factory.CreateClient();
         model.DeltaSize = 30;
         model.Then(Replies.Tools(("t1", "get_hall_overview", "{}"))).Then(Replies.Card());
-        const string question = "Was ist mit RT-03 los?";
+        const string Question = "Was ist mit RT-03 los?";
 
-        var first = await AskAsync(client, "hall_lead", question);
+        var first = await AskAsync(client, "hall_lead", Question);
 
         Assert.Equal("tool_call", first[0].Name);
         Assert.Equal("done", first[^1].Name);
@@ -250,7 +250,7 @@ public sealed class ClaudeEndpointTests(InfrastructureFixture infrastructure)
         Assert.False(first[^1].Data.TryGetProperty("repeat", out var firstRepeat) && firstRepeat.GetBoolean());
         var requestsAfterFirst = model.Requests.Count;
 
-        var repeat = await AskAsync(client, "hall_lead", "  " + question.ToUpperInvariant());
+        var repeat = await AskAsync(client, "hall_lead", "  " + Question.ToUpperInvariant());
 
         Assert.Equal(["tool_call", "answer", "done"], repeat.Select(e => e.Name));
         Assert.Equal(requestsAfterFirst, model.Requests.Count);
@@ -262,14 +262,14 @@ public sealed class ClaudeEndpointTests(InfrastructureFixture infrastructure)
 
         // „Neu fragen“ (fresh) fragt Claude wirklich noch einmal und liefert keine Wiederholung.
         model.Then(Replies.Card());
-        var fresh = await AskAsync(client, "hall_lead", question, fresh: true);
+        var fresh = await AskAsync(client, "hall_lead", Question, fresh: true);
 
         Assert.Equal(requestsAfterFirst + 1, model.Requests.Count);
         Assert.False(fresh[^1].Data.TryGetProperty("repeat", out var freshRepeat) && freshRepeat.GetBoolean());
 
         // Die Wiederholung steht im Verlauf (drei Fragen) und im Audit-Log als eigene Aktion.
         var latest = await client.GetFromJsonAsync<JsonElement>(new Uri("/api/history/latest?role=hall_lead", UriKind.Relative));
-        Assert.Equal(3, latest.GetProperty("turns").EnumerateArray().Count(t => string.Equals(t.GetProperty("question").GetString()!.Trim(), question, StringComparison.OrdinalIgnoreCase)));
+        Assert.Equal(3, latest.GetProperty("turns").EnumerateArray().Count(t => string.Equals(t.GetProperty("question").GetString()!.Trim(), Question, StringComparison.OrdinalIgnoreCase)));
         var audit = await AuditStream.ReadAsync(factory.Services.GetRequiredService<IConnectionMultiplexer>());
         Assert.Contains(audit, a => a.Action == "ask.repeat");
     }

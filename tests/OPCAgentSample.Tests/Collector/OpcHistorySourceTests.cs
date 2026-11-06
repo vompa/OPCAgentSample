@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OPCAgentSample.Domain;
@@ -17,12 +16,12 @@ namespace OPCAgentSample.Tests.Collector;
 [Collection(SimulatorFixtureGroup.Name)]
 public sealed class OpcHistorySourceTests(SimulatorFixture simulator, ITestOutputHelper output)
 {
-    private static readonly ShiftCalendar s_calendar = new();
+    private static readonly ShiftCalendar Calendar = new();
 
     [Fact]
     public async Task A_full_shift_read_over_OPC_equals_the_generator_records()
     {
-        var shift = s_calendar.ShiftPeriod(new DateOnly(2026, 10, 14), Shift.Late);
+        var shift = Calendar.ShiftPeriod(new DateOnly(2026, 10, 14), Shift.Late);
 
         var actual = await ReadAsync(shift.StartUtc, shift.EndUtc);
         var expected = simulator.Generator.Generate(shift.StartUtc, shift.EndUtc).ToList();
@@ -36,7 +35,7 @@ public sealed class OpcHistorySourceTests(SimulatorFixture simulator, ITestOutpu
     [Fact]
     public async Task The_running_shift_up_to_the_clock_with_open_events_equals_the_generator_records_and_paging_changes_nothing()
     {
-        var from = s_calendar.ShiftPeriodOf(SimulatorFixture.Now).StartUtc;
+        var from = Calendar.ShiftPeriodOf(SimulatorFixture.Now).StartUtc;
 
         var actual = await ReadAsync(from, SimulatorFixture.Now, pageSize: 500);
         var expected = simulator.Generator.Generate(from, SimulatorFixture.Now).ToList();

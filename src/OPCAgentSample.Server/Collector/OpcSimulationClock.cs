@@ -17,7 +17,7 @@ namespace OPCAgentSample.Server.Collector;
 public sealed class OpcSimulationClock(TimeProvider timeProvider) : IDemoClock
 {
     /// <summary>Eine neuere Lesung, die höchstens so weit zurückliegt, gilt als veralteter Wert und wird ignoriert (Uhr bleibt monoton).</summary>
-    private static readonly TimeSpan s_staleToleranceReal = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan StaleToleranceReal = TimeSpan.FromSeconds(10);
 
     private Anchor? _anchor;
 
@@ -38,7 +38,7 @@ public sealed class OpcSimulationClock(TimeProvider timeProvider) : IDemoClock
         if (current is { Frozen: false } && simulationUtc < Evaluate(current))
         {
             var behind = Evaluate(current) - simulationUtc;
-            var tolerance = (Math.Abs(current.Speed) * s_staleToleranceReal.TotalSeconds * TimeSpan.TicksPerSecond) + (5 * TimeSpan.TicksPerSecond);
+            var tolerance = (Math.Abs(current.Speed) * StaleToleranceReal.TotalSeconds * TimeSpan.TicksPerSecond) + (5 * TimeSpan.TicksPerSecond);
             if (behind.Ticks <= tolerance)
             {
                 // Nur die Geschwindigkeit nachführen; der Zeitpunkt bleibt auf dem bisherigen, weiter fortgeschriebenen Stand.

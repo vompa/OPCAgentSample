@@ -92,12 +92,12 @@ public sealed class SimulatorAlarmTests(SimulatorFixture fixture)
     public async Task Writing_a_process_value_is_rejected_and_the_value_stays()
     {
         await using var client = await OpcTestClient.ConnectAsync(fixture.EndpointUrl, fixture.ClientPki);
-        const string node = "HalleA.Pressen.RT-04.Prozess.TaktzeitSoll";
-        var before = await client.ReadValueAsync<double>(node);
+        const string Node = "HalleA.Pressen.RT-04.Prozess.TaktzeitSoll";
+        var before = await client.ReadValueAsync<double>(Node);
 
         var response = await client.Session.WriteAsync(null,
         [
-            new WriteValue { NodeId = client.Node(node), AttributeId = Attributes.Value, Value = new DataValue(new Variant(1.0)) },
+            new WriteValue { NodeId = client.Node(Node), AttributeId = Attributes.Value, Value = new DataValue(new Variant(1.0)) },
             new WriteValue
             {
                 NodeId = client.Node("HalleA.Oefen.OF-02.Planung.Zuordnungsregel"),
@@ -107,7 +107,7 @@ public sealed class SimulatorAlarmTests(SimulatorFixture fixture)
         ], default);
 
         Assert.All(response.Results, code => Assert.True(StatusCode.IsBad(code), code.ToString()));
-        Assert.Equal(before, await client.ReadValueAsync<double>(node));
+        Assert.Equal(before, await client.ReadValueAsync<double>(Node));
         Assert.Equal("alle Ø 180", await client.ReadValueAsync<string>("HalleA.Oefen.OF-02.Planung.Zuordnungsregel"));
     }
 

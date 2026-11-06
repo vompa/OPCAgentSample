@@ -29,8 +29,8 @@ internal static class McpKeys
 /// </summary>
 internal sealed class McpHost
 {
-    private static readonly object s_gate = new();
-    private static Task<McpHost>? s_instance;
+    private static readonly Lock Gate = new();
+    private static Task<McpHost>? Instance;
 
     private McpHost(WebApplicationFactory<Program> factory) => Factory = factory;
 
@@ -38,9 +38,9 @@ internal sealed class McpHost
 
     public static Task<McpHost> GetAsync(InfrastructureFixture infrastructure)
     {
-        lock (s_gate)
+        lock (Gate)
         {
-            return s_instance ??= CreateAsync(infrastructure);
+            return Instance ??= CreateAsync(infrastructure);
         }
     }
 

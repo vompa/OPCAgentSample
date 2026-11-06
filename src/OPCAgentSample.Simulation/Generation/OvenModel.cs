@@ -19,8 +19,8 @@ internal sealed class OvenModel
     private const double ColdCelsius = 25;
     private const double ZoneSigma = 0.4;
     private const double DeviationCelsius = 6;
-    private static readonly TimeSpan s_horizon = TimeSpan.FromDays(56);
-    private static readonly TimeSpan s_lotLookback = TimeSpan.FromMinutes(60);
+    private static readonly TimeSpan Horizon = TimeSpan.FromDays(56);
+    private static readonly TimeSpan LotLookback = TimeSpan.FromMinutes(60);
 
     private readonly ScenarioDefinition _scenario;
     private readonly ProductionShiftIndex _shifts;
@@ -69,7 +69,7 @@ internal sealed class OvenModel
 
         foreach (var charge in Charges.Where(c => window.Contains(c.UnloadedUtc)))
         {
-            var lots = _pressLots(charge.DiameterMm, charge.LoadedUtc - s_lotLookback, charge.LoadedUtc);
+            var lots = _pressLots(charge.DiameterMm, charge.LoadedUtc - LotLookback, charge.LoadedUtc);
             records.Add(new OvenCharge(Spec.StationId, charge.UnloadedUtc, charge.ChargeId, charge.Place, charge.DiameterMm,
                 charge.Plates, charge.LoadedUtc, charge.UnloadedUtc, lots, RotationTestPassed: true, BreakTestPassed: true));
         }
@@ -133,7 +133,7 @@ internal sealed class OvenModel
         var charges = new List<OvenChargeInfo>();
         var start = _scenario.HistoryStartUtc;
         var firstIndex = (long)Math.Floor((start - Spec.LoadAnchorUtc) / Spec.LoadInterval);
-        var lastIndex = (long)Math.Ceiling((start + s_horizon - Spec.LoadAnchorUtc) / Spec.LoadInterval);
+        var lastIndex = (long)Math.Ceiling((start + Horizon - Spec.LoadAnchorUtc) / Spec.LoadInterval);
         for (var k = firstIndex; k <= lastIndex; k++)
         {
             var loaded = Spec.LoadAnchorUtc + (Spec.LoadInterval * k);

@@ -11,7 +11,7 @@ namespace OPCAgentSample.Tests.Web;
 [Collection(InfrastructureFixture.Name)]
 public sealed class WebApiTests(InfrastructureFixture infrastructure)
 {
-    private static readonly string[] s_escalatedLevels = ["warn", "crit"];
+    private static readonly string[] EscalatedLevels = ["warn", "crit"];
 
     private const string FavoriteQuestion = "Was muss ich von der Nachtschicht wissen?";
 
@@ -349,7 +349,7 @@ public sealed class WebApiTests(InfrastructureFixture infrastructure)
         var items = feed.GetProperty("items").EnumerateArray().ToList();
         Assert.Equal(expected, items.Count);
         if (role != "shift_lead")
-            Assert.All(items, item => Assert.Contains(item.GetProperty("level").GetString(), s_escalatedLevels));
+            Assert.All(items, item => Assert.Contains(item.GetProperty("level").GetString(), EscalatedLevels));
     }
 
     [Fact]

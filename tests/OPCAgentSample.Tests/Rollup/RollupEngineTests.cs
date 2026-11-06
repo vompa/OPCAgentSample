@@ -13,22 +13,22 @@ namespace OPCAgentSample.Tests.Rollup;
 [Collection(RollupFixture.Name)]
 public sealed class RollupEngineTests(RollupFixture fixture)
 {
-    private static readonly SharedHistory s_history = SharedHistory.Instance;
+    private static readonly SharedHistory History = SharedHistory.Instance;
 
-    private static readonly string[] s_stations = [.. PlantLayout.HallAStations.Select(s => s.Id)];
+    private static readonly string[] Stations = [.. PlantLayout.HallAStations.Select(s => s.Id)];
 
     [Fact]
     public async Task Every_shift_in_redis_equals_the_builder_over_the_generator_records()
     {
         var rollup = await fixture.GetIngestedAsync();
-        var shifts = s_history.Calendar.ProductionShiftsBetween(s_history.Scenario.HistoryStartUtc, s_history.Now).ToList();
+        var shifts = History.Calendar.ProductionShiftsBetween(History.Scenario.HistoryStartUtc, History.Now).ToList();
 
         Assert.NotEmpty(shifts);
         foreach (var shift in shifts)
         {
-            var stored = await rollup.Reader.ReadBlockAsync(s_stations, RollupLevel.Shift, shift.Key);
-            RollupAssert.Equivalent(s_history.Block(shift), stored.Block, shift.Key);
-            Assert.Equal(shift.EndUtc > s_history.Now, stored.IsOpen);
+            var stored = await rollup.Reader.ReadBlockAsync(Stations, RollupLevel.Shift, shift.Key);
+            RollupAssert.Equivalent(History.Block(shift), stored.Block, shift.Key);
+            Assert.Equal(shift.EndUtc > History.Now, stored.IsOpen);
         }
     }
 
@@ -36,10 +36,10 @@ public sealed class RollupEngineTests(RollupFixture fixture)
     public async Task Every_period_equals_the_sum_of_its_children()
     {
         var rollup = await fixture.GetIngestedAsync();
-        var calendar = s_history.Calendar;
-        var firstDay = s_history.Scenario.DailyHistoryStart;
-        var lastDay = calendar.ProductionDayOf(s_history.Now);
-        var stations = s_stations.Concat(["HALLE-B", "HALLE-C"]).ToList();
+        var calendar = History.Calendar;
+        var firstDay = History.Scenario.DailyHistoryStart;
+        var lastDay = calendar.ProductionDayOf(History.Now);
+        var stations = Stations.Concat(["HALLE-B", "HALLE-C"]).ToList();
 
         var days = new List<DateOnly>();
         for (var day = firstDay; day <= lastDay; day = day.AddDays(1)) days.Add(day);
@@ -91,11 +91,11 @@ public sealed class RollupEngineTests(RollupFixture fixture)
     {
         var rollup = await fixture.GetIngestedAsync();
 
-        var week = await rollup.Reader.ReadBlockAsync(s_stations, RollupLevel.Week, "2026-W42");
+        var week = await rollup.Reader.ReadBlockAsync(Stations, RollupLevel.Week, "2026-W42");
 
-        RollupAssert.Equivalent(s_history.Week42(), week.Block, "2026-W42");
+        RollupAssert.Equivalent(History.Week42(), week.Block, "2026-W42");
         Assert.True(week.IsOpen);
-        Assert.Equal(s_history.Now, week.Block.SourceUntilUtc);
+        Assert.Equal(History.Now, week.Block.SourceUntilUtc);
         var oee = OeeCalculator.From(week.Block, SharedHistory.OeeStations);
         Assert.Equal(77, OeeResult.Percent(oee.Oee));
     }
@@ -120,8 +120,8 @@ public sealed class RollupEngineTests(RollupFixture fixture)
     public async Task Process_statistics_match_a_naive_calculation_on_the_raw_values()
     {
         var rollup = await fixture.GetIngestedAsync();
-        var day = s_history.Calendar.DayPeriodOf(s_history.Now);
-        var cycles = s_history.Records.OfType<CycleRecord>().Where(c => c.StationId == "RT-04" && day.Contains(c.TimestampUtc)).ToList();
+        var day = History.Calendar.DayPeriodOf(History.Now);
+        var cycles = History.Records.OfType<CycleRecord>().Where(c => c.StationId == "RT-04" && day.Contains(c.TimestampUtc)).ToList();
 
         var quarterHours = await rollup.Reader.ReadStatsAsync("RT-04", SeriesNames.BuildUp, "15m", day.Key);
 
@@ -136,8 +136,8 @@ public sealed class RollupEngineTests(RollupFixture fixture)
         var fine = await rollup.Reader.ReadStatsAsync("RT-04", SeriesNames.BuildUp, "1m", day.Key);
         Assert.Equal(cycles.Count, fine.Values.Sum(s => s.Count));
         var week = await rollup.Reader.ReadStatsAsync("RT-04", SeriesNames.BuildUp, "w", "-", ["2026-W42"]);
-        var weekCycles = s_history.Records.OfType<CycleRecord>()
-            .Count(c => c.StationId == "RT-04" && s_history.Calendar.WeekPeriodOf(s_history.Now).Contains(c.TimestampUtc));
+        var weekCycles = History.Records.OfType<CycleRecord>()
+            .Count(c => c.StationId == "RT-04" && History.Calendar.WeekPeriodOf(History.Now).Contains(c.TimestampUtc));
         Assert.Equal(weekCycles, week["2026-W42"].Count);
     }
 
@@ -145,8 +145,8 @@ public sealed class RollupEngineTests(RollupFixture fixture)
     public async Task Tolerance_band_counts_from_the_histogram_equal_a_naive_count()
     {
         var rollup = await fixture.GetIngestedAsync();
-        var week = s_history.Calendar.WeekPeriodOf(s_history.Now);
-        var cycles = s_history.Records.OfType<CycleRecord>().Where(c => c.StationId == "RT-01" && week.Contains(c.TimestampUtc)).ToList();
+        var week = History.Calendar.WeekPeriodOf(History.Now);
+        var cycles = History.Records.OfType<CycleRecord>().Where(c => c.StationId == "RT-01" && week.Contains(c.TimestampUtc)).ToList();
         var naive = cycles.LongCount(c =>
         {
             var deviation = ((c.CycleTimeSeconds / c.TargetCycleSeconds) - 1) * 100;
@@ -164,8 +164,8 @@ public sealed class RollupEngineTests(RollupFixture fixture)
     public async Task Scrap_by_reason_is_stored_with_the_shift_counters()
     {
         var rollup = await fixture.GetIngestedAsync();
-        var shift = s_history.Shift(14, Shift.Night);
-        var expected = s_history.Records.OfType<CycleRecord>()
+        var shift = History.Shift(14, Shift.Night);
+        var expected = History.Records.OfType<CycleRecord>()
             .Where(c => c.StationId == "RT-03" && shift.Contains(c.TimestampUtc) && c.Scrap is not null)
             .GroupBy(c => c.Scrap!.Value.ToString())
             .ToDictionary(g => g.Key, g => (long)g.Count());
@@ -180,28 +180,28 @@ public sealed class RollupEngineTests(RollupFixture fixture)
     public async Task Events_streams_ring_buffer_and_trace_are_stored()
     {
         var rollup = await fixture.GetIngestedAsync();
-        var from = s_history.Calendar.WeekPeriodOf(s_history.Now).StartUtc;
+        var from = History.Calendar.WeekPeriodOf(History.Now).StartUtc;
 
-        var losses = await rollup.Reader.ReadLossesAsync(from, s_history.Now);
-        var expected = s_history.Records.OfType<LossEvent>().GroupBy(l => l.Id).Select(g => g.Last())
-            .Count(l => l.StartUtc < s_history.Now && (l.EndUtc is null || l.EndUtc > from));
-        var cycles = await rollup.Reader.ReadRecentCyclesAsync("RT-03", s_history.Now);
-        var state = await rollup.Reader.ReadStateAtAsync("RT-03", s_history.Now);
-        var expectedState = s_history.Records.OfType<StateChange>().Last(s => s.StationId == "RT-03" && s.TimestampUtc <= s_history.Now);
+        var losses = await rollup.Reader.ReadLossesAsync(from, History.Now);
+        var expected = History.Records.OfType<LossEvent>().GroupBy(l => l.Id).Select(g => g.Last())
+            .Count(l => l.StartUtc < History.Now && (l.EndUtc is null || l.EndUtc > from));
+        var cycles = await rollup.Reader.ReadRecentCyclesAsync("RT-03", History.Now);
+        var state = await rollup.Reader.ReadStateAtAsync("RT-03", History.Now);
+        var expectedState = History.Records.OfType<StateChange>().Last(s => s.StationId == "RT-03" && s.TimestampUtc <= History.Now);
 
         Assert.Equal(expected, losses.Count);
         Assert.Equal(Retention.RingBufferCycles, cycles.Count);
-        Assert.Equal(s_history.Records.OfType<CycleRecord>().Last(c => c.StationId == "RT-03").CycleTimeSeconds, cycles[^1].CycleTimeSeconds);
+        Assert.Equal(History.Records.OfType<CycleRecord>().Last(c => c.StationId == "RT-03").CycleTimeSeconds, cycles[^1].CycleTimeSeconds);
         Assert.Equal(expectedState.State, state!.State);
         Assert.Equal(expectedState.OrderId, state.OrderId);
-        Assert.Equal(s_history.Now, await rollup.Reader.ReadOverallWatermarkAsync());
+        Assert.Equal(History.Now, await rollup.Reader.ReadOverallWatermarkAsync());
     }
 
     [Fact]
     public async Task Order_and_mould_counters_equal_the_cycles()
     {
         var rollup = await fixture.GetIngestedAsync();
-        var order = s_history.Records.OfType<CycleRecord>().Where(c => c.OrderId is not null).GroupBy(c => c.OrderId!).First();
+        var order = History.Records.OfType<CycleRecord>().Where(c => c.OrderId is not null).GroupBy(c => c.OrderId!).First();
 
         var stored = await rollup.Redis.Connection.GetDatabase().HashGetAsync(RollupKeys.OrderCount(order.Key), "c");
 
@@ -213,7 +213,7 @@ public sealed class RollupEngineTests(RollupFixture fixture)
     {
         var rollup = await fixture.GetIngestedAsync();
         var database = rollup.Redis.Connection.GetDatabase();
-        var day = s_history.Calendar.DayPeriodOf(s_history.Now).Key;
+        var day = History.Calendar.DayPeriodOf(History.Now).Key;
 
         async Task<double> DaysLeftAsync(string key) => (await database.KeyTimeToLiveAsync(key))?.TotalDays ?? double.NaN;
 

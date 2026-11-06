@@ -21,7 +21,7 @@ namespace OPCAgentSample.Tests.Web;
 [Collection(InfrastructureFixture.Name)]
 public sealed class LiveStreamTests(InfrastructureFixture infrastructure)
 {
-    private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(30);
 
     /// <param name="shareRedis">Teilt Redis mit einer bereits laufenden Instanz (zweite Instanz); sonst wird Redis neu befüllt bzw. geleert.</param>
     private async Task<WebApplicationFactory<Program>> CreateFactoryAsync(
@@ -72,7 +72,7 @@ public sealed class LiveStreamTests(InfrastructureFixture infrastructure)
 
     private static async Task WaitUntilAsync(Func<bool> condition, string description)
     {
-        using var cancellation = new CancellationTokenSource(s_timeout);
+        using var cancellation = new CancellationTokenSource(Timeout);
         while (!condition())
         {
             if (cancellation.IsCancellationRequested) throw new TimeoutException($"Nicht eingetreten: {description}");
@@ -85,7 +85,7 @@ public sealed class LiveStreamTests(InfrastructureFixture infrastructure)
     public async Task Stream_sends_retry_then_station_alarm_inbox_and_clock_as_documented()
     {
         var factory = await CreateFactoryAsync(withHistory: true);
-        using var _f = factory;
+        using var ownedFactory = factory;
         using var http = factory.CreateClient();
 
         await using var live = await SseTestClient.ConnectAsync(http, "/api/live?role=shift_lead");
@@ -116,7 +116,7 @@ public sealed class LiveStreamTests(InfrastructureFixture infrastructure)
     public async Task Heartbeat_comments_arrive_while_nothing_changes()
     {
         var factory = await CreateFactoryAsync(settings: new Dictionary<string, string?> { ["Live:HeartbeatInterval"] = "00:00:00.200" });
-        using var _f = factory;
+        using var ownedFactory = factory;
         using var http = factory.CreateClient();
 
         await using var live = await SseTestClient.ConnectAsync(http, "/api/live?role=shift_lead");
@@ -135,7 +135,7 @@ public sealed class LiveStreamTests(InfrastructureFixture infrastructure)
             ["Live:ClockCheckInterval"] = "00:00:00.100",
             ["Live:HeartbeatInterval"] = "00:00:00.200",
         });
-        using var _f = factory;
+        using var ownedFactory = factory;
         using var http = factory.CreateClient();
         var hub = factory.Services.GetRequiredService<LiveHub>();
 
@@ -154,7 +154,7 @@ public sealed class LiveStreamTests(InfrastructureFixture infrastructure)
     public async Task Without_a_maximum_duration_the_stream_never_sends_idle()
     {
         var factory = await CreateFactoryAsync(settings: new Dictionary<string, string?> { ["Live:HeartbeatInterval"] = "00:00:00.100" });
-        using var _f = factory;
+        using var ownedFactory = factory;
         using var http = factory.CreateClient();
 
         await using var live = await SseTestClient.ConnectAsync(http, "/api/live?role=shift_lead");
@@ -167,7 +167,7 @@ public sealed class LiveStreamTests(InfrastructureFixture infrastructure)
     public async Task A_new_message_arrives_with_its_stream_id_as_event_id()
     {
         var factory = await CreateFactoryAsync();
-        using var _f = factory;
+        using var ownedFactory = factory;
         using var http = factory.CreateClient();
         await using var live = await SseTestClient.ConnectAsync(http, "/api/live?role=shift_lead");
         await live.WaitForAsync(f => f.Event == "clock");
@@ -186,7 +186,7 @@ public sealed class LiveStreamTests(InfrastructureFixture infrastructure)
     {
         var factory = await CreateFactoryAsync(
             withHistory: true, settings: new Dictionary<string, string?> { ["Live:MaxConnectionsPerOwner"] = "10" });
-        using var _f = factory;
+        using var ownedFactory = factory;
         using var http = factory.CreateClient();
 
         await using var everything = await SseTestClient.ConnectAsync(http, "/api/live?role=shift_lead", lastEventId: "0-0");
@@ -216,7 +216,7 @@ public sealed class LiveStreamTests(InfrastructureFixture infrastructure)
     public async Task Messages_are_filtered_by_role_on_the_server()
     {
         var factory = await CreateFactoryAsync();
-        using var _f = factory;
+        using var ownedFactory = factory;
         using var http = factory.CreateClient();
         await using var shiftLead = await SseTestClient.ConnectAsync(http, "/api/live?role=shift_lead");
         await using var hallLead = await SseTestClient.ConnectAsync(http, "/api/live?role=hall_lead");
@@ -243,7 +243,7 @@ public sealed class LiveStreamTests(InfrastructureFixture infrastructure)
     public async Task The_connection_limit_per_owner_rejects_with_429_and_frees_slots_on_disconnect()
     {
         var factory = await CreateFactoryAsync(settings: new Dictionary<string, string?> { ["Live:MaxConnectionsPerOwner"] = "2" });
-        using var _f = factory;
+        using var ownedFactory = factory;
         using var http = factory.CreateClient();
         var hub = factory.Services.GetRequiredService<LiveHub>();
 
@@ -269,7 +269,7 @@ public sealed class LiveStreamTests(InfrastructureFixture infrastructure)
     public async Task Closing_the_connection_unregisters_it()
     {
         var factory = await CreateFactoryAsync();
-        using var _f = factory;
+        using var ownedFactory = factory;
         using var http = factory.CreateClient();
         var hub = factory.Services.GetRequiredService<LiveHub>();
 
@@ -286,7 +286,7 @@ public sealed class LiveStreamTests(InfrastructureFixture infrastructure)
     public async Task Taking_an_inbox_item_updates_the_inbox_counter_of_the_open_stream()
     {
         var factory = await CreateFactoryAsync(withHistory: true);
-        using var _f = factory;
+        using var ownedFactory = factory;
         using var http = factory.CreateClient();
         await using var live = await SseTestClient.ConnectAsync(http, "/api/live?role=shift_lead");
         await live.WaitForAsync(f => f.Event == "clock");
@@ -303,9 +303,9 @@ public sealed class LiveStreamTests(InfrastructureFixture infrastructure)
     public async Task A_change_through_instance_A_reaches_the_client_of_instance_B()
     {
         var instanceA = await CreateFactoryAsync();
-        using var _a = instanceA;
+        using var ownedA = instanceA;
         var instanceB = await CreateFactoryAsync(shareRedis: true);
-        using var _b = instanceB;
+        using var ownedB = instanceB;
         using var httpA = instanceA.CreateClient();
         using var httpB = instanceB.CreateClient();
         Assert.NotSame(instanceA.Services.GetRequiredService<LiveHub>(), instanceB.Services.GetRequiredService<LiveHub>());

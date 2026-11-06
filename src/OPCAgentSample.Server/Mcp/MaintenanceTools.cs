@@ -5,8 +5,6 @@ using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using OPCAgentSample.Domain;
-using OPCAgentSample.Domain.History;
-using OPCAgentSample.Kpi;
 using OPCAgentSample.Server.Demo;
 using OPCAgentSample.Server.MasterData;
 
@@ -34,7 +32,7 @@ public sealed class MaintenanceTools(
         + "Auftrag und bei Formen der Verschleiß mit Zeitpunkt der Standzeitgrenze. Zusätzlich Empfehlungen: Hat eine Station eine offene Zustandswarnung "
         + "und ihre reguläre Wartung steht erst später an, wird vorziehen vorgeschlagen. Horizont: Schicht, heute, morgen, 48 h, Woche, KW 43 "
         + "oder von/bis (Datum). Nächster Schritt: check_maintenance_conflicts für Konflikte und Bündelung, get_condition_warnings für den Anlass.")]
-    public async Task<CallToolResult> GetMaintenanceDue(
+    public async Task<CallToolResult> GetMaintenanceDueAsync(
         [Description("Bereich: Halle A, Werk, Bereich oder Station(en). Standard: Halle A.")] JsonElement? scope = null,
         [Description("Horizont: Schicht, heute, morgen, 48 h, Woche, KW 43. Standard: Woche.")] string? horizont = null,
         [Description("Beginn (Datum 2026-10-19 oder Zeitpunkt), alternativ zum Horizont.")] string? von = null,
@@ -99,7 +97,7 @@ public sealed class MaintenanceTools(
         + "der zusätzliche Maschinenstillstand. Ergebnis: Konflikte, Bündelungsvorschläge je Station, Stillstand einzeln gegenüber gebündelt "
         + "(Summe und je Station) und der Verschleiß der Form zum Rüstzeitpunkt. Nur für Hallenleiterin und Produktionsleiter (Wartungsplanung). "
         + "Nächster Schritt: get_maintenance_due für die Termine, get_order_progress für die Aufträge.")]
-    public async Task<CallToolResult> CheckMaintenanceConflicts(
+    public async Task<CallToolResult> CheckMaintenanceConflictsAsync(
         [Description("Halle: A. Standard: Halle A.")] string? hallId = null,
         [Description("Zeitraum: heute, heute-morgen, 48 h, Woche, KW 43. Standard: heute.")] string? zeitraum = null,
         CancellationToken cancellationToken = default)

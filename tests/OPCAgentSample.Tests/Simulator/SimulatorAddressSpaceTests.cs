@@ -1,23 +1,22 @@
 using Opc.Ua;
 using OPCAgentSample.Domain;
-using OPCAgentSample.Simulator;
 
 namespace OPCAgentSample.Tests.Simulator;
 
 [Collection(SimulatorFixtureGroup.Name)]
 public sealed class SimulatorAddressSpaceTests(SimulatorFixture fixture)
 {
-    private static readonly string[] s_pressGroups =
+    private static readonly string[] PressGroups =
     [
         "Identitaet", "Zustand", "Auftrag", "Zaehler", "Energie", "Ereignisse", "Alarme", "Prozess", "Zyklus", "Teilstationen",
         "Material", "Werkzeug", "Hydraulik", "Ausschussgruende",
     ];
 
-    private static readonly string[] s_plantChildren = ["Simulation", "Schichtkalender", "HalleA", "HalleB", "HalleC"];
-    private static readonly string[] s_hallAChildren = ["Klima", "Pressen", "Puffer", "Oefen", "Verpackung"];
-    private static readonly string[] s_ovenGroups =
+    private static readonly string[] PlantChildren = ["Simulation", "Schichtkalender", "HalleA", "HalleB", "HalleC"];
+    private static readonly string[] HallAChildren = ["Klima", "Pressen", "Puffer", "Oefen", "Verpackung"];
+    private static readonly string[] OvenGroups =
         ["Identitaet", "Zustand", "Ereignisse", "Alarme", "Kapazitaet", "LaufendeCharge", "Temperatur", "Planung", "Sicherheit"];
-    private static readonly string[] s_otherHallChildren = ["Zustand", "Zaehler"];
+    private static readonly string[] OtherHallChildren = ["Zustand", "Zaehler"];
 
     [Fact]
     public async Task Plant_namespace_has_index_2_and_the_agreed_uri()
@@ -35,8 +34,8 @@ public sealed class SimulatorAddressSpaceTests(SimulatorFixture fixture)
 
         Assert.Contains("Werk", await ChildNames(client, ObjectIds.ObjectsFolder));
         var plant = await client.ChildNamesAsync("Werk");
-        Assert.Equivalent(s_plantChildren, plant, strict: false);
-        Assert.Equivalent(s_hallAChildren, await client.ChildNamesAsync("HalleA"), strict: false);
+        Assert.Equivalent(PlantChildren, plant, strict: false);
+        Assert.Equivalent(HallAChildren, await client.ChildNamesAsync("HalleA"), strict: false);
     }
 
     [Fact]
@@ -46,7 +45,9 @@ public sealed class SimulatorAddressSpaceTests(SimulatorFixture fixture)
 
         var expected = new Dictionary<string, string>
         {
-            ["HalleA.Pressen"] = "RundtischType", ["HalleA.Puffer"] = "PufferType", ["HalleA.Oefen"] = "OfenType",
+            ["HalleA.Pressen"] = "RundtischType",
+            ["HalleA.Puffer"] = "PufferType",
+            ["HalleA.Oefen"] = "OfenType",
             ["HalleA.Verpackung"] = "VerpackungType",
         };
         foreach (var (area, typeName) in expected)
@@ -85,7 +86,7 @@ public sealed class SimulatorAddressSpaceTests(SimulatorFixture fixture)
     {
         await using var client = await OpcTestClient.ConnectAsync(fixture.EndpointUrl, fixture.ClientPki);
 
-        Assert.Equivalent(s_pressGroups, await client.ChildNamesAsync("HalleA.Pressen.RT-04"), strict: false);
+        Assert.Equivalent(PressGroups, await client.ChildNamesAsync("HalleA.Pressen.RT-04"), strict: false);
         var process = await client.ChildNamesAsync("HalleA.Pressen.RT-04.Prozess");
         Assert.Contains("PresskraftAufbauzeit", process);
         Assert.Contains("Fuellgewicht", process);
@@ -98,7 +99,7 @@ public sealed class SimulatorAddressSpaceTests(SimulatorFixture fixture)
     {
         await using var client = await OpcTestClient.ConnectAsync(fixture.EndpointUrl, fixture.ClientPki);
 
-        Assert.Equivalent(s_ovenGroups, await client.ChildNamesAsync("HalleA.Oefen.OF-02"), strict: false);
+        Assert.Equivalent(OvenGroups, await client.ChildNamesAsync("HalleA.Oefen.OF-02"), strict: false);
         Assert.Contains("AnzahlPlatten", await client.ChildNamesAsync("HalleA.Puffer.PU-OFEN.Bestand"));
         Assert.Contains("Kartonmagazin", await client.ChildNamesAsync("HalleA.Verpackung.VP-02.Verpackung"));
         Assert.Contains("Auftrag", await client.ChildNamesAsync("HalleA.Verpackung.VP-02"));
@@ -164,7 +165,7 @@ public sealed class SimulatorAddressSpaceTests(SimulatorFixture fixture)
 
         foreach (var hall in new[] { "HalleB", "HalleC" })
         {
-            Assert.Equivalent(s_otherHallChildren, await client.ChildNamesAsync(hall), strict: false);
+            Assert.Equivalent(OtherHallChildren, await client.ChildNamesAsync(hall), strict: false);
             Assert.True(await client.ReadValueAsync<long>($"{hall}.Zaehler.2026-W42.F.StueckGut") > 0);
         }
 

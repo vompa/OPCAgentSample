@@ -29,3 +29,7 @@ src/OPCAgentSample.Server/wwwroot/
 
 ## Oberfläche für Azure Static Web Apps (WEB_OUT_DIR=dist)
 src/OPCAgentSample.Web/dist/
+
+## Arbeitsdateien von vibe-coding
+work/_raw/
+.slice-loop/

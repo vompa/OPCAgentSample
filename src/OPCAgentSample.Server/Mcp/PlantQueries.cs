@@ -43,7 +43,7 @@ public static class CycleColumns
 /// </summary>
 public sealed class PlantQueries(RollupReader reader, MasterDataStore masterData, ShiftCalendar calendar)
 {
-    private static readonly TimeSpan s_strokeRateWindow = TimeSpan.FromMinutes(60);
+    private static readonly TimeSpan StrokeRateWindow = TimeSpan.FromMinutes(60);
 
     /// <summary>Verlustereignisse, die das Fenster berühren (neuester Stand je Id).</summary>
     public Task<IReadOnlyList<LossEvent>> LossEventsAsync(DateTimeOffset from, DateTimeOffset to, IReadOnlyCollection<string>? stations) =>
@@ -151,10 +151,10 @@ public sealed class PlantQueries(RollupReader reader, MasterDataStore masterData
         foreach (var mould in current)
         {
             var total = await reader.ReadMouldCyclesAsync(mould.Id);
-            var recent = await CyclesAsync(mould.StationId, until - s_strokeRateWindow, until);
+            var recent = await CyclesAsync(mould.StationId, until - StrokeRateWindow, until);
             result.Add(new MouldReading(
                 mould.Id, mould.StationId, mould.Nests > 0 ? (int)(total / mould.Nests) : 0, mould.StrokeLimit,
-                mould.Nests > 0 ? recent / s_strokeRateWindow.TotalMinutes / mould.Nests : 0, mould.AverageStrokesPerDay));
+                mould.Nests > 0 ? recent / StrokeRateWindow.TotalMinutes / mould.Nests : 0, mould.AverageStrokesPerDay));
         }
 
         return result;

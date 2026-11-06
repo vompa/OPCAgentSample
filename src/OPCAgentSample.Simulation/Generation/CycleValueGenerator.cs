@@ -13,7 +13,7 @@ internal static class CycleValueGenerator
     private const double ThicknessScrapOffsetMm = 0.08;
     private const double WeightScrapMarginGrams = 0.2;
 
-    private static readonly (double Upper, ScrapReason Reason)[] s_reasonWeights =
+    private static readonly (double Upper, ScrapReason Reason)[] ReasonWeights =
     [
         (0.30, ScrapReason.Thickness),
         (0.55, ScrapReason.Fabric),
@@ -64,5 +64,5 @@ internal static class CycleValueGenerator
         }
     }
 
-    private static ScrapReason PickReason(double pick) => s_reasonWeights.First(w => pick < w.Upper).Reason;
+    private static ScrapReason PickReason(double pick) => ReasonWeights.First(w => pick < w.Upper).Reason;
 }
