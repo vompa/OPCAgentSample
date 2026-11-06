@@ -1,5 +1,7 @@
 // Erklärseite: erscheint ohne Sitzung statt der Anmeldung, meldet mit dem Code an, wird von Einladungslinks übersprungen
 // und ist angemeldet wie lokal ohne Demo-Zugang über „Über die Demo“ erreichbar.
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { flushPromises, mount, type VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -214,6 +216,86 @@ describe('AboutView (Inhalt)', () => {
     expect(images.slice(0, 2).every((i) => i.attributes('loading') === undefined)).toBe(true);
     expect(images.slice(2).every((i) => i.attributes('loading') === 'lazy')).toBe(true);
     wrapper.unmount();
+  });
+
+  it('zeigt vor dem Weg einer Antwort das Schema aus Halle, Server und Client mit allen Stationsnamen', () => {
+    const wrapper = mountAbout();
+    const section = wrapper.get('#so-funktioniert-es');
+    const schema = section.get('figure.flow-schema');
+    const order = [...section.element.querySelectorAll('.flow-schema, .about-flow')];
+    expect(order.map((node) => node.classList[0])).toEqual(['flow-schema', 'about-flow']);
+    expect(schema.get('figcaption').text().length).toBeGreaterThan(40);
+
+    const zones = schema.findAll('.flow-zone h3').map((heading) => heading.text());
+    expect(zones).toEqual(['Halle A', 'Server', 'Client']);
+    const stations = schema.findAll('.flow-station-name').map((name) => name.text());
+    expect(stations).toEqual([
+      'RT-01',
+      'RT-02',
+      'RT-03',
+      'RT-04',
+      'OF-01',
+      'OF-02',
+      'VP-01',
+      'VP-02',
+    ]);
+    for (const part of ['Collector', 'Redis', 'MCP-Server', 'Claude', 'Warum steht VP-02?']) {
+      expect(schema.text()).toContain(part);
+    }
+    // Das Hallennetz ist abgeschottet: genau eine Leitung verlässt die Halle, durch die Firewall zum Collector.
+    const firewall = schema.get('.flow-hall .flow-firewall').text();
+    expect(firewall).toContain('Von außen nicht erreichbar');
+    expect(firewall).toContain('Port 4840');
+    expect(firewall).toContain('nur für den Collector');
+    expect(schema.findAll('.flow-gate .flow-wall')).toHaveLength(1);
+    expect(schema.get('figcaption').text()).toContain('ohne Zugang von außen');
+    // Die Anonymisierung gibt es noch nicht: im Schema nur als ergänzbare Stufe, die Bildunterschrift sagt es offen.
+    expect(schema.get('.flow-optional').text()).toContain('Anonymisierung');
+    expect(schema.get('.flow-optional').text()).toContain('ergänzbar');
+    expect(schema.get('figcaption').text()).toContain('heute unverändert');
+    // Der Zustand steht auch als Text da, nicht nur als Farbe.
+    expect(schema.get('.flow-station.is-crit').text()).toContain('Störung');
+    expect(schema.get('.flow-station.is-warn').text()).toContain('Warnung');
+    wrapper.unmount();
+  });
+
+  it('hält die Animation des Schemas per Knopf an und setzt sie fort', async () => {
+    const wrapper = mountAbout();
+    const schema = wrapper.get('.flow-schema');
+    const button = schema.get('button.flow-pause');
+    expect(button.attributes('aria-pressed')).toBe('false');
+    expect(button.text()).toBe('Animation anhalten');
+    expect(schema.classes()).not.toContain('is-paused');
+
+    await button.trigger('click');
+    expect(button.attributes('aria-pressed')).toBe('true');
+    expect(button.text()).toBe('Animation fortsetzen');
+    expect(schema.classes()).toContain('is-paused');
+
+    await button.trigger('click');
+    expect(button.attributes('aria-pressed')).toBe('false');
+    expect(schema.classes()).not.toContain('is-paused');
+    wrapper.unmount();
+  });
+
+  it('bewegt das Schema nur ohne Wunsch nach reduzierter Bewegung', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/styles/about.css'), 'utf8');
+    const start = css.indexOf('/* ---- Datenfluss-Schema ---- */');
+    expect(start).toBeGreaterThan(-1);
+    const schemaCss = css.slice(start, css.indexOf('/* ---- Ende Datenfluss-Schema ---- */'));
+    const motion = '@media (prefers-reduced-motion: no-preference) {';
+    const motionStart = schemaCss.indexOf(motion);
+    expect(motionStart).toBeGreaterThan(-1);
+    const motionEnd = schemaCss.indexOf('\n}\n', motionStart);
+    // Außerhalb des Bewegungsblocks gibt es keine Animation.
+    const outside = schemaCss.slice(0, motionStart) + schemaCss.slice(motionEnd);
+    expect(outside).not.toMatch(/animation:/);
+    const inside = schemaCss.slice(motionStart, motionEnd);
+    expect(inside).toMatch(/animation:/);
+    // Ohne Bewegung gibt es nichts anzuhalten; der Knopf ist sonst groß genug.
+    expect(schemaCss).toMatch(/\.flow-pause \{[^}]*min-height: var\(--touch\)/);
+    expect(schemaCss).toMatch(/\.flow-pause \{[^}]*display: none/);
+    expect(inside).toMatch(/\.flow-pause \{[^}]*display: inline-flex/);
   });
 
   it('nennt die Grenzen der Demo und verwendet keine Gedankenstriche', () => {
