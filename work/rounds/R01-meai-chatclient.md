@@ -73,14 +73,14 @@ Start: `docker compose up -d`, `dotnet run --project src/OPCAgentSample.Simulato
 1. In der Weboberfläche eine Frage stellen (z. B. „Wie ist die Lage?“).
 Expected: Die Antwortkarte erscheint wie vor der Runde, die Überschrift streamt vorab, im Log steht „Claude-Frage: … Modellaufrufe …“ mit plausiblen Token-Werten.
 Closes: AC-01, AC-03
-Result: ☐
+Result: ☑ – User, 2026-11-06: POST /api/ask „Wie ist die Lage?“ lieferte Antwortkarte mit 4 answer_draft vorab; Log „Claude-Frage: 2 Modellaufrufe, 1 Tool-Aufrufe, Tokens Eingabe 144, Ausgabe 2040, Cache gelesen 12281, Cache geschrieben 15015“
 
 ### Slice 02 – ChatClient-Adapter
 Start: `dotnet test tests/OPCAgentSample.Tests -c Release --filter "FullyQualifiedName~ChatClientModelClientTests"`
 1. Die Tests der Klasse laufen lassen (die Registrierung nutzt den neuen Client noch nicht, die Oberfläche ändert sich nicht).
 Expected: alle 36 Tests sind grün. (superseded by slice 03: die Klasse hat jetzt 43 Fälle, die Registrierung nutzt den neuen Client)
 Closes: AC-03, AC-04, AC-05
-Result: ☐
+Result: ☑ – User, 2026-11-06: 43 von 43 grün
 
 ### Slice 03 – Umschalten und Alt-Code entfernen
 Start: `docker compose up -d`, `dotnet run --project src/OPCAgentSample.Simulator`, `dotnet run --project src/OPCAgentSample.Server` mit gesetztem `Claude:ApiKey`
@@ -89,4 +89,4 @@ Expected: Die Antwortkarte erscheint, die Überschrift streamt vorab, im Log ste
 2. Den Server ohne `Claude:ApiKey` starten und eine vorbereitete Frage stellen.
 Expected: Das Start-Log nennt die Referenz-Engine, die Karte ist als „Vorbereitete Antwort – Claude ist nicht angebunden“ gekennzeichnet.
 Closes: AC-01, AC-02
-Result: ☐
+Result: ☑ – User, 2026-11-06: Schritt 1 wie Slice 01; Schritt 2 ohne Key: Start-Log „Antwort-Engine: Referenz (vorbereitete Antworten)“, vorbereitete Karte kam (Kennzeichnung in der Oberfläche nicht angesehen, API-Test)
