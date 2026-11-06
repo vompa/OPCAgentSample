@@ -786,6 +786,11 @@
   gap: 8px;
 }
 
+.pending-slow {
+  padding-left: 16px;
+  color: var(--warn-text);
+}
+
 .pending-dot {
   flex: 0 0 8px;
   width: 8px;

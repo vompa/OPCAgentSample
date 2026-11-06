@@ -149,7 +149,7 @@ const LIMITS: Limit[] = [
   {
     label: 'Betrieb',
     value: 'Scale-to-zero',
-    text: 'Ohne Anfrage schaltet sich die Demo nach etwa fünf Minuten ab. Der erste Aufruf startet alle Container und dauert länger; lokal ist die Historie nach rund 40 Sekunden komplett.',
+    text: 'Ohne Anfrage schaltet sich die Demo nach etwa 15 Minuten ab. Der erste Aufruf startet alle Container und dauert länger; lokal ist die Historie nach rund 40 Sekunden komplett.',
     tone: 'wide',
   },
 ];
