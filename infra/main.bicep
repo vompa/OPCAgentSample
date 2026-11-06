@@ -36,10 +36,10 @@ param redisTag string = '7'
 @maxValue(1)
 param minReplicas int = 0
 
-@description('Wartezeit in Sekunden, bis die App ohne Anfragen auf null skaliert (KEDA cooldownPeriod). 3600 = eine Stunde Nachlauf: Wer die Demo nach der Anmeldung nutzt, hat sie eine Stunde nach der letzten Anfrage noch warm.')
+@description('Wartezeit in Sekunden, bis die App ohne Anfragen auf null skaliert (KEDA cooldownPeriod). 900 = 15 Minuten Nachlauf: kurz genug, dass einzelne Besuche wenig kosten; ein offener Live-Strom hält die App ohnehin wach.')
 @minValue(300)
 @maxValue(7200)
-param cooldownSeconds int = 3600
+param cooldownSeconds int = 900
 
 @description('Wach-Zeitfenster (KEDA-Cron) einschalten: Im Fenster bleibt 1 Replik auch ohne Anfragen wach (ca. 49 USD/Monat bei 8-18 Uhr). Standard aus: Die Demo schläft und wird nach der Anmeldung geweckt.')
 param awakeWindow bool = false
@@ -250,7 +250,7 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
       ]
       scale: {
         minReplicas: minReplicas
-        // Nachlauf vor dem Einschlafen (Standard eine Stunde)
+        // Nachlauf vor dem Einschlafen (Standard 15 Minuten)
         cooldownPeriod: cooldownSeconds
         // Genau eine Replik: Redis liegt in der App, jede weitere Replik hätte eigene Daten
         maxReplicas: 1

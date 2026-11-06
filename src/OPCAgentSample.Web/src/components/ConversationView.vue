@@ -2,6 +2,8 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useFollowScroll } from '@/composables/useFollowScroll';
 import { useIsMobile } from '@/composables/useIsMobile';
+import { useAppStore } from '@/stores/app';
+import { useBackendStore } from '@/stores/backend';
 import { useConversationStore } from '@/stores/conversation';
 import { useFavoritesStore } from '@/stores/favorites';
 import { useIdentityStore } from '@/stores/identity';
@@ -10,6 +12,7 @@ import AnswerCardView from './AnswerCardView.vue';
 import KeepIds from './KeepIds.vue';
 
 const conversation = useConversationStore();
+const backend = useBackendStore();
 const favorites = useFavoritesStore();
 const identity = useIdentityStore();
 const container = ref<HTMLElement | null>(null);
@@ -87,6 +90,8 @@ function repeatsTitle(title: string, question: string): boolean {
 
 function retry(question: string): void {
   conversation.pending = null;
+  // Nach abgelaufener Frist erneut wecken; die Frage wartet dann wieder auf die Halle.
+  if (backend.phase === 'failed') useAppStore().retryWake();
   void conversation.ask(question);
 }
 </script>
@@ -135,6 +140,9 @@ function retry(question: string): void {
           <span class="pending-line"
             ><span class="pending-dot" aria-hidden="true"></span>Wird gesendet, sobald die Halle
             bereit ist …</span
+          >
+          <span v-if="backend.slow" class="pending-line pending-slow"
+            >Der Start dauert ungewöhnlich lange. Die Demo ist möglicherweise gerade pausiert.</span
           >
         </div>
         <template v-else>

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@/api/errors';
 import { apiMock, resetApiMock } from '@/test/apiMock';
 import { useAuthStore } from '@/stores/auth';
+import { useBackendStore } from '@/stores/backend';
 import { useIdentityStore } from '@/stores/identity';
 import { ME } from '@/test/fixtures';
 import DataNotice from './DataNotice.vue';
@@ -126,6 +127,27 @@ describe('Hinweise zu Daten und Live-Strom', () => {
 
     expect(wrapper.get('[role="status"]').text()).toContain('Historie wird geladen');
     expect(wrapper.get('[role="status"]').classes()).toContain('is-loading');
+  });
+
+  it('weist in der Vorschau auf eine vermutlich pausierte Demo hin, wenn der Start ungewöhnlich lange dauert', async () => {
+    withStatus({});
+    const backend = useBackendStore();
+    backend.show('preview', '09:42');
+    backend.phase = 'waking';
+    const wrapper = mount(DataNotice);
+    expect(wrapper.get('[role="status"]').text()).not.toContain('pausiert');
+
+    backend.slow = true;
+    await flushPromises();
+    const notice = wrapper.get('[role="status"]');
+    expect(notice.text()).toContain('Vorschau · Stand 09:42');
+    expect(notice.text()).toContain('möglicherweise gerade pausiert');
+    expect(notice.classes()).toContain('is-warning');
+
+    backend.phase = 'failed';
+    await flushPromises();
+    expect(wrapper.get('[role="status"]').text()).toContain('vermutlich gerade pausiert');
+    expect(wrapper.find('.data-notice-action').text()).toBe('Erneut versuchen');
   });
 
   it('zeigt den Zeitbasis-Hinweis des Servers und sonst nichts', () => {

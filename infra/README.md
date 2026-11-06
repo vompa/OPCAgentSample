@@ -36,11 +36,13 @@ flowchart LR
    Halle bereit ist“) und gehen danach automatisch raus. Postfach übernehmen, Favoriten ändern und neue Sitzungen gehen erst mit dem Backend.
 4. **Aufwachen:** Nach der Anmeldung fragt die Oberfläche `/api/health` mit wachsendem Abstand (1, 2, 3, 5, 5, 8, dann alle 10 s, höchstens
    5 Minuten; typisch ist das Backend nach etwa 40 s bereit). Antwortet es, lädt sie alle Bereiche live, ersetzt die Vorschau, startet den
-   Live-Strom (SSE) und sendet die wartende Frage. Läuft die Frist ab, bleibt die Vorschau stehen und das Banner bietet „Erneut versuchen“.
+   Live-Strom (SSE) und sendet die wartende Frage. Dauert es länger als 60 s, weist das Banner darauf hin, dass die Demo pausiert sein könnte (eine gestoppte App,
+   etwa nach dem Not-Stopp, ist im Browser nicht von „startet noch“ zu unterscheiden). Läuft die Frist ab, bleibt die Vorschau stehen,
+   das Banner bietet „Erneut versuchen“ und eine wartende Frage gibt das Eingabefeld wieder frei.
 5. **Wiederkehrer:** Die Oberfläche merkt sich lokal nur „angemeldet bis `<Zeitpunkt>`“ (aus der Login-Antwort, nicht geheim; weder Code noch Token).
    Gilt der Hinweis noch, weckt sie das Backend beim Öffnen gleich (ohne Erklärseite) und zeigt bis dahin die **zuletzt gesehenen Live-Daten**
    („Stand 09:47 · wird aktualisiert“, aus IndexedDB). Antwortet der Server mit 401, wird der Hinweis gelöscht und die Erklärseite erscheint.
-6. **Einschlafen:** Eine Stunde nach der letzten Anfrage (`cooldownPeriod` 3600 s) skaliert die App auf null. Ein offener Tab hält sie nicht
+6. **Einschlafen:** 15 Minuten nach der letzten Anfrage (`cooldownPeriod` 900 s) skaliert die App auf null. Ein offener Tab hält sie nicht
    wach (der Live-Strom endet nach 15 Minuten ohne Aktion). Bricht der Strom ab, prüft die Oberfläche `/api/health` und weckt das Backend bei Bedarf neu.
 
 **Cookie und CORS:** `opc.vompa.dev` und `api.opc.vompa.dev` sind verschiedene Herkünfte, aber dieselbe *Site* (`vompa.dev`). Das Sitzungs-Cookie
@@ -88,17 +90,17 @@ Preise: Azure Retail Prices API, Region Germany West Central (gleich Sweden Cent
 
 Die Oberfläche (Static Web Apps Free) kostet nichts. Das Backend belegt im Betrieb 1,25 vCPU und 2,5 GiB
 (1,25 × 3600 × 0,000024 + 2,5 × 3600 × 0,000003 = 0,108 + 0,027 = **0,135 USD je Laufstunde**). Simulator und Collector
-arbeiten laufend, deshalb gilt der Aktiv-Tarif. Ohne Anfrage skaliert die App erst nach `cooldownPeriod` = 3600 s auf null; jeder Besuch
-kostet daher Kaltstart (ca. 1 min) + Nutzung (ca. 10 min) + Nachlauf (60 min) ≈ **1,2 Laufstunden ≈ 0,16 USD**, wenn die Besuche
-nicht zusammenfallen (Worst Case; Besuche innerhalb einer Stunde teilen sich den Lauf).
+arbeiten laufend, deshalb gilt der Aktiv-Tarif. Ohne Anfrage skaliert die App erst nach `cooldownPeriod` = 900 s auf null; jeder Besuch
+kostet daher Kaltstart (ca. 1 min) + Nutzung (ca. 10 min) + Nachlauf (15 min) ≈ **0,43 Laufstunden ≈ 0,06 USD**, wenn die Besuche
+nicht zusammenfallen (Worst Case; Besuche innerhalb von 15 Minuten teilen sich den Lauf).
 
 | Besuche im Monat (je mit Anmeldung) | Laufzeit (Worst Case) | Kosten (ohne Freikontingent) |
 |---|---|---|
-| 2 | ca. 2,4 h | ca. 0,32 USD |
-| 10 | ca. 12 h | ca. 1,62 USD |
-| 30 | ca. 36 h | ca. 4,86 USD |
-| Uptime-Prüfung Backend, wöchentlich (ca. 4,3 × 1,1 h) | ca. 4,7 h | ca. 0,64 USD |
-| Aktion „Demo aufwecken“ (2 h + 1 h Nachlauf) | 3 h | ca. 0,41 USD je Nutzung |
+| 2 | ca. 0,9 h | ca. 0,12 USD |
+| 10 | ca. 4,3 h | ca. 0,58 USD |
+| 30 | ca. 13 h | ca. 1,76 USD |
+| Uptime-Prüfung Backend, wöchentlich (ca. 4,3 × 0,3 h) | ca. 1,3 h | ca. 0,17 USD |
+| Aktion „Demo aufwecken“ (2 h + 15 min Nachlauf) | ca. 2,3 h | ca. 0,30 USD je Nutzung |
 | Wach-Zeitfenster täglich 8 bis 18 Uhr (`AWAKE_WINDOW=true`, nicht mehr Standard) | ca. 300 h | ca. 41 USD |
 | zum Vergleich: immer an (`minReplicas = 1`, 730 h) | 730 h | ca. 99 USD |
 
@@ -225,8 +227,8 @@ die Container App) und `asuid.opc` müssen durch die neuen ersetzt werden; bis d
 
 - **Ausrollen:** Actions → *Deploy to Azure* → *Run workflow* (main). Der Smoke-Test wartet auf den Kaltstart.
 - **Spiegel Redis:** Der Workflow spiegelt `redis:7-alpine` nur, wenn es auf ghcr.io noch fehlen (ein Deploy hängt so nicht an Docker Hub). Für Sicherheitsupdates beim Start *refresh-mirrors* anhaken.
-- **Wachzeiten:** Standard ist Scale-to-zero ohne Wach-Zeitfenster; das Backend wird nach der Anmeldung geweckt. Variable `AWAKE_WINDOW` = `true` hält die App täglich 8 bis 18 Uhr Wiener Zeit wach (KEDA-Cron, Parameter `awakeStart`/`awakeEnd`/`awakeTimeZone`, ca. 41 USD/Monat). `MIN_REPLICAS` = `1` hält sie immer wach (ca. 99 USD/Monat). Der Nachlauf vor dem Einschlafen ist `cooldownSeconds` (Standard 3600). Nach Änderung neu ausrollen.
-- **Vor einem Termin wecken:** Actions → *Demo aufwecken* → *Run workflow* mit der Anzahl Stunden (Standard 2, höchstens 6). Der Workflow weckt das Backend per `GET /api/health` und ruft es alle 20 Minuten erneut auf, solange es wach bleiben soll. Gewählt gegenüber einer Änderung von `minReplicas`, weil es ohne Azure-Anmeldung und Schreibrechte auskommt, die ausgerollte Konfiguration nicht verstellt (ein späteres Deployment würde sie zurücksetzen) und gleich viel kostet (der Nachlauf beträgt ohnehin eine Stunde). Abbrechen des Laufs beendet das Wachhalten.
+- **Wachzeiten:** Standard ist Scale-to-zero ohne Wach-Zeitfenster; das Backend wird nach der Anmeldung geweckt. Variable `AWAKE_WINDOW` = `true` hält die App täglich 8 bis 18 Uhr Wiener Zeit wach (KEDA-Cron, Parameter `awakeStart`/`awakeEnd`/`awakeTimeZone`, ca. 41 USD/Monat). `MIN_REPLICAS` = `1` hält sie immer wach (ca. 99 USD/Monat). Der Nachlauf vor dem Einschlafen ist `cooldownSeconds` (Standard 900). Nach Änderung neu ausrollen.
+- **Vor einem Termin wecken:** Actions → *Demo aufwecken* → *Run workflow* mit der Anzahl Stunden (Standard 2, höchstens 6). Der Workflow weckt das Backend per `GET /api/health` und ruft es alle 10 Minuten erneut auf, solange es wach bleiben soll. Gewählt gegenüber einer Änderung von `minReplicas`, weil es ohne Azure-Anmeldung und Schreibrechte auskommt, die ausgerollte Konfiguration nicht verstellt (ein späteres Deployment würde sie zurücksetzen) und gleich viel kostet (der Nachlauf beträgt ohnehin 15 Minuten). Abbrechen des Laufs beendet das Wachhalten.
 - **Verfügbarkeit:** [`uptime.yml`](../.github/workflows/uptime.yml) prüft täglich die Oberfläche (kostenlos, weckt nichts) und montags zusätzlich `https://api.opc.vompa.dev/api/health` mit Kaltstart.
   GitHub deaktiviert geplante Workflows nach 60 Tagen ohne Aktivität; dann im Actions-Tab wieder aktivieren.
 - **Vorschau-Daten aktualisieren:** Ändert sich etwas, das die Oberfläche zeigt (Übersicht, Postfach, Meldungen, Favoriten, Referenzantworten), bricht der Test `SnapshotTests` ab und nennt den Befehl: `docker compose up -d redis`, dann `dotnet run --project src/OPCAgentSample.Snapshot -- src/OPCAgentSample.Web/public/snapshot` (nimmt die Szenario-Historie in ein Wegwerf-Redis auf, startet den Server in-process und ruft dessen API wie die Oberfläche) und die geänderten JSON-Dateien einchecken.

@@ -39,6 +39,10 @@ function cacheKey(role: string): string {
   return `live:${role}`;
 }
 
+/** Hinweis an einer wartenden Frage, wenn die Halle innerhalb der Frist nicht bereit wurde. */
+export const QUEUE_FAILED_TEXT =
+  'Die Halle antwortet nicht, die Demo ist vermutlich pausiert. Bitte später erneut fragen.';
+
 /** Abstand, in dem die Oberfläche während des Kaltstarts („Historie wird geladen …“) nachfragt. */
 export const LOADING_POLL_MS = 4_000;
 
@@ -238,7 +242,10 @@ export const useAppStore = defineStore('app', () => {
 
   /** Weckt das Backend und lädt danach live (die Vorschau steht dann schon). */
   async function connect(): Promise<void> {
-    if (!(await backend.wake())) return;
+    if (!(await backend.wake())) {
+      if (backend.phase === 'failed') conversation.abandonQueue(QUEUE_FAILED_TEXT);
+      return;
+    }
     await loadLive(identity.role, ++loadToken);
   }
 
@@ -249,7 +256,7 @@ export const useAppStore = defineStore('app', () => {
 
   /**
    * Der Live-Strom ist abgerissen: Ist die Sitzung abgelaufen (401, dann Anmeldung) oder ist das Backend eingeschlafen
-   * (Cooldown nach einer Stunde ohne Aufrufe)? Dann neu wecken und live laden.
+   * (Cooldown nach 15 Minuten ohne Aufrufe)? Dann neu wecken und live laden.
    */
   async function recheckAfterLoss(): Promise<void> {
     await useAuthStore().verify();
