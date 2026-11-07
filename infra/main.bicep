@@ -283,6 +283,7 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
 }
 
 output appFqdn string = app.properties.configuration.ingress.fqdn
+output appName string = app.name
 output webName string = web.name
 output webDefaultHost string = web.properties.defaultHostname
 output webHost string = webHost

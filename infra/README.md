@@ -235,7 +235,9 @@ die Container App) und `asuid.opc` müssen durch die neuen ersetzt werden; bis d
 - **Logs:** Log Analytics `opc-agent-logs`, Tabelle `ContainerAppConsoleLogs_CL` (Spalte `ContainerName_s`). Metriken
   und Traces werden in Azure nicht exportiert; Nutzung und Betrieb zeigt die Report-Seite der Weboberfläche (ihre Zahlen stammen
   aus dem flüchtigen Redis und beginnen mit jedem Kaltstart neu).
-- **Zugangscode wechseln:** neuen Code erzeugen, `DEMO_ACCESS_CODE_SHA256` ersetzen, neu ausrollen.
+- **Zugangscode wechseln:** neuen Code erzeugen, `DEMO_ACCESS_CODE_SHA256` und `SMOKE_ACCESS_CODE` ersetzen, neu ausrollen.
+  Ein geänderter Secret-Wert erzeugt keine neue Revision; der Workflow startet deshalb die aktive Revision neu, damit
+  geänderte Secrets (auch Einladungen und `CLAUDE_API_KEY`) sofort gelten.
 - **Einladung vergeben oder sperren:** siehe [Einladungslinks](#einladungslinks).
 - **Claude abschalten:** Secret `CLAUDE_API_KEY` leeren und neu ausrollen; die Demo zeigt dann nur vorbereitete Antworten.
 - **Immer an statt Scale-to-zero:** Parameter `minReplicas=1` (rund 99 USD im Monat).

@@ -140,6 +140,18 @@ jobs:
           echo "api-host=$(jq -r .publicHost.value outputs.json)" >> "$GITHUB_OUTPUT"
           echo "web-host=$(jq -r .webHost.value outputs.json)" >> "$GITHUB_OUTPUT"
           echo "web-name=$(jq -r .webName.value outputs.json)" >> "$GITHUB_OUTPUT"
+          echo "app-name=$(jq -r .appName.value outputs.json)" >> "$GITHUB_OUTPUT"
+
+      # Ein geänderter Secret-Wert (z. B. Zugangscode, Einladungen) erzeugt keine neue Revision; laufende Replikas behielten
+      # den alten Wert. Der Neustart der aktiven Revision lädt die Secrets neu (bei Scale-to-zero ohne Replikas harmlos).
+      - name: Aktive Revision neu starten (übernimmt geänderte Secrets)
+        env:
+          RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          APP_NAME: ${{ steps.deploy.outputs.app-name }}
+        run: |
+          revision="$(az containerapp show --name "$APP_NAME" --resource-group "$RESOURCE_GROUP" --query properties.latestRevisionName --output tsv)"
+          az containerapp revision restart --name "$APP_NAME" --resource-group "$RESOURCE_GROUP" --revision "$revision" --output none
+          echo "Revision $revision neu gestartet"
 
       # Deployment-Token der Static Web App: gehört nicht in die Bicep-Ausgabe (stünde im Deployment-Verlauf).
       - name: Deployment-Token der Static Web App holen
